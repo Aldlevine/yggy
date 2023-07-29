@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "module": "ES2015",
+        "moduleResolution": "NodeNext",
+        "target": "ES2017",
+        "rootDirs": [
+            "web",
+            "web/generated"
+        ],
+        "outDir": "assets",
+        "sourceMap": false,
+        "strict": true,
+        "paths": {
+            "socket.io-client": [
+                "./node_modules/socket.io-client"
+            ]
+        },
+        "experimentalDecorators": true
+    },
+}
