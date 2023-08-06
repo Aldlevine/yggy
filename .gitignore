@@ -296,5 +296,5 @@ dist
 
 # Pyggy.gitignore
 
-web/generated
+generated
 assets

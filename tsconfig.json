@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
-        "module": "ES2015",
+        "module": "ES2022",
         "moduleResolution": "NodeNext",
         "target": "ES2017",
         "rootDirs": [
-            "web",
-            "web/generated"
+            "web/",
+            "generated/",
+            "components/",
         ],
         "outDir": "assets",
         "sourceMap": false,
@@ -13,8 +14,9 @@
         "paths": {
             "socket.io-client": [
                 "./node_modules/socket.io-client"
-            ]
+            ],
         },
         "experimentalDecorators": true
     },
+    "compileOnSave": true
 }
