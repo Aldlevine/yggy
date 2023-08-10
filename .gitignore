@@ -294,7 +294,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Pyggy.gitignore
+# yggy.gitignore
 
-generated
-assets
+/web

@@ -2,13 +2,15 @@
     "compilerOptions": {
         "module": "ES2022",
         "moduleResolution": "NodeNext",
-        "target": "ES2017",
-        "rootDirs": [
-            "web/",
-            "generated/",
-            "components/",
+        "target": "ES2022",
+        "lib": [
+            "DOM",
+            "ES2022"
         ],
-        "outDir": "assets",
+        "rootDirs": [
+            "/"
+        ],
+        "outDir": "web",
         "sourceMap": false,
         "strict": true,
         "paths": {

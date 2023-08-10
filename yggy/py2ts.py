@@ -1,6 +1,6 @@
 from typing import Any, TypeVar, cast, get_args, get_origin, is_typeddict
 
-__all__ = []
+__all__ = ["type_py2ts"]
 
 
 def type_py2ts(t: type) -> str:

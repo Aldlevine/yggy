@@ -1,5 +1,0 @@
-{
-    "imports": {
-        "socket.io-client": "https://cdn.socket.io/4.7.1/socket.io.esm.min.js"
-    }
-}
