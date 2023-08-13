@@ -1,5 +1,5 @@
 import { __uuid4 } from "../utils.js";
-import { ObservableManager, ObservableChange } from "./observable_manager.js";
+import { ObservableChange, ObservableManager } from "./observable_manager.js";
 
 
 export class Observable<T> {
@@ -11,6 +11,10 @@ export class Observable<T> {
         this.__manager = __manager;
         this.__id = __id;
         this.__value = __value;
+    }
+
+    get id(): string {
+        return this.__id;
     }
 
     get value(): T {

@@ -75,7 +75,7 @@ class CommWS:
 
     def run(self) -> None:
         try:
+            asyncio.run(self.__serve())
+        except RuntimeError:
             loop = asyncio.get_running_loop()
             loop.create_task(self.__serve())
-        except RuntimeError:
-            asyncio.run(self.__serve())

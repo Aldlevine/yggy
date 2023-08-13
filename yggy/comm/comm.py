@@ -1,30 +1,32 @@
+# from asyncio import Queue
+import uuid
 from typing import (
     Any,
+    Callable,
     Container,
     Coroutine,
-    Callable,
     Iterable,
     NotRequired,
     TypedDict,
     Unpack,
+    cast,
+    get_origin,
     overload,
 )
-import uuid
 
 __all__ = [
     "COMM_ADD_CLIENT_MSG",
     "COMM_REMOVE_CLIENT_MSG",
     "Comm",
     "GlobalReceiverFn_t",
+    "Message",
     "ReceiverFn_t",
     "SendKwds",
+    "create_message",
 ]
 
 COMM_ADD_CLIENT_MSG = "comm.add_client"
 COMM_REMOVE_CLIENT_MSG = "comm.remove_client"
-
-ReceiverFn_t = Callable[[Any], Coroutine[Any, Any, Any]]
-GlobalReceiverFn_t = Callable[[str, Any], Coroutine[Any, Any, Any]]
 
 
 class SendKwds(TypedDict):
@@ -32,6 +34,23 @@ class SendKwds(TypedDict):
 
 
 SenderFn_t = Callable[[str, Any, SendKwds], Coroutine[Any, Any, Any]]
+ReceiverFn_t = Callable[[Any], Coroutine[Any, Any, Any]]
+GlobalReceiverFn_t = Callable[[str, Any], Coroutine[Any, Any, Any]]
+
+
+class Message(TypedDict, total=False):
+    message_id: str
+
+
+def create_message[T: Message](message_type: type[T], kwds: T) -> T:
+    origin = get_origin(message_type) or message_type
+    return cast(
+        T,
+        {
+            "message_id": uuid.uuid4().hex,
+            **{k: v for k, v in kwds.items() if k in origin.__annotations__.keys()},
+        },
+    )
 
 
 class Comm:
@@ -41,12 +60,18 @@ class Comm:
     __global_receivers: list[GlobalReceiverFn_t]
     __clients: set[str]
 
+    # __send_queue: Queue[tuple[str, Any]]
+    # __notify_queue: Queue[tuple[str, Any]]
+
     def __init__(self) -> None:
         self.__id = uuid.uuid4().hex
         self.__senders = []
         self.__receivers = {}
         self.__global_receivers = []
         self.__clients = set()
+
+        # self.__send_queue = Queue()
+        # self.__notify_queue = Queue()
 
         self.recv(COMM_ADD_CLIENT_MSG, self.__recv_add_client)
         self.recv(COMM_REMOVE_CLIENT_MSG, self.__recv_remove_client)

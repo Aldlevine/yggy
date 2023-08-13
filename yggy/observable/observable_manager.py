@@ -1,20 +1,23 @@
-from typing import Any
+from typing import Any, cast
 
-from ..comm import Comm, COMM_ADD_CLIENT_MSG
+from .messages import (
+    OBSERVABLE_CHANGE_MSG,
+    OBSERVABLE_CLIENT_CHANGE_MSG,
+    OBSERVABLE_READY_MSG,
+    OBSERVABLE_REGISTER_MSG,
+)
 
-from .observable import Observable, ObservableChange
+from ..comm import COMM_ADD_CLIENT_MSG, Comm, Message
+from .observable import Observable, ObservableChangeMessage
 from .observable_value import ObservableValue
 
 __all__ = [
-    "OBSERVABLE_CHANGE_MSG",
-    "OBSERVABLE_CLIENT_CHANGE_MSG",
-    "OBSERVABLE_REGISTER_MSG",
     "ObservableManager",
 ]
 
-OBSERVABLE_CHANGE_MSG = "observable.change"
-OBSERVABLE_CLIENT_CHANGE_MSG = "observable.client_change"
-OBSERVABLE_REGISTER_MSG = "observable.register"
+
+class ReadyMessage(Message):
+    ...
 
 
 class ObservableManager:
@@ -41,7 +44,7 @@ class ObservableManager:
     def unregister(self, __observable: Observable[Any]) -> None:
         del self.__registry[__observable.id]
 
-    async def notify_change(self, __change: ObservableChange[Any]) -> None:
+    async def notify_change(self, __change: ObservableChangeMessage[Any]) -> None:
         data_id = __change["data_id"]
 
         if data_id in self.__notifying:
@@ -53,7 +56,7 @@ class ObservableManager:
         finally:
             self.__notifying.discard(data_id)
 
-    async def __recv_change(self, __change: ObservableChange[Any]) -> None:
+    async def __recv_change(self, __change: ObservableChangeMessage[Any]) -> None:
         data_id = __change["data_id"]
         if data_id not in self.__registry:
             return
@@ -61,11 +64,15 @@ class ObservableManager:
         obs = self.__registry[data_id]
 
         new_value = __change["new_value"]
-        await obs.set_async(new_value)
+        if isinstance(obs, ObservableValue):
+            obs = cast(ObservableValue[Any], obs)
+            await obs.set_async(new_value)
 
     async def __recv_add_client(self, __client_id: str) -> None:
         for observable in self.__registry.values():
-            await self.__comm.send(OBSERVABLE_REGISTER_MSG, observable.__json__(), client_ids=[__client_id])
-
-    def value[T](self, __value: T) -> ObservableValue[T]:
-        return ObservableValue(self, __value)
+            await self.__comm.send(
+                OBSERVABLE_REGISTER_MSG, observable.__json__(), client_ids=[__client_id]
+            )
+        await self.__comm.send(
+            OBSERVABLE_READY_MSG, ReadyMessage(), client_ids=[__client_id]
+        )

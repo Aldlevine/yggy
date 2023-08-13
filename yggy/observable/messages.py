@@ -1,0 +1,11 @@
+__all__ = [
+    "OBSERVABLE_CHANGE_MSG",
+    "OBSERVABLE_CLIENT_CHANGE_MSG",
+    "OBSERVABLE_READY_MSG",
+    "OBSERVABLE_REGISTER_MSG",
+]
+
+OBSERVABLE_CHANGE_MSG = "observable.change"
+OBSERVABLE_CLIENT_CHANGE_MSG = "observable.client_change"
+OBSERVABLE_READY_MSG = "observable.ready"
+OBSERVABLE_REGISTER_MSG = "observable.register"

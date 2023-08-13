@@ -4,6 +4,7 @@ import { Observable } from "./observable.js";
 // TODO: constants should be transpiled from py
 export const OBSERVABLE_CHANGE_MSG = "observable.change";
 export const OBSERVABLE_CLIENT_CHANGE_MSG = "observable.client_change";
+export const OBSERVABLE_READY_MSG = "observable.ready";
 export const OBSERVABLE_REGISTER_MSG = "observable.register";
 
 // TODO: pod types should be transpiled from py
@@ -32,6 +33,13 @@ export class ObservableManager {
 
         this.__comm.recv(OBSERVABLE_CHANGE_MSG, this.__recv_change.bind(this));
         this.__comm.recv(OBSERVABLE_REGISTER_MSG, this.__recv_register.bind(this));
+    }
+
+    public get<T = any>(__id: string | number): Observable<T> | undefined {
+        if (typeof __id === "number") {
+            return Object.values(this.__registry)[__id];
+        }
+        return this.__registry[__id];
     }
 
     public notify_change(__change: ObservableChange<any>): void {

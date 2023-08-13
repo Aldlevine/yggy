@@ -4,11 +4,23 @@
 
 <head>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pyggy</title>
 
+    <style>
+        html {
+            font-size: 16px;
+        }
+
+        input {
+            font-size: 16px;
+        }
+    </style>
 </head>
 
 <body>
+    <input id="slider" type="range" min="0" max="100" step="1" />
+    <input id="readout" type="number" min="0" max="100" step="1" />
 
     <script type="module" src="./app/index.js"></script>
 
