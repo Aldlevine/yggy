@@ -9,7 +9,7 @@ export const OBSERVABLE_REGISTER_MSG = "observable.register";
 
 // TODO: pod types should be transpiled from py
 export type ObservableChange<T> = {
-    event_id: string;
+    message_id: string;
     data_id: string;
     old_value: T;
     new_value: T;

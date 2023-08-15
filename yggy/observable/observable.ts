@@ -34,7 +34,7 @@ export class Observable<T> {
         this.__value = __value;
 
         const change: ObservableChange<T> = {
-            event_id: __uuid4(),
+            message_id: __uuid4(),
             data_id: this.__id,
             old_value: old_value,
             new_value: __value,

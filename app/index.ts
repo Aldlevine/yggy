@@ -1,31 +1,28 @@
-import { Comm } from "../yggy/comm/comm.js";
-import { CommWS } from "../yggy/comm/comm_ws.js";
-import { Observable } from "../yggy/observable/observable.js";
-import { OBSERVABLE_CHANGE_MSG, OBSERVABLE_READY_MSG, ObservableManager } from "../yggy/observable/observable_manager.js";
+import * as yggy from "../yggy/index.js";
 
 declare global {
     interface Window {
-        comm: Comm
-        obs_manager: ObservableManager
+        comm: yggy.Comm
+        obs_manager: yggy.ObservableManager
     }
 }
 
-const comm = window.comm = new Comm();
-const comm_ws = new CommWS(comm, location.hostname, 5678);
-const obs_manager = new ObservableManager(comm);
+const comm = window.comm = new yggy.Comm();
+const comm_ws = new yggy.CommWS(comm, location.hostname, 5678);
+const obs_manager = new yggy.ObservableManager(comm);
 
 window.obs_manager = obs_manager;
 
 
-comm.recv("observable.register", (obs: any) => {
+comm.recv(yggy.OBSERVABLE_REGISTER_MSG, (obs: any) => {
     console.log(obs);
 });
 
 const slider = <HTMLInputElement>document.getElementById("slider")
 const readout = <HTMLInputElement>document.getElementById("readout");
-let obs: Observable<number>
+let obs: yggy.Observable<number>
 
-comm.recv(OBSERVABLE_READY_MSG, () => {
+comm.recv(yggy.OBSERVABLE_READY_MSG, () => {
     obs = obs_manager.get(0)!;
 
     readout.value = slider.value = String(obs.value);
@@ -39,7 +36,7 @@ comm.recv(OBSERVABLE_READY_MSG, () => {
 });
 
 
-comm.recv(OBSERVABLE_CHANGE_MSG, (data) => {
+comm.recv(yggy.OBSERVABLE_CHANGE_MSG, (data) => {
     if (data.data_id == obs?.id) {
         slider.value = String(data["new_value"]);
         readout.value = String(data["new_value"]);

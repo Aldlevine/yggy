@@ -1,11 +1,17 @@
 import asyncio
 from dataclasses import dataclass
+from threading import Thread
 from typing import Any
 
 from websockets import server
+from websockets.exceptions import ConnectionClosedError
 
 from ..json import json
 from .comm import Comm, SendKwds
+from ..logging import get_logger
+
+# logger = get_logger("yggy.comm_ws")
+logger = get_logger(__loader__.name)
 
 
 @dataclass
@@ -49,33 +55,40 @@ class CommWS:
     def connections(self) -> dict[str, server.WebSocketServerProtocol]:
         return self.__connections
 
+    def run(self) -> None:
+        self.__loop = asyncio.new_event_loop()
+        self.__loop.run_until_complete(self.__serve())
+
+    def start(self) -> None:
+        self.__thread = Thread(target=self.run, daemon=True)
+        self.__thread.start()
+
+    def stop(self) -> None:
+        self.__loop.stop()
+
     async def __do_send(self, msg: str, data: Any, kwds: SendKwds) -> None:
-        for client_id, websocket in self.__connections.items():
+        for client_id, websocket in tuple(self.__connections.items()):
             if "client_ids" not in kwds or client_id in kwds["client_ids"]:
                 await websocket.send(json.dumps({"msg": msg, "data": data}))
 
     async def __on_connection(self, websocket: server.WebSocketServerProtocol) -> None:
-        client_id = self.__comm.get_client_id()
+        client_id = self.__comm.new_client_id()
         self.__connections[client_id] = websocket
 
         try:
-            await self.__comm.add_client(client_id)
+            self.__comm.add_client(client_id)
 
-            async for message in websocket:
-                event = CommWSMessage(**json.loads(message))
-                await self.__comm.send(event.msg, event.data)
+            try:
+                async for message in websocket:
+                    event = CommWSMessage(**json.loads(message))
+                    self.__comm.send(event.msg, event.data)
+            except ConnectionClosedError:
+                logger.debug(f"CONNECTION CLOSED {client_id}")
 
         finally:
             del self.__connections[client_id]
-            await self.__comm.remove_client(client_id)
+            self.__comm.remove_client(client_id)
 
     async def __serve(self) -> None:
         async with server.serve(self.__on_connection, self.__host, self.__port):
             await asyncio.Future()
-
-    def run(self) -> None:
-        try:
-            asyncio.run(self.__serve())
-        except RuntimeError:
-            loop = asyncio.get_running_loop()
-            loop.create_task(self.__serve())

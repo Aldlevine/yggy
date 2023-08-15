@@ -1,12 +1,16 @@
-from asyncio import create_task
 from typing import TYPE_CHECKING, Any, cast
-
-from .messages import OBSERVABLE_CHANGE_MSG
-from ..comm.comm import ReceiverFn_t
 
 from yggy.observable.observable import Observable
 
-from .observable import MISSING, MissingType, Observable, ObservableChangeMessage, ObservableFactory
+from ..comm import ReceiverFn_t
+from .messages import OBSERVABLE_CHANGE_MSG
+from .observable import (
+    MISSING,
+    MissingType,
+    Observable,
+    ObservableChangeMessage,
+    ObservableFactory,
+)
 
 if TYPE_CHECKING:
     from .observable_manager import ObservableManager
@@ -45,23 +49,14 @@ class ObservableValue[T](Observable[Any]):
         old_value = self.get()
         new_value = __value
         self._set(__value)
-        notif = self._notify_change(old_value, new_value)
-        try:
-            create_task(notif)
-        except RuntimeError:
-            notif.close()
-
-    async def set_async(self, __value: T) -> None:
-        old_value = self.get()
-        new_value = __value
-        self._set(__value)
-        await self._notify_change(old_value, new_value)
+        self._notify_change(old_value, new_value)
 
     def watch(self, __fn: ReceiverFn_t) -> None:
-        async def __recv_watch(__change: ObservableChangeMessage[Any]) -> None:
+        def __recv_watch(__change: ObservableChangeMessage[Any]) -> None:
             if __change["data_id"] != self.id:
                 return
-            await __fn(__change)
+            __fn(__change)
+
         self._manager.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_watch)
 
     def __json__(self) -> dict[str, Any]:

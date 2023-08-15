@@ -1,5 +1,5 @@
 {
-  "name": "pyggy",
+  "name": "yggy",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,5 +12,8 @@
   "dependencies": {
     "socket.io-client": "^4.7.1",
     "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=14.17"
   }
 }

@@ -4,7 +4,7 @@ export class CommWS {
     private __comm: Comm
     private __host: string
     private __port: number
-    private __websocket: WebSocket
+    private __websocket!: WebSocket
 
     constructor(
         comm: Comm,
@@ -15,12 +15,7 @@ export class CommWS {
         this.__host = host;
         this.__port = port;
 
-        this.__websocket = new WebSocket(`ws://${host}:${port}`);
-
-        this.__websocket.onopen = this.__onopen.bind(this);
-        this.__websocket.onerror = this.__onerror.bind(this);
-        this.__websocket.onclose = this.__onclose.bind(this);
-        this.__websocket.onmessage = this.__onmessage.bind(this);
+        this.__create_websocket();
 
         comm.add_sender(this.__onsend.bind(this));
     }
@@ -28,6 +23,19 @@ export class CommWS {
     get comm(): Comm { return this.__comm; }
     get host(): string { return this.__host; }
     get port(): number { return this.__port; }
+
+    __create_websocket(): void {
+        if (this.__websocket != null) {
+            this.__websocket.close();
+        }
+
+        this.__websocket = new WebSocket(`ws://${this.host}:${this.port}`);
+
+        this.__websocket.onopen = this.__onopen.bind(this);
+        this.__websocket.onerror = this.__onerror.bind(this);
+        this.__websocket.onclose = this.__onclose.bind(this);
+        this.__websocket.onmessage = this.__onmessage.bind(this);
+    }
 
     __onsend(msg: string, data: any): void {
         this.__websocket.send(JSON.stringify({ msg, data }));
@@ -48,5 +56,6 @@ export class CommWS {
 
     __onclose(ev: Event): void {
         console.log("CLOSE");
+        setTimeout(() => this.__create_websocket());
     }
 }

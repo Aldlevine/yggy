@@ -2,9 +2,7 @@ import abc
 import uuid
 from typing import TYPE_CHECKING, Any
 
-from ..comm.comm import GlobalReceiverFn_t
-
-from ..comm import Message, ReceiverFn_t, create_message
+from ..comm import GlobalReceiverFn_t, Message, ReceiverFn_t, create_message
 
 if TYPE_CHECKING:
     from .observable_manager import ObservableManager
@@ -45,7 +43,7 @@ class Observable[F: ReceiverFn_t | GlobalReceiverFn_t](abc.ABC):
     def watch(self, __fn: F) -> None:
         ...
 
-    async def _notify_change[T](self, old_value: T, new_value: T) -> None:
+    def _notify_change[T](self, old_value: T, new_value: T) -> None:
         change = create_message(
             ObservableChangeMessage[T],
             {
@@ -54,8 +52,8 @@ class Observable[F: ReceiverFn_t | GlobalReceiverFn_t](abc.ABC):
                 "old_value": old_value,
             },
         )
-        await self._manager.notify_change(change)
-        
+        self._manager.notify_change(change)
+
 
 class MissingType:
     ...

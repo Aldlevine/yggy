@@ -10,9 +10,11 @@
         "rootDirs": [
             "./"
         ],
-        "outDir": "web",
-        "sourceMap": false,
         "strict": true,
+        "paths": {
+            "socket.io-client": [
+                "../node_modules/socket.io-client"
+            ],
+        },
     },
-    "compileOnSave": true
 }

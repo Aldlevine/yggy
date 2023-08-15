@@ -2,7 +2,7 @@ import uuid
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar, TypedDict, cast
 
-from ..comm.comm import GlobalReceiverFn_t
+from ..comm import GlobalReceiverFn_t
 from .observable import MISSING, Observable, ObservableFactory
 from .observable_value import ObservableValueFactory
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 __all__ = [
     "ObjectModel",
     "ObservableObject",
-    # "ObservableObjectFactory",
+    "ObservableObjectFactory",
 ]
 
 class ObjectModel(TypedDict, total=False):
@@ -31,7 +31,7 @@ class ObservableObject[T: ObjectModel](Observable[GlobalReceiverFn_t]):
             if isinstance(v, ObservableFactory):
                 cls.__observable_factories[k] = v
 
-    def __init__(self, __manager: "ObservableManager", __kwds: T) -> None:
+    def __init__(self, __manager: "ObservableManager", __kwds: T = {}) -> None:
         self.__observables = {}
 
         for k, v in type(self).__dict__.items():
@@ -69,18 +69,18 @@ class ObservableObject[T: ObjectModel](Observable[GlobalReceiverFn_t]):
         return super().__getattribute__(__name)
     
 
-# class ObservableObjectFactory[T: TypedDict](ObservableFactory[T]):
-#     __type: type[ObservableObject[T]]
-#     __kwds: T
+class ObservableObjectFactory[T: ObjectModel](ObservableFactory):
+    __type: type[ObservableObject[T]]
+    __kwds: T
 
-#     def __init__(self, __manager: "ObservableManager", __type: type[ObservableObject[T]], __kwds: T) -> None:
-#         super().__init__(__manager)
-#         self.__type = __type
-#         self.__kwds = __kwds
+    def __init__(self, __manager: "ObservableManager", __type: type[ObservableObject[T]], __kwds: T = {}) -> None:
+        super().__init__(__manager)
+        self.__type = __type
+        self.__kwds = __kwds
 
-#     def __call__(self, **kwds: T) -> ObservableObject[T]:
-#         merged_kwds = self.__kwds.copy()
-#         for k, v in kwds.get("value", {}):
-#             if k in merged_kwds:
-#                 merged_kwds[k] = v # type: ignore
-#         return self.__type(self._manager, merged_kwds)
+    def __call__(self, kwds: T = {}) -> ObservableObject[T]:
+        merged_kwds = self.__kwds.copy()
+        for k, v in kwds.get("value", {}):
+            if k in merged_kwds:
+                merged_kwds[k] = v # type: ignore
+        return self.__type(self._manager, merged_kwds)

@@ -1,8 +1,10 @@
-import yggy
+from os import path
+import yggy.basic as yggy
 
-from . import app
-
-app.run()
+app = yggy.app.App(
+    app_root=path.dirname(__file__),
+    web_root=path.normpath(path.dirname(__file__) + "/../web"),
+)
 
 
 class ObjModel(yggy.ObjectModel, total=False):
@@ -12,22 +14,24 @@ class ObjModel(yggy.ObjectModel, total=False):
 
 
 class Obj(app.Object[ObjModel]):
-    value = app.Value(0)
-    min = app.Value(0)
-    max = app.Value(100)
+    value = app.obs(0)
+    min = app.obs(0)
+    max = app.obs(100)
 
 
-async def obj_change(key: str, change: yggy.ObservableChangeMessage[int]) -> None:
-    print(key, change)
+class Obj2Model(yggy.ObjectModel, total=False):
+    obj: Obj
+
+
+class Obj2(app.Object[Obj2Model]):
+    obj = app.obs(Obj)
 
 
 def main() -> None:
-    obj = Obj({})
-    obj.watch(obj_change)
-    obj.value.value = 10
+    obj2 = Obj2({})
+    obj2.obj.value.value = 10
+    app.run()
 
 
-app.comm.recv("comm.ready")
-main()
-
-# print(obj.type.__annotations__)
+if __name__ == "__main__":
+    main()
