@@ -4,16 +4,19 @@ export type ReceiverFn_t = (data: any) => any;
 import { __get_default, __set_default, __uuid4 } from "../utils.js";
 
 export class Comm {
-    private __id: string = __uuid4()
+    private __id: string = __uuid4();
     private __senders: GlobalReceiverFn_t[] = [];
-
     private __receivers: { [key: string]: ReceiverFn_t[] } = {};
     private __global_receivers: GlobalReceiverFn_t[] = [];
 
-    get id() { return this.__id; }
+    get id() {
+        return this.__id;
+    }
 
     add_sender(sender: GlobalReceiverFn_t): void {
-        if (this.__senders.includes(sender)) { return; }
+        if (this.__senders.includes(sender)) {
+            return;
+        }
         this.__senders.push(sender);
     }
 
@@ -61,11 +64,15 @@ export class Comm {
     unrecv(msg: string, fn: ReceiverFn_t): void {
         const receivers = __get_default(this.__receivers, msg, null);
 
-        if (!receivers) { return; }
+        if (!receivers) {
+            return;
+        }
 
         const index = receivers.indexOf(fn);
 
-        if (index == -1) { return; }
+        if (index == -1) {
+            return;
+        }
 
         receivers.splice(index, 1);
     }

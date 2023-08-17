@@ -1,16 +1,12 @@
 import { Comm } from "./comm.js";
 
 export class CommWS {
-    private __comm: Comm
-    private __host: string
-    private __port: number
-    private __websocket!: WebSocket
+    private __comm: Comm;
+    private __host: string;
+    private __port: number;
+    private __websocket!: WebSocket;
 
-    constructor(
-        comm: Comm,
-        host: string = "localhost",
-        port: number = 5678,
-    ) {
+    constructor(comm: Comm, host: string = "localhost", port: number = 5678) {
         this.__comm = comm;
         this.__host = host;
         this.__port = port;
@@ -20,9 +16,15 @@ export class CommWS {
         comm.add_sender(this.__onsend.bind(this));
     }
 
-    get comm(): Comm { return this.__comm; }
-    get host(): string { return this.__host; }
-    get port(): number { return this.__port; }
+    get comm(): Comm {
+        return this.__comm;
+    }
+    get host(): string {
+        return this.__host;
+    }
+    get port(): number {
+        return this.__port;
+    }
 
     __create_websocket(): void {
         if (this.__websocket != null) {

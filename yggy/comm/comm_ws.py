@@ -1,16 +1,17 @@
 import asyncio
 from dataclasses import dataclass
 from threading import Thread
-from typing import Any
+from typing import Any, Coroutine
 
 from websockets import server
 from websockets.exceptions import ConnectionClosedError
 
 from ..json import json
-from .comm import Comm, SendKwds
 from ..logging import get_logger
+from .comm import Comm, SendKwds
 
-# logger = get_logger("yggy.comm_ws")
+__all__ = ["CommWS"]
+
 logger = get_logger(__loader__.name)
 
 
@@ -67,9 +68,11 @@ class CommWS:
         self.__loop.stop()
 
     async def __do_send(self, msg: str, data: Any, kwds: SendKwds) -> None:
+        coros: list[Coroutine[Any, Any, Any]] = []
         for client_id, websocket in tuple(self.__connections.items()):
             if "client_ids" not in kwds or client_id in kwds["client_ids"]:
-                await websocket.send(json.dumps({"msg": msg, "data": data}))
+                coros.append(websocket.send(json.dumps({"msg": msg, "data": data})))
+        await asyncio.gather(*coros)
 
     async def __on_connection(self, websocket: server.WebSocketServerProtocol) -> None:
         client_id = self.__comm.new_client_id()

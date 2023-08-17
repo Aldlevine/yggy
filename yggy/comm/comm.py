@@ -1,7 +1,7 @@
 import asyncio
-from threading import Thread
 import uuid
-from queue import SimpleQueue, Empty
+from queue import Empty, SimpleQueue
+from threading import Thread
 from typing import (
     Any,
     Callable,
@@ -16,24 +16,19 @@ from typing import (
 )
 
 from ..logging import get_logger
+from .messages import COMM_ADD_CLIENT_MSG, COMM_REMOVE_CLIENT_MSG, Message
 
 __all__ = [
-    "COMM_ADD_CLIENT_MSG",
     "COMM_REMOVE_CLIENT_MSG",
     "Comm",
     "GlobalReceiverFn_t",
-    "Message",
     "ReceiverFn_t",
+    "STOP_PROPAGATION",
     "SendKwds",
     "create_message",
-    "STOP_PROPAGATION",
-    "StopPropagationType",
 ]
 
 logger = get_logger(__loader__.name)
-
-COMM_ADD_CLIENT_MSG = "comm.add_client"
-COMM_REMOVE_CLIENT_MSG = "comm.remove_client"
 
 
 class SendKwds(TypedDict, total=False):
@@ -41,19 +36,12 @@ class SendKwds(TypedDict, total=False):
     client_ids: Container[str] | Iterable[str]
 
 
-class StopPropagationType:
-    ...
-
-STOP_PROPAGATION = StopPropagationType()
+STOP_PROPAGATION = object()
 
 
 SenderFn_t = Callable[[str, Any, SendKwds], Coroutine[Any, Any, Any]]
 ReceiverFn_t = Callable[[Any], Any]
 GlobalReceiverFn_t = Callable[[str, Any], Any]
-
-
-class Message(TypedDict, total=False):
-    message_id: str
 
 
 def create_message[T: Message](message_type: type[T], kwds: T) -> T:
@@ -66,7 +54,7 @@ def create_message[T: Message](message_type: type[T], kwds: T) -> T:
             **{k: v for k, v in kwds.items() if k in origin.__annotations__.keys()},
         },
     )
-    
+
 
 class Comm:
     __id: str
@@ -200,12 +188,10 @@ class Comm:
             if STOP_PROPAGATION == receiver(msg, data):
                 stop_propagation = True
 
-
         receivers = self.__receivers.get(msg, [])
         for receiver in receivers:
             if STOP_PROPAGATION == receiver(data):
                 stop_propagation = True
-                
 
         if not kwds.get("local_only") and not stop_propagation:
             for sender in self.__senders:

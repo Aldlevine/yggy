@@ -1,28 +1,20 @@
 from typing import Any, cast
 
-from ..comm import (
-    COMM_ADD_CLIENT_MSG,
-    Comm,
-    Message,
-    STOP_PROPAGATION,
-    StopPropagationType,
-)
+from ..comm import COMM_ADD_CLIENT_MSG, STOP_PROPAGATION, Comm
 from .messages import (
     OBSERVABLE_CHANGE_MSG,
     OBSERVABLE_CLIENT_CHANGE_MSG,
     OBSERVABLE_READY_MSG,
     OBSERVABLE_REGISTER_MSG,
+    ChangeMessage,
+    ReadyMessage,
 )
-from .observable import Observable, ObservableChangeMessage
+from .observable import Observable
 from .observable_value import ObservableValue
 
 __all__ = [
     "ObservableManager",
 ]
-
-
-class ReadyMessage(Message):
-    ...
 
 
 class ObservableManager:
@@ -49,7 +41,7 @@ class ObservableManager:
     def unregister(self, __observable: Observable[Any]) -> None:
         del self.__registry[__observable.id]
 
-    def notify_change(self, __change: ObservableChangeMessage[Any]) -> None:
+    def notify_change(self, __change: ChangeMessage[Any]) -> None:
         data_id = __change["data_id"]
 
         if data_id in self.__notifying:
@@ -61,9 +53,7 @@ class ObservableManager:
         finally:
             self.__notifying.discard(data_id)
 
-    def __recv_change(
-        self, __change: ObservableChangeMessage[Any]
-    ) -> StopPropagationType:
+    def __recv_change(self, __change: ChangeMessage[Any]) -> object:
         data_id = __change["data_id"]
 
         if data_id in self.__registry:
@@ -81,4 +71,8 @@ class ObservableManager:
             self.__comm.send(
                 OBSERVABLE_REGISTER_MSG, observable.__json__(), client_ids=[__client_id]
             )
-        self.__comm.send(OBSERVABLE_READY_MSG, ReadyMessage(), client_ids=[__client_id])
+        self.__comm.send(
+            OBSERVABLE_READY_MSG,
+            ReadyMessage(client_id=__client_id),
+            client_ids=[__client_id],
+        )

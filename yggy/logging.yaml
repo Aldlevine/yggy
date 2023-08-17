@@ -1,11 +1,5 @@
 version: 1
 
-filters:
-  yggy_only:
-    (): yggy.logging.NameFilter
-    names:
-      - yggy
-
 loggers:
   root:
     level: DEBUG
@@ -27,9 +21,6 @@ handlers:
     formatter: verbose
     filename: yggy.log
     level: WARNING
-    # level: DEBUG
-    # filters:
-    #   - yggy_only
   screen:
     class: logging.StreamHandler
     formatter: simple

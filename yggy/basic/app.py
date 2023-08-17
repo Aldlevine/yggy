@@ -2,13 +2,11 @@ import shutil
 from glob import glob
 from itertools import chain
 from os import makedirs, path
-# import time
 from typing import Any, Iterable, cast, overload
 
 from .. import (
     Comm,
     CommWS,
-    ObjectModel,
     ObservableManager,
     ObservableObject,
     ObservableObjectFactory,
@@ -51,30 +49,33 @@ class App:
 
         obs = self.__obs_manager
 
-        class __ObservableObject[T: ObjectModel](ObservableObject[T]):
+        class __ObservableObject(ObservableObject):
             @overload
-            def __init__(self, __manager: ObservableManager, __kwds: T = {}) -> None:
+            def __init__(self, __manager: ObservableManager, /, **__kwds: Any) -> None:
                 ...
 
             @overload
-            def __init__(self, __kwds: T) -> None:
+            def __init__(self, /, **__kwds: Any) -> None:
                 ...
 
-            def __init__(self, __arg0: ObservableManager | T = {}, __arg1: T = {}) -> None:
+            def __init__(
+                self, __arg0: ObservableManager | None = None, /, **__kwds: Any
+            ) -> None:
                 # overload 0
                 if isinstance(__arg0, ObservableManager):
-                    super().__init__(__arg0, __arg1)
+                    super().__init__(__arg0, **__kwds)
                     return
 
                 # overload 1
-                super().__init__(obs, __arg0)
-                
+                super().__init__(obs, **__kwds)
+
         self.Object = __ObservableObject
-            
+        self.Value = ObservableValue
+
     @property
     def app_root(self) -> str:
         return self.__app_root
-    
+
     @property
     def web_root(self) -> str:
         return self.__web_root
@@ -84,24 +85,25 @@ class App:
         return self.__static_file_exts
 
     @overload
-    def obs[T: ObservableObject[Any]](self, __value: type[T]) -> T:
+    def obs[T: ObservableObject](self, __value: type[T], **kwds: Any) -> T:
         ...
 
     @overload
     def obs[T: bool | int | float | str](self, __value: T) -> ObservableValue[T]:
         ...
 
-    def obs(self, _arg0: Any, _arg1: Any = None) -> ObservableValue[Any] | ObservableObject[Any]:
-        
+    def obs(self, _arg0: Any, **_kwds: Any) -> ObservableValue[Any] | ObservableObject:
         # overload 0
         if isinstance(_arg0, type) and issubclass(_arg0, ObservableObject):
-            if _arg1 is None:
-                _arg1 = {}
-            return cast(ObservableObject[Any], ObservableObjectFactory(self.__obs_manager, _arg0, _arg1))
-            ...
+            return cast(
+                ObservableObject,
+                ObservableObjectFactory(self.__obs_manager, _arg0, **_kwds),
+            )
 
         # overload 1
-        return cast(ObservableValue[Any], ObservableValueFactory(self.__obs_manager, _arg0))
+        return cast(
+            ObservableValue[Any], ObservableValueFactory(self.__obs_manager, _arg0)
+        )
 
     @property
     def comm(self) -> Comm:
@@ -129,8 +131,6 @@ class App:
             self.__comm_ws.start()
             self.__comm.start()
             self.__http.start()
-            # while True:
-            #     time.sleep(1)
             self.__watcher.start()
 
         except KeyboardInterrupt:

@@ -1,9 +1,9 @@
 import logging
-from logging import LogRecord
 import logging.config
-import yaml
-
+from logging import LogRecord
 from os import path
+
+import yaml
 
 CONFIG_FILE = path.dirname(__file__) + "/logging.yaml"
 
@@ -25,7 +25,7 @@ class __LoggerFactory:
     __initialized: bool = False
 
     @classmethod
-    def __init_logger(cls) -> None:
+    def init_logger(cls) -> None:
         if cls.__initialized:
             return
         cls.__initialized = True
@@ -37,8 +37,10 @@ class __LoggerFactory:
 
     @classmethod
     def get_logger(cls, name: str) -> logging.Logger:
-        cls.__init_logger()
+        cls.init_logger()
         return logging.getLogger(name)
 
+
+__LoggerFactory.init_logger()
 
 get_logger = __LoggerFactory.get_logger

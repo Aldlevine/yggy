@@ -24,15 +24,6 @@ def get_handler_class(__web_root: str) -> type[SimpleHTTPRequestHandler]:
     return HTTPRequestHandler
 
 
-# def run(__web_root: str) -> None:
-#     server = HTTPServer(("0.0.0.0", 8000), get_handler_class(__web_root))
-#     server.serve_forever()
-
-
-# def start(__web_root: str) -> None:
-#     _thread = Thread(target=run)
-
-
 class HTTP:
     __web_root: str
     __server: HTTPServer

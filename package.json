@@ -2,7 +2,7 @@
   "name": "yggy",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "yggy/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +10,6 @@
   "author": "Aaron Levine",
   "license": "ISC",
   "dependencies": {
-    "socket.io-client": "^4.7.1",
     "typescript": "^5.1.6"
   },
   "engines": {

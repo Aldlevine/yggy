@@ -1,28 +1,19 @@
-import { Comm } from "../comm/comm.js"
+import { Comm } from "../comm/comm.js";
+import {
+    ChangeMessage,
+    OBSERVABLE_CHANGE_MSG,
+    OBSERVABLE_CLIENT_CHANGE_MSG,
+    OBSERVABLE_REGISTER_MSG,
+    RegisterMessage,
+    RegisterObjectMessage,
+    RegisterValueMessage,
+} from "./messages.js";
 import { Observable } from "./observable.js";
-
-// TODO: constants should be transpiled from py
-export const OBSERVABLE_CHANGE_MSG = "observable.change";
-export const OBSERVABLE_CLIENT_CHANGE_MSG = "observable.client_change";
-export const OBSERVABLE_READY_MSG = "observable.ready";
-export const OBSERVABLE_REGISTER_MSG = "observable.register";
-
-// TODO: pod types should be transpiled from py
-export type ObservableChange<T> = {
-    message_id: string;
-    data_id: string;
-    old_value: T;
-    new_value: T;
-}
-
-// TODO: pod types should be transpiled from py
-export type ObservableRegister<T> = {
-    id: string;
-    value: T;
-}
+import { ObservableObject } from "./observable_object.js";
+import { ObservableValue } from "./observable_value.js";
 
 export class ObservableManager {
-    private __registry: { [key: string]: Observable<any> };
+    private __registry: { [key: string]: Observable };
     private __updating: Set<string>;
     private __comm: Comm;
 
@@ -32,37 +23,61 @@ export class ObservableManager {
         this.__comm = __comm;
 
         this.__comm.recv(OBSERVABLE_CHANGE_MSG, this.__recv_change.bind(this));
-        this.__comm.recv(OBSERVABLE_REGISTER_MSG, this.__recv_register.bind(this));
+        this.__comm.recv(
+            OBSERVABLE_REGISTER_MSG,
+            this.__recv_register.bind(this)
+        );
     }
 
-    public get<T = any>(__id: string | number): Observable<T> | undefined {
+    public get comm(): Comm {
+        return this.__comm;
+    }
+
+    public get(__id: string | number): Observable | undefined {
         if (typeof __id === "number") {
             return Object.values(this.__registry)[__id];
         }
         return this.__registry[__id];
     }
 
-    public notify_change(__change: ObservableChange<any>): void {
-        if (this.__updating.has(__change.data_id)) { return; }
+    public notify_change(__change: ChangeMessage<any>): void {
+        if (this.__updating.has(__change.data_id)) {
+            return;
+        }
 
         this.__comm.send(OBSERVABLE_CLIENT_CHANGE_MSG, __change);
     }
 
-    private __recv_change(__change: ObservableChange<any>): void {
-        const { data_id, new_value } = __change;
+    private __recv_change(__change: ChangeMessage<any>): void {
+        const { data_id } = __change;
 
-        if (this.__updating.has(data_id)) { return; }
+        if (this.__updating.has(data_id)) {
+            return;
+        }
         this.__updating.add(data_id);
 
-        this.__registry[data_id].set(new_value);
+        this.__registry[data_id]._recv_change(__change);
 
         this.__updating.delete(data_id);
     }
 
-    private __recv_register(__observable: ObservableRegister<any>): void {
-        const { id, value } = __observable;
+    private __recv_register(__observable: RegisterMessage<any>): void {
+        if (__observable.observable_type == "value") {
+            const { data_id, value } = <RegisterValueMessage<any>>__observable;
+            this.__registry[data_id] = new ObservableValue(
+                this,
+                data_id,
+                value
+            );
+        }
 
-        this.__registry[id] = new Observable(this, id, value);
+        if (__observable.observable_type == "object") {
+            const { data_id, attrs } = <RegisterObjectMessage>__observable;
+            this.__registry[data_id] = new ObservableObject(
+                this,
+                data_id,
+                attrs
+            );
+        }
     }
-
 }
