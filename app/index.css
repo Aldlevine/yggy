@@ -1,6 +1,20 @@
 :root {
     --font-size: 16px;
     --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-family-mono:
+        ui-monospace,
+        Menlo,
+        Monaco,
+        "Cascadia Mono",
+        "Segoe UI Mono",
+        "Roboto Mono",
+        "Oxygen Mono",
+        "Ubuntu Monospace",
+        "Source Code Pro",
+        "Fira Mono",
+        "Droid Sans Mono",
+        "Courier New",
+        monospace;
     --body-padding: 2em;
     --body-width: 1000px;
 }
@@ -61,13 +75,16 @@ input {
 
 input[type="text"],
 input[type="number"] {
+    box-sizing: border-box;
     font-size: 16px;
+    font-family: var(--font-family-mono);
     appearance: none;
     background: var(--body-color);
     border: solid 1px var(--input-border-color);
     color: var(--text-color);
     border-radius: 4px;
     padding: 0.25em;
+    margin: 0.125em;
     width: 5em;
 }
 

@@ -11,6 +11,10 @@
             "./"
         ],
         "strict": true,
-        "paths": {},
+        "paths": {
+            "@preact/*": [
+                "../node_modules/preact/*"
+            ]
+        },
     },
 }

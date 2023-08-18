@@ -21,7 +21,7 @@ class ObservableObject(Observable[GlobalReceiverFn_t]):
     __type_id: ClassVar[str]
     __observable_factories: ClassVar[dict[str, ObservableFactory]]
 
-    __observables: dict[str, Observable[Any]]
+    _observables: dict[str, Observable[Any]]
 
     def __init_subclass__(cls) -> None:
         cls.__type_id = uuid.uuid4().hex
@@ -31,14 +31,16 @@ class ObservableObject(Observable[GlobalReceiverFn_t]):
                 cls.__observable_factories[k] = v
 
     def __init__(self, __manager: "ObservableManager", **__kwds: Any) -> None:
-        self.__observables = {}
+        # we do this in case we want to preset observables in a subclass
+        # idk if there's a better solution here
+        setattr(self, "_observables", getattr(self, "_observables", {}))
 
         for k, v in type(self).__dict__.items():
             if isinstance(v, ObservableValueFactory):
                 v = cast(ObservableValueFactory[Any], v)
-                self.__observables[k] = v(__kwds.get(k, MISSING))
+                self._observables[k] = v(__kwds.get(k, MISSING))
             elif isinstance(v, ObservableFactory):
-                self.__observables[k] = v()
+                self._observables[k] = v()
 
         super().__init__(__manager)
         self.__post_init__()
@@ -47,7 +49,7 @@ class ObservableObject(Observable[GlobalReceiverFn_t]):
         ...
 
     def watch(self, __fn: GlobalReceiverFn_t) -> GlobalReceiverFn_t:
-        for k, obs in self.__observables.items():
+        for k, obs in self._observables.items():
             obs.watch(partial(__fn, k))
         return __fn
 
@@ -60,7 +62,7 @@ class ObservableObject(Observable[GlobalReceiverFn_t]):
         ...
 
     def __json__(self) -> dict[str, Any]:
-        attrs = {k: v.id for k, v in self.__observables.items()}
+        attrs = {k: v.id for k, v in self._observables.items()}
         return cast(
             dict[str, Any],
             create_message(
@@ -70,10 +72,12 @@ class ObservableObject(Observable[GlobalReceiverFn_t]):
         )
 
     def __getattribute__(self, __name: str) -> Any:
-        if __name.endswith("__observables"):
+        if __name == "__dict__":
             return super().__getattribute__(__name)
-        if __name in self.__observables.keys():
-            return self.__observables[__name]
+        if __name.endswith("_observables"):
+            return super().__getattribute__(__name)
+        if __name in self._observables.keys():
+            return self._observables[__name]
         return super().__getattribute__(__name)
 
 

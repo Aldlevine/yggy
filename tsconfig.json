@@ -16,6 +16,11 @@
         "jsx": "react",
         "jsxFactory": "h",
         "alwaysStrict": true,
+        "paths": {
+            "@preact/*": [
+                "./node_modules/preact/*"
+            ]
+        }
     },
     "compileOnSave": true
 }

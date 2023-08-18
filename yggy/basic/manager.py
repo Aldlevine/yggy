@@ -2,7 +2,7 @@ import shutil
 from glob import glob
 from itertools import chain
 from os import makedirs, path
-from typing import Any, Iterable, cast, overload
+from typing import Any, ClassVar, Iterable, Self, cast, overload
 
 from .. import (
     Comm,
@@ -16,10 +16,46 @@ from .. import (
 from .http import HTTP
 from .watch import Watcher
 
-__all__ = ["App"]
+__all__ = ["Manager", "obs", "Object"]
 
 
-class App:
+@overload
+def obs[T: ObservableObject](__value: type[T], **kwds: Any) -> T:
+    ...
+
+@overload
+def obs[T: bool | int | float | str](__value: T) -> ObservableValue[T]:
+    ...
+
+
+def obs(_arg0: Any, **_kwds: Any) -> ObservableValue[Any] | ObservableObject:
+    return Manager.main.obs(_arg0, **_kwds)
+
+
+class Object(ObservableObject):
+    @overload
+    def __init__(self, __manager: ObservableManager, /, **__kwds: Any) -> None:
+        ...
+
+    @overload
+    def __init__(self, /, **__kwds: Any) -> None:
+        ...
+
+    def __init__(
+        self, __arg0: ObservableManager | None = None, /, **__kwds: Any
+    ) -> None:
+        # overload 0
+        if isinstance(__arg0, ObservableManager):
+            super().__init__(__arg0, **__kwds)
+            return
+
+        # overload 1
+        super().__init__(Manager.main.obs_manager, **__kwds)
+
+
+class Manager:
+    __main: ClassVar[Self | None] = None
+
     __app_root: str
     __web_root: str
     __static_file_exts: list[str]
@@ -29,11 +65,14 @@ class App:
     __obs_manager: ObservableManager
     __watcher: Watcher
 
+    cache_version: int = 0
+
     def __init__(
         self,
         app_root: str,
         web_root: str,
         static_file_exts: Iterable[str] = ("html", "js", "css", "ico", "png"),
+        singleton: bool = False,
     ) -> None:
         self.__app_root = app_root
         self.__web_root = web_root
@@ -45,32 +84,20 @@ class App:
         self.__obs_manager = ObservableManager(self.__comm)
         self.__comm_ws = CommWS(self.__comm, host="0.0.0.0")
         self.__watcher = Watcher(self)
-        self.__http = HTTP(self.__web_root)
+        self.__http = HTTP(self)
 
-        obs = self.__obs_manager
+        if singleton:
+            type(self).__main = self
 
-        class __ObservableObject(ObservableObject):
-            @overload
-            def __init__(self, __manager: ObservableManager, /, **__kwds: Any) -> None:
-                ...
+    @classmethod
+    @property
+    def main(cls) -> Self:
+        assert cls.__main is not None
+        return cls.__main
 
-            @overload
-            def __init__(self, /, **__kwds: Any) -> None:
-                ...
-
-            def __init__(
-                self, __arg0: ObservableManager | None = None, /, **__kwds: Any
-            ) -> None:
-                # overload 0
-                if isinstance(__arg0, ObservableManager):
-                    super().__init__(__arg0, **__kwds)
-                    return
-
-                # overload 1
-                super().__init__(obs, **__kwds)
-
-        self.Object = __ObservableObject
-        self.Value = ObservableValue
+    @property
+    def obs_manager(self) -> ObservableManager:
+        return self.__obs_manager
 
     @property
     def app_root(self) -> str:

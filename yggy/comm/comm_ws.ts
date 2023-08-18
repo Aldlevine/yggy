@@ -5,6 +5,7 @@ export class CommWS {
     private __host: string;
     private __port: number;
     private __websocket!: WebSocket;
+    private __closed!: boolean;
 
     constructor(comm: Comm, host: string = "localhost", port: number = 5678) {
         this.__comm = comm;
@@ -26,7 +27,14 @@ export class CommWS {
         return this.__port;
     }
 
+    close(): void {
+        this.__closed = true;
+        this.__websocket.close();
+    }
+
     __create_websocket(): void {
+        this.__closed = false;
+
         if (this.__websocket != null) {
             this.__websocket.close();
         }
@@ -56,8 +64,10 @@ export class CommWS {
         console.log("ERROR");
     }
 
-    __onclose(ev: Event): void {
+    __onclose(ev: CloseEvent): void {
         console.log("CLOSE");
-        setTimeout(() => this.__create_websocket());
+        if (!this.__closed) {
+            setTimeout(() => this.__create_websocket());
+        }
     }
 }

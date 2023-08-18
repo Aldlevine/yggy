@@ -1,23 +1,27 @@
-import { bind, h } from "../yggy/basic/jsx.js";
+import { PropertiesOf, bind, h } from "../yggy/basic/jsx.js";
 import * as yggy from "../yggy/index.js";
 
 import { Slider, SliderModel } from "./slider.js";
 
-export type Model = yggy.ObservableObject & {
+export type AppModel = yggy.ObservableObject & {
     volume_slider: SliderModel,
     other_slider: SliderModel,
     fname: yggy.ObservableValue<string>;
+    fname_width: yggy.ObservableValue<number>;
     lname: yggy.ObservableValue<string>;
+    lname_width: yggy.ObservableValue<number>;
 }
 
-export function App(model: Model): HTMLElement {
+export function App(model: PropertiesOf<AppModel>): HTMLElement {
     fetch("./qr.svg").then(async (svg) => {
         const qrcode = document.getElementById("qrcode")!;
         qrcode.innerHTML = (await svg.text()).replace(/svg:/g, "");
+        qrcode.firstElementChild!.innerHTML = "<title>qr code</title>" + qrcode.firstElementChild!.innerHTML;
     });
 
     return (
         <div id="app">
+            <link rel="stylesheet" href={`./index.css?${Date.now()}`} />
             <h1>yggy</h1>
 
             <hr />
@@ -26,11 +30,11 @@ export function App(model: Model): HTMLElement {
                 <h3>text entry</h3>
 
                 <p>
-                    <label>First Name: <input type="text" value={bind(model.fname, "input")} /></label>
+                    <label>First Name: <input type="text" value={bind(model.fname, "input")} placeholder="John" size={model.fname_width} style="width: auto" /></label>
                 </p>
 
                 <p>
-                    <label>Last Name: <input type="text" value={bind(model.lname, "input")} /></label>
+                    <label>Last Name: <input type="text" value={bind(model.lname, "input")} placeholder="Doe" size={model.lname_width} style="width: auto" /></label>
                 </p>
 
                 <p>
@@ -49,7 +53,7 @@ export function App(model: Model): HTMLElement {
                 </p>
 
                 <p>
-                    Volume: <Slider {...model.volume_slider} />
+                    <label><Slider {...{ label: "Volume: ", ...model.volume_slider }} /></label>
                 </p>
 
                 <p>
@@ -57,7 +61,7 @@ export function App(model: Model): HTMLElement {
                 </p>
 
                 <p>
-                    Other: <Slider {...model.other_slider} />
+                    <label><Slider {...{ label: "Other: ", ...model.other_slider, max: 100 }} /></label>
                 </p>
 
                 <p>

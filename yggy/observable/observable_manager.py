@@ -37,6 +37,7 @@ class ObservableManager:
 
     def register(self, __observable: Observable[Any]) -> None:
         self.__registry[__observable.id] = __observable
+        self.__comm.send(OBSERVABLE_REGISTER_MSG, __observable.__json__())
 
     def unregister(self, __observable: Observable[Any]) -> None:
         del self.__registry[__observable.id]

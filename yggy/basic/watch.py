@@ -3,7 +3,6 @@
 import subprocess
 from logging import INFO
 from os import path
-from threading import Thread
 from typing import TYPE_CHECKING
 
 from watchdog.events import FileModifiedEvent, PatternMatchingEventHandler
@@ -13,7 +12,7 @@ from watchdog.utils.event_debouncer import EventDebouncer
 from ..logging import get_logger
 
 if TYPE_CHECKING:
-    from .app import App
+    from .manager import Manager
 
 logger = get_logger(__loader__.name)
 watchdog_logger = get_logger("watchdog")
@@ -22,7 +21,7 @@ watchdog_logger.level = INFO
 
 class EventHandler(PatternMatchingEventHandler):
     __updating: bool = False
-    __app: "App"
+    __app: "Manager"
 
     def __init__(
         self,
@@ -31,7 +30,7 @@ class EventHandler(PatternMatchingEventHandler):
         ignore_directories: bool = False,
         case_sensitive: bool = False,
         *,
-        app: "App",
+        app: "Manager",
     ):
         super().__init__(patterns, ignore_patterns, ignore_directories, case_sensitive)
         self.__app = app
@@ -59,17 +58,17 @@ class EventHandler(PatternMatchingEventHandler):
         event = events[0]
         path: str = event.src_path
         if path.endswith(".ts") or path.endswith(".tsx"):
-            Thread(target=self.compile_ts).start()
+            self.compile_ts()
+            self.__app.cache_version += 1
         if any([path.endswith(ext) for ext in self.__app.static_file_exts]):
-            Thread(
-                target=self.copy_file, kwargs={"path": path.removeprefix("./app/")}
-            ).start()
+            self.copy_file(path=path.removeprefix("./app/"))
+            self.__app.cache_version += 1
 
 
 class Watcher:
-    __app: "App"
+    __app: "Manager"
 
-    def __init__(self, __app: "App") -> None:
+    def __init__(self, __app: "Manager") -> None:
         self.__app = __app
         self.__observer = Observer()
         self.__observer.daemon = True

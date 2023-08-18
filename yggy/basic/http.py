@@ -1,22 +1,59 @@
+import os
+import re
+from http import HTTPStatus
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from os import path
 from threading import Thread
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..logging import get_logger
+
+if TYPE_CHECKING:
+    from .manager import Manager
 
 _logger = get_logger(__loader__.name)
 
 
-def get_handler_class(__web_root: str) -> type[SimpleHTTPRequestHandler]:
-    web_root = __web_root
+def get_handler_class(manager: "Manager") -> type[SimpleHTTPRequestHandler]:
+    web_root = manager.web_root
 
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
         def do_GET(self) -> None:
             if self.path == "/":
                 self.path = "index.html"
             self.path = "./" + path.relpath(web_root + "/" + self.path, path.curdir)
-            return super().do_GET()
+
+            fp = self.translate_path(self.path)
+            if not path.exists(fp) or path.isdir(fp):
+                self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+                return
+
+            ctype = self.guess_type(fp)
+
+            with open(fp, "rb") as f:
+                fs = os.fstat(f.fileno())
+                if f.name.split("?")[0].endswith(".js"):
+                    code = f.read().decode()
+                    # this monstrosity is a naive way to replace ES import/export declarations
+                    # with a cache-busting version, for hot module reload. Works for now.
+                    # TODO: Improve cache-busting method
+                    code = re.sub(
+                        r"((?:import|(?:export[^\"'\n]+from))[^\"'\n]*)([\"'])([^\"'\n]*)([\"'])",
+                        rf"\1\2\3?uuid={manager.cache_version}\4",
+                        code,
+                    )
+                    enc = code.encode()
+                    self.send_response(HTTPStatus.OK)
+                    self.send_header("Content-type", ctype)
+                    self.send_header("Content-Length", str(len(enc)))
+                    self.end_headers()
+                    self.wfile.write(enc)
+                else:
+                    self.send_response(HTTPStatus.OK)
+                    self.send_header("Content-type", ctype)
+                    self.send_header("Content-Length", str(fs[6]))
+                    self.end_headers()
+                    self.copyfile(f, self.wfile)
 
         def log_message(self, format: str, *args: Any) -> None:
             _logger.info(format % args)
@@ -25,13 +62,19 @@ def get_handler_class(__web_root: str) -> type[SimpleHTTPRequestHandler]:
 
 
 class HTTP:
-    __web_root: str
+    __manager: "Manager"
     __server: HTTPServer
+    __host: str
+    __port: int
 
-    def __init__(self, __web_root: str) -> None:
-        self.__web_root = __web_root
+    def __init__(
+        self, __manager: "Manager", host: str = "0.0.0.0", port: int = 8000
+    ) -> None:
+        self.__manager = __manager
+        self.__host = host
+        self.__port = port
         self.__server = HTTPServer(
-            ("0.0.0.0", 8000), get_handler_class(self.__web_root)
+            (self.__host, self.__port), get_handler_class(self.__manager)
         )
 
     def run(self) -> None:

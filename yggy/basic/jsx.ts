@@ -1,26 +1,10 @@
 /** @jsx h */
 
+import type { JSXInternal } from "@preact/src/jsx.js";
 import { ObservableValue } from "../index.js";
 
-interface Binder {
-    obs: ObservableValue<any>;
-    evt?: string;
-}
-
-interface IntrinsicElement {
-    [bindName: `bind-${string}`]: Binder;
-    [attrName: string]: any;
-}
-
-declare global {
-    namespace JSX {
-        interface Element extends HTMLElement {
-            [attrName: string]: any;
-        }
-        interface IntrinsicElements {
-            [elemName: string]: IntrinsicElement;
-        }
-    }
+export type PropertiesOf<T> = {
+    [P in keyof T]: T[P] extends ObservableValue<infer U> ? T[P] | U : T[P];
 }
 
 class Binding {
@@ -33,12 +17,28 @@ class Binding {
     }
 }
 
-export function bind(obs: ObservableValue<any> | any, ...events: string[]): Binding {
-    return new Binding(obs, ...events);
+export function bind<T>(obs: ObservableValue<T> | T, ...events: string[]): Binding | T {
+    if (obs instanceof ObservableValue) {
+        return new Binding(obs, ...events);
+    }
+    return obs;
 }
 
+type __JSXElement<T> = T | Binding | ObservableValue<T>
+
+declare global {
+    namespace JSX {
+        type IntrinsicElements = {
+            [K in keyof JSXInternal.IntrinsicElements]: {
+                [K2 in keyof JSXInternal.IntrinsicElements[K]]: __JSXElement<JSXInternal.IntrinsicElements[K][K2]>
+            }
+        }
+    }
+}
+
+
 // TODO: This should be less hacky
-export function h(name: string | ((...args: any[]) => JSX.Element), attrs?: JSX.Element, ...children: any): JSX.Element {
+export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [key: string]: any }, ...children: any): HTMLElement {
     if (name instanceof Function) {
         return name(attrs, ...children);
     }

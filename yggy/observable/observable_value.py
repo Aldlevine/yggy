@@ -18,9 +18,9 @@ class ObservableValue[T](Observable[Any]):
     __type: type[T]
 
     def __init__(self, __manager: "ObservableManager", __value: T) -> None:
-        super().__init__(__manager)
         self.__value = __value
         self.__type = type(__value)
+        super().__init__(__manager)
 
     @property
     def type(self) -> type[T]:
