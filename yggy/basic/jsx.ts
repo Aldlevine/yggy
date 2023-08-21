@@ -10,7 +10,12 @@ export type PropertiesOf<T> = {
     : T[P];
 }
 
-class Binding {
+export type ValuesOf<T> = {
+    [P in keyof T]: T[P] extends ObservableValue<infer U> | infer U ? U : T[P]
+}
+
+
+export class Binding {
     obs: ObservableValue<any>;
     events: string[];
 
