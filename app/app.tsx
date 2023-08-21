@@ -12,7 +12,15 @@ export type AppModel = yggy.ObservableObject & {
     lname_width: yggy.ObservableValue<number>;
 }
 
-export function App(model: PropertiesOf<AppModel>): HTMLElement {
+export const NOT_CONNECTED: HTMLDivElement = (
+    <div class="fade-in">
+        <h1>
+            NOT CONNECTED
+        </h1>
+    </div>
+);
+
+export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
     fetch("./qr.svg").then(async (svg) => {
         const qrcode = document.getElementById("qrcode")!;
         qrcode.innerHTML = (await svg.text()).replace(/svg:/g, "");
@@ -67,6 +75,14 @@ export function App(model: PropertiesOf<AppModel>): HTMLElement {
                 <p>
                     The other slider value is: {model.other_slider.value}!
                 </p>
+            </p>
+
+            <p>
+                <br />
+                <h3>diagram</h3>
+
+                <img class="yggy-light" src="./yggy_light.gif" />
+                <img class="yggy-dark" src="./yggy_dark.gif" />
             </p>
 
             <p>

@@ -2,7 +2,7 @@ import abc
 import uuid
 from typing import TYPE_CHECKING, Any, overload
 
-from ..comm import GlobalReceiverFn_t, ReceiverFn_t, create_message
+from ..comm import create_message
 from .messages import ChangeMessage
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-class Observable[F: ReceiverFn_t | GlobalReceiverFn_t](abc.ABC):
+class Observable(abc.ABC):
     _manager: "ObservableManager"
     __data_id: str
 
@@ -49,10 +49,6 @@ class Observable[F: ReceiverFn_t | GlobalReceiverFn_t](abc.ABC):
     def __json__(self) -> dict[str, Any]:
         ...
 
-    @abc.abstractmethod
-    def watch(self, __fn: F) -> F:
-        ...
-
     def _notify_change[T](self, old_value: T, new_value: T) -> None:
         change = create_message(
             ChangeMessage[T],
@@ -80,5 +76,5 @@ class ObservableFactory(abc.ABC):
         self._manager = __manager
 
     @abc.abstractmethod
-    def __call__(self) -> Observable[Any]:
+    def __call__(self) -> Observable:
         ...

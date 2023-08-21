@@ -8,12 +8,31 @@ export class Comm {
     private __senders: GlobalReceiverFn_t[] = [];
     private __receivers: { [key: string]: ReceiverFn_t[] } = {};
     private __global_receivers: GlobalReceiverFn_t[] = [];
+    private __open: boolean = true;
 
     get id() {
         return this.__id;
     }
+    get open(): boolean {
+        return this.__open;
+    }
+
+    private __require_open(): void {
+        if (!this.__open) {
+            throw new Error("comm closed");
+        }
+    }
+
+    close(): void {
+        this.send("comm.closed", {});
+        this.__senders = [];
+        this.__receivers = {};
+        this.__global_receivers = [];
+        this.__open = false;
+    }
 
     add_sender(sender: GlobalReceiverFn_t): void {
+        this.__require_open();
         if (this.__senders.includes(sender)) {
             return;
         }
@@ -21,12 +40,14 @@ export class Comm {
     }
 
     send(msg: string, data: any): void {
+        this.__require_open();
         for (let sender of this.__senders) {
             sender(msg, data);
         }
     }
 
     notify(msg: string, data: any): void {
+        this.__require_open();
         for (let receiver of this.__global_receivers) {
             receiver(msg, data);
         }
@@ -41,6 +62,7 @@ export class Comm {
     recv(msg: string, fn: ReceiverFn_t): void;
 
     recv(arg0: string | GlobalReceiverFn_t, arg1?: ReceiverFn_t): void {
+        this.__require_open();
         // overload 1
         if (typeof arg0 === "function" && !arg1) {
             if (!this.__global_receivers.includes(arg0)) {

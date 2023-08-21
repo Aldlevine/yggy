@@ -27,6 +27,10 @@
     --input-border-color: #999;
 }
 
+.yggy-dark {
+    display: none;
+}
+
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-color: #252526;
@@ -34,6 +38,14 @@
         --body-border-color: #1f1f1f;
         --text-color: #ddd;
         --input-border-color: #555;
+    }
+
+    .yggy-light {
+        display: none;
+    }
+
+    .yggy-dark {
+        display: unset;
     }
 }
 
@@ -98,4 +110,27 @@ img {
     width: 100%;
     height: auto;
     margin: auto;
+}
+
+.fade-in {
+    animation: fade-in forwards 0.25s 1s;
+    opacity: 0;
+}
+
+/* .yggy-diagram {
+    background-image: var(--diagram-url);
+    height: var(--diagram-height);
+    width: 100%;
+    background-size: contain;
+    background-repeat: no-repeat;
+} */
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }

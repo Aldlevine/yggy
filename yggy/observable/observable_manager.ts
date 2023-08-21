@@ -1,4 +1,5 @@
 import { Comm } from "../comm/comm.js";
+import { __uuid4 } from "../utils.js";
 import {
     ChangeMessage,
     OBSERVABLE_CHANGE_MSG,
@@ -61,23 +62,20 @@ export class ObservableManager {
         this.__updating.delete(data_id);
     }
 
-    private __recv_register(__observable: RegisterMessage<any>): void {
+    private __recv_register(__observable: RegisterMessage): void {
         if (__observable.observable_type == "value") {
             const { data_id, value } = <RegisterValueMessage<any>>__observable;
-            this.__registry[data_id] = new ObservableValue(
-                this,
-                data_id,
-                value
-            );
+            this.__registry[data_id] = new ObservableValue(this, data_id, value);
         }
 
         if (__observable.observable_type == "object") {
             const { data_id, attrs } = <RegisterObjectMessage>__observable;
-            this.__registry[data_id] = new ObservableObject(
-                this,
-                data_id,
-                attrs
-            );
+            this.__registry[data_id] = new ObservableObject(this, data_id, attrs);
         }
+    }
+
+    public register_value<T>(__value: T): ObservableValue<T> {
+        const data_id = __uuid4();
+        return this.__registry[data_id] = new ObservableValue(this, data_id, __value)
     }
 }

@@ -36,7 +36,7 @@ class __LoggerFactory:
         logging.config.dictConfig(config)
 
     @classmethod
-    def get_logger(cls, name: str) -> logging.Logger:
+    def get_logger(cls, name: str | None = None) -> logging.Logger:
         cls.init_logger()
         return logging.getLogger(name)
 

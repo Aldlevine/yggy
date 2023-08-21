@@ -1,10 +1,13 @@
 /** @jsx h */
 
 import type { JSXInternal } from "@preact/src/jsx.js";
-import { ObservableValue } from "../index.js";
+import { ObservableObject, ObservableValue } from "../index.js";
 
 export type PropertiesOf<T> = {
-    [P in keyof T]: T[P] extends ObservableValue<infer U> ? T[P] | U : T[P];
+    [P in keyof Omit<T, keyof ObservableObject | keyof ObservableValue<any>>]:
+    T[P] extends ObservableValue<infer U>
+    ? T[P] | U
+    : T[P];
 }
 
 class Binding {
@@ -29,7 +32,7 @@ type __JSXElement<T> = T | Binding | ObservableValue<T>
 declare global {
     namespace JSX {
         type IntrinsicElements = {
-            [K in keyof JSXInternal.IntrinsicElements]: {
+            [K in keyof JSXInternal.IntrinsicElements as K extends string ? K | `svg-${K}` : K]: {
                 [K2 in keyof JSXInternal.IntrinsicElements[K]]: __JSXElement<JSXInternal.IntrinsicElements[K][K2]>
             }
         }
@@ -38,11 +41,19 @@ declare global {
 
 
 // TODO: This should be less hacky
-export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [key: string]: any }, ...children: any): HTMLElement {
+export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [key: string]: any }, ...children: any): Element {
     if (name instanceof Function) {
         return name(attrs, ...children);
     }
-    const element: HTMLElement & { [key: string]: any } = document.createElement(name);
+
+    let element: Element & { [key: string]: any };
+    if (/^svg-/.test(name)) {
+        name = name.substring("svg-".length);
+        element = document.createElementNS("http://www.w3.org/2000/svg", name)
+    }
+    else {
+        element = document.createElement(name);
+    }
 
     if (attrs) {
         for (let key in attrs) {

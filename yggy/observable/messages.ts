@@ -13,7 +13,7 @@ export type ChangeMessage<T> = Message & {
 
 export type ClientChangeMessage<T> = ChangeMessage<T> & {};
 
-export type RegisterMessage<T extends "value" | "object"> = Message & {
+export type RegisterMessage<T extends "value" | "object" = "value" | "object"> = Message & {
     observable_type: T;
     data_id: string;
 };

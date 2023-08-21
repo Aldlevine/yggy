@@ -18,7 +18,7 @@ __all__ = [
 
 
 class ObservableManager:
-    __registry: dict[str, Observable[Any]]
+    __registry: dict[str, Observable]
     __comm: Comm
 
     __notifying: set[str]
@@ -35,11 +35,11 @@ class ObservableManager:
     def comm(self) -> Comm:
         return self.__comm
 
-    def register(self, __observable: Observable[Any]) -> None:
+    def register(self, __observable: Observable) -> None:
         self.__registry[__observable.id] = __observable
         self.__comm.send(OBSERVABLE_REGISTER_MSG, __observable.__json__())
 
-    def unregister(self, __observable: Observable[Any]) -> None:
+    def unregister(self, __observable: Observable) -> None:
         del self.__registry[__observable.id]
 
     def notify_change(self, __change: ChangeMessage[Any]) -> None:

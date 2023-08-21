@@ -76,6 +76,7 @@ class CommWS:
 
     async def __on_connection(self, websocket: server.WebSocketServerProtocol) -> None:
         client_id = self.__comm.new_client_id()
+        logger.info(f"CONNECTION OPEN {client_id}")
         self.__connections[client_id] = websocket
 
         try:
@@ -86,7 +87,7 @@ class CommWS:
                     event = CommWSMessage(**json.loads(message))
                     self.__comm.send(event.msg, event.data)
             except ConnectionClosedError:
-                logger.debug(f"CONNECTION CLOSED {client_id}")
+                logger.info(f"CONNECTION CLOSED {client_id}")
 
         finally:
             del self.__connections[client_id]

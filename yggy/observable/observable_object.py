@@ -1,11 +1,22 @@
 import uuid
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, cast, dataclass_transform
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    cast,
+    dataclass_transform,
+    overload,
+)
 
-from ..comm import GlobalReceiverFn_t, create_message
+from ..comm import GlobalReceiverFn_t, ReceiverFn_t, create_message
+from ..logging import get_logger
 from .messages import RegisterObjectMessage
 from .observable import MISSING, Observable, ObservableFactory
-from .observable_value import ObservableValueFactory
+from .observable_value import ObservableValue, ObservableValueFactory
+
+logger = get_logger(f"{__package__}.{__name__}")
 
 if TYPE_CHECKING:
     from .observable_manager import ObservableManager
@@ -17,11 +28,12 @@ __all__ = [
 
 
 @dataclass_transform(eq_default=False)
-class ObservableObject(Observable[GlobalReceiverFn_t]):
+class ObservableObject(Observable):
     __type_id: ClassVar[str]
     __observable_factories: ClassVar[dict[str, ObservableFactory]]
 
-    _observables: dict[str, Observable[Any]]
+    __receivers: dict[str, list[ReceiverFn_t]]
+    _observables: dict[str, Observable]
 
     def __init_subclass__(cls) -> None:
         cls.__type_id = uuid.uuid4().hex
@@ -35,6 +47,7 @@ class ObservableObject(Observable[GlobalReceiverFn_t]):
         # idk if there's a better solution here
         setattr(self, "_observables", getattr(self, "_observables", {}))
 
+        self.__receivers = {}
         for k, v in type(self).__dict__.items():
             if isinstance(v, ObservableValueFactory):
                 v = cast(ObservableValueFactory[Any], v)
@@ -48,10 +61,44 @@ class ObservableObject(Observable[GlobalReceiverFn_t]):
     def __post_init__(self) -> None:
         ...
 
-    def watch(self, __fn: GlobalReceiverFn_t) -> GlobalReceiverFn_t:
-        for k, obs in self._observables.items():
-            obs.watch(partial(__fn, k))
+    @overload
+    def watch(self, __attr: str) -> Callable[[ReceiverFn_t], ReceiverFn_t]:
+        ...
+
+    @overload
+    def watch(
+        self, __attr: str, __fn: ReceiverFn_t
+    ) -> Callable[[ReceiverFn_t], ReceiverFn_t]:
+        ...
+
+    def watch(
+        self, __attr: str, __fn: ReceiverFn_t | None = None
+    ) -> ReceiverFn_t | Callable[[ReceiverFn_t], ReceiverFn_t]:
+        if __fn is None:
+            return partial(self.watch, __attr)
+
+        receivers = self.__receivers.setdefault(__attr, [])
+        receivers.append(__fn)
+        attr_obs = self._observables[__attr]
+        if isinstance(attr_obs, ObservableValue):
+            attr_obs.watch(__fn)
         return __fn
+
+    def unwatch(self, __fn: GlobalReceiverFn_t) -> GlobalReceiverFn_t:
+        logger.warn("unwatch ObservableObject not implemented")
+        return __fn
+
+    def close(self) -> None:
+        self._manager.unregister(self)
+        for attr, receivers in self.__receivers.items():
+            for receiver in receivers:
+                attr_obs = self._observables[attr]
+                if isinstance(attr_obs, ObservableValue):
+                    attr_obs.unwatch(receiver)
+                if isinstance(attr_obs, ObservableObject):
+                    attr_obs.close()
+            receivers.clear()
+        self.__receivers.clear()
 
     @property
     @classmethod

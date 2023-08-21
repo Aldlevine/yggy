@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Any, cast, overload
+from weakref import WeakKeyDictionary
 
 from ..comm import ReceiverFn_t, create_message
 from .messages import OBSERVABLE_CHANGE_MSG, ChangeMessage, RegisterValueMessage
@@ -13,13 +14,16 @@ __all__ = [
 ]
 
 
-class ObservableValue[T](Observable[Any]):
+class ObservableValue[T](Observable):
     __value: T
     __type: type[T]
+
+    __receivers: WeakKeyDictionary[ReceiverFn_t, ReceiverFn_t]
 
     def __init__(self, __manager: "ObservableManager", __value: T) -> None:
         self.__value = __value
         self.__type = type(__value)
+        self.__receivers = WeakKeyDictionary()
         super().__init__(__manager)
 
     @property
@@ -45,8 +49,16 @@ class ObservableValue[T](Observable[Any]):
                 return
             __fn(__change)
 
+        self.__receivers[__fn] = __recv_watch
+
         self._manager.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_watch)
 
+        return __fn
+
+    def unwatch(self, __fn: ReceiverFn_t) -> ReceiverFn_t:
+        if __fn in self.__receivers:
+            self._manager.comm.unrecv(OBSERVABLE_CHANGE_MSG, self.__receivers[__fn])
+            del self.__receivers[__fn]
         return __fn
 
     def __json__(self) -> dict[str, Any]:
