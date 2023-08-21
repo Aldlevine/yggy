@@ -7,13 +7,14 @@ export type SliderModel = {
     max: ObservableValue<number>;
     step: ObservableValue<number>;
     value: ObservableValue<number>;
+    blur: ObservableValue<number>;
 }
 
 type SliderProps = {
     label?: string
 }
 
-export function Slider({ min, max, step, value, ...props }: PropertiesOf<SliderModel> & SliderProps): HTMLElement {
+export function Slider({ min, max, step, value, blur, ...props }: PropertiesOf<SliderModel> & SliderProps): HTMLElement {
     const id = __uuid4();
     const label = props.label ?? "";
     return (
@@ -28,7 +29,7 @@ export function Slider({ min, max, step, value, ...props }: PropertiesOf<SliderM
                             0.000  0.000  0.000  0.000  0.000 
                             0.000  0.000  0.000  1.000  0.000">
                         </svg-feColorMatrix>
-                        <svg-feGaussianBlur stdDeviation={value}></svg-feGaussianBlur>
+                        <svg-feGaussianBlur stdDeviation={blur}></svg-feGaussianBlur>
                     </svg-filter>
                 </svg-defs>
             </svg-svg>

@@ -10,6 +10,7 @@ export type AppModel = yggy.ObservableObject & {
     fname_width: yggy.ObservableValue<number>;
     lname: yggy.ObservableValue<string>;
     lname_width: yggy.ObservableValue<number>;
+    full_name: yggy.ObservableValue<string>;
 }
 
 export const NOT_CONNECTED: HTMLDivElement = (
@@ -46,7 +47,7 @@ export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
                 </p>
 
                 <p>
-                    Hello, {model.fname} {model.lname}! How are you doing?
+                    Hello, {model.full_name}! How are you doing?
                 </p>
             </p>
 

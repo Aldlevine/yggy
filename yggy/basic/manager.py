@@ -2,21 +2,15 @@ import shutil
 from glob import glob
 from itertools import chain
 from os import makedirs, path
-from typing import Any, ClassVar, Iterable, Self, cast, overload
+from typing import Any, Callable, ClassVar, Iterable, Self, cast, overload
 
-from .. import (
-    Comm,
-    CommWS,
-    ObservableManager,
-    ObservableObject,
-    ObservableObjectFactory,
-    ObservableValue,
-    ObservableValueFactory,
-)
+from .. import (Comm, CommWS, ObservableFunc, ObservableFuncFactory,
+                ObservableManager, ObservableObject, ObservableObjectFactory,
+                ObservableValue, ObservableValueFactory)
 from .http import HTTP
 from .watch import Watcher
 
-__all__ = ["Manager", "obs", "Object"]
+__all__ = ["Manager", "func", "obs", "Object"]
 
 
 @overload
@@ -30,6 +24,12 @@ def obs[T: bool | int | float | str](__value: T) -> ObservableValue[T]:
 
 def obs(_arg0: Any, **_kwds: Any) -> ObservableValue[Any] | ObservableObject:
     return Manager.main.obs(_arg0, **_kwds)
+
+
+def func[T](*facs: ObservableValue[Any]) -> Callable[[Callable[[*tuple[Any, ...]], T]], ObservableFunc[T]]:
+    def __inner(fn: Callable[[*tuple[Any, ...]], T]) -> ObservableFunc[T]:
+        return Manager.main.func(fn, *facs)
+    return __inner
 
 
 class Object(ObservableObject):
@@ -131,6 +131,9 @@ class Manager:
         return cast(
             ObservableValue[Any], ObservableValueFactory(self.__obs_manager, _arg0)
         )
+    
+    def func[T](self, fn: Callable[[*tuple[Any, ...]], T], *facs: ObservableValueFactory[Any]) -> ObservableFunc[T]:
+        return cast(ObservableFunc[T], ObservableFuncFactory[T](self.__obs_manager, fn, *facs))
 
     @property
     def comm(self) -> Comm:

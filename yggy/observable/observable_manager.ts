@@ -74,8 +74,4 @@ export class ObservableManager {
         }
     }
 
-    public register_value<T>(__value: T): ObservableValue<T> {
-        const data_id = __uuid4();
-        return this.__registry[data_id] = new ObservableValue(this, data_id, __value)
-    }
 }

@@ -97,7 +97,7 @@ class ObservableValueFactory[T](ObservableFactory):
         self.__value = __value
         super().__init__(__manager)
 
-    def __call__(self, __value: T | MissingType = MISSING) -> ObservableValue[T]:
+    def __call__(self, __value: T | MissingType = MISSING, *__args: Any, **__kwds: Any) -> ObservableValue[T]:
         value: T = self.__value
         if __value is not MISSING:
             value = cast(T, __value)

@@ -14,6 +14,10 @@ class GlobalModel(yggy.Object):
     lname: yggy.ObservableValue[str] = yggy.obs("")
     lname_width: yggy.ObservableValue[int] = yggy.obs(10)
 
+    @yggy.func(fname, lname)
+    def full_name(self) -> str:
+        return f"{self.fname()} {self.lname()}".strip()
+
     def __post_init__(self) -> None:
         @self.volume_slider.watch("value")
         def _(change: yggy.ChangeMessage[int]) -> None:

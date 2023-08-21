@@ -76,5 +76,5 @@ class ObservableFactory(abc.ABC):
         self._manager = __manager
 
     @abc.abstractmethod
-    def __call__(self) -> Observable:
+    def __call__(self, *__args: Any, **__kwds: Any) -> Observable:
         ...

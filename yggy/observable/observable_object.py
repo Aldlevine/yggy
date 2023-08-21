@@ -15,6 +15,7 @@ from ..logging import get_logger
 from .messages import RegisterObjectMessage
 from .observable import MISSING, Observable, ObservableFactory
 from .observable_value import ObservableValue, ObservableValueFactory
+from .observable_func import ObservableFuncFactory
 
 logger = get_logger(f"{__package__}.{__name__}")
 
@@ -52,6 +53,9 @@ class ObservableObject(Observable):
             if isinstance(v, ObservableValueFactory):
                 v = cast(ObservableValueFactory[Any], v)
                 self._observables[k] = v(__kwds.get(k, MISSING))
+            if isinstance(v, ObservableFuncFactory):
+                v = cast(ObservableFuncFactory[Any], v)
+                self._observables[k] = v(self)
             elif isinstance(v, ObservableFactory):
                 self._observables[k] = v()
 
@@ -100,6 +104,16 @@ class ObservableObject(Observable):
             receivers.clear()
         self.__receivers.clear()
 
+    def find_factory_observable(self, factory: ObservableFactory) -> Observable | None:
+        obs_name: str | None = None
+        for name, fac in self.__observable_factories.items():
+            if fac == factory:
+                obs_name = name
+                break
+        if obs_name == None:
+            return None
+        return self._observables[obs_name]
+
     @property
     @classmethod
     def __type_id__(cls) -> str:
@@ -142,7 +156,7 @@ class ObservableObjectFactory(ObservableFactory):
         self.__type = __type
         self.__kwds = __kwds
 
-    def __call__(self, **kwds: Any) -> ObservableObject:
+    def __call__(self, *args: Any, **kwds: Any) -> ObservableObject:
         merged_kwds = self.__kwds.copy()
         for k, v in kwds.items():
             if k in merged_kwds:

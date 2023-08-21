@@ -7,6 +7,10 @@ class SliderModel(yggy.Object):
     step: yggy.ObservableValue[int] = yggy.obs(1)
     value: yggy.ObservableValue[int] = yggy.obs(50)
 
+    @yggy.func(value)
+    def blur(self) -> float:
+        return (self.value() - self.min()) / (self.max() - self.min())
+
     def __post_init__(self) -> None:
         @self.step.watch
         def _(change: yggy.ChangeMessage[int]) -> None:
