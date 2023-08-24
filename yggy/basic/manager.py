@@ -2,55 +2,13 @@ import shutil
 from glob import glob
 from itertools import chain
 from os import makedirs, path
-from typing import Any, Callable, ClassVar, Iterable, Self, cast, overload
+from typing import ClassVar, Iterable, Self
 
-from .. import (Comm, CommWS, ObservableFunc, ObservableFuncFactory,
-                ObservableManager, ObservableObject, ObservableObjectFactory,
-                ObservableValue, ObservableValueFactory)
+from .. import Comm, CommWS, ObservableNetwork
 from .http import HTTP
-from .watch import Watcher
+from .watcher import Watcher
 
-__all__ = ["Manager", "func", "obs", "Object"]
-
-
-@overload
-def obs[T: ObservableObject](__value: type[T], **kwds: Any) -> T:
-    ...
-
-@overload
-def obs[T: bool | int | float | str](__value: T) -> ObservableValue[T]:
-    ...
-
-
-def obs(_arg0: Any, **_kwds: Any) -> ObservableValue[Any] | ObservableObject:
-    return Manager.main.obs(_arg0, **_kwds)
-
-
-def func[T](*facs: ObservableValue[Any]) -> Callable[[Callable[[*tuple[Any, ...]], T]], ObservableFunc[T]]:
-    def __inner(fn: Callable[[*tuple[Any, ...]], T]) -> ObservableFunc[T]:
-        return Manager.main.func(fn, *facs)
-    return __inner
-
-
-class Object(ObservableObject):
-    @overload
-    def __init__(self, __manager: ObservableManager, /, **__kwds: Any) -> None:
-        ...
-
-    @overload
-    def __init__(self, /, **__kwds: Any) -> None:
-        ...
-
-    def __init__(
-        self, __arg0: ObservableManager | None = None, /, **__kwds: Any
-    ) -> None:
-        # overload 0
-        if isinstance(__arg0, ObservableManager):
-            super().__init__(__arg0, **__kwds)
-            return
-
-        # overload 1
-        super().__init__(Manager.main.obs_manager, **__kwds)
+__all__ = ["Manager"]
 
 
 class Manager:
@@ -62,7 +20,7 @@ class Manager:
 
     __comm: Comm
     __comm_ws: CommWS
-    __obs_manager: ObservableManager
+    __network: ObservableNetwork
     __watcher: Watcher
 
     cache_version: int = 0
@@ -81,7 +39,7 @@ class Manager:
         makedirs(self.__web_root, exist_ok=True)
 
         self.__comm = Comm()
-        self.__obs_manager = ObservableManager(self.__comm)
+        self.__network = ObservableNetwork(self.__comm)
         self.__comm_ws = CommWS(self.__comm, host="0.0.0.0")
         self.__watcher = Watcher(self)
         self.__http = HTTP(self)
@@ -96,8 +54,8 @@ class Manager:
         return cls.__main
 
     @property
-    def obs_manager(self) -> ObservableManager:
-        return self.__obs_manager
+    def network(self) -> ObservableNetwork:
+        return self.__network
 
     @property
     def app_root(self) -> str:
@@ -110,30 +68,6 @@ class Manager:
     @property
     def static_file_exts(self) -> list[str]:
         return self.__static_file_exts
-
-    @overload
-    def obs[T: ObservableObject](self, __value: type[T], **kwds: Any) -> T:
-        ...
-
-    @overload
-    def obs[T: bool | int | float | str](self, __value: T) -> ObservableValue[T]:
-        ...
-
-    def obs(self, _arg0: Any, **_kwds: Any) -> ObservableValue[Any] | ObservableObject:
-        # overload 0
-        if isinstance(_arg0, type) and issubclass(_arg0, ObservableObject):
-            return cast(
-                ObservableObject,
-                ObservableObjectFactory(self.__obs_manager, _arg0, **_kwds),
-            )
-
-        # overload 1
-        return cast(
-            ObservableValue[Any], ObservableValueFactory(self.__obs_manager, _arg0)
-        )
-    
-    def func[T](self, fn: Callable[[*tuple[Any, ...]], T], *facs: ObservableValueFactory[Any]) -> ObservableFunc[T]:
-        return cast(ObservableFunc[T], ObservableFuncFactory[T](self.__obs_manager, fn, *facs))
 
     @property
     def comm(self) -> Comm:

@@ -4,54 +4,54 @@ export type ReceiverFn_t = (data: any) => any;
 import { __get_default, __set_default, __uuid4 } from "../utils.js";
 
 export class Comm {
-    private __id: string = __uuid4();
-    private __senders: GlobalReceiverFn_t[] = [];
-    private __receivers: { [key: string]: ReceiverFn_t[] } = {};
-    private __global_receivers: GlobalReceiverFn_t[] = [];
-    private __open: boolean = true;
+    #id: string = __uuid4();
+    #senders: GlobalReceiverFn_t[] = [];
+    #receivers: { [key: string]: ReceiverFn_t[] } = {};
+    #global_receivers: GlobalReceiverFn_t[] = [];
+    #open: boolean = true;
 
     get id() {
-        return this.__id;
+        return this.#id;
     }
     get open(): boolean {
-        return this.__open;
+        return this.#open;
     }
 
-    private __require_open(): void {
-        if (!this.__open) {
+    #require_open(): void {
+        if (!this.#open) {
             throw new Error("comm closed");
         }
     }
 
-    close(): void {
+    stop(): void {
         this.send("comm.closed", {});
-        this.__senders = [];
-        this.__receivers = {};
-        this.__global_receivers = [];
-        this.__open = false;
+        this.#senders = [];
+        this.#receivers = {};
+        this.#global_receivers = [];
+        this.#open = false;
     }
 
     add_sender(sender: GlobalReceiverFn_t): void {
-        this.__require_open();
-        if (this.__senders.includes(sender)) {
+        this.#require_open();
+        if (this.#senders.includes(sender)) {
             return;
         }
-        this.__senders.push(sender);
+        this.#senders.push(sender);
     }
 
     send(msg: string, data: any): void {
-        this.__require_open();
-        for (let sender of this.__senders) {
+        this.#require_open();
+        for (let sender of this.#senders) {
             sender(msg, data);
         }
     }
 
     notify(msg: string, data: any): void {
-        this.__require_open();
-        for (let receiver of this.__global_receivers) {
+        this.#require_open();
+        for (let receiver of this.#global_receivers) {
             receiver(msg, data);
         }
-        const receivers = __get_default(this.__receivers, msg, () => []);
+        const receivers = __get_default(this.#receivers, msg, () => []);
         for (let receiver of receivers) {
             receiver(data);
         }
@@ -62,18 +62,18 @@ export class Comm {
     recv(msg: string, fn: ReceiverFn_t): void;
 
     recv(arg0: string | GlobalReceiverFn_t, arg1?: ReceiverFn_t): void {
-        this.__require_open();
+        this.#require_open();
         // overload 1
         if (typeof arg0 === "function" && !arg1) {
-            if (!this.__global_receivers.includes(arg0)) {
-                this.__global_receivers.push(arg0);
+            if (!this.#global_receivers.includes(arg0)) {
+                this.#global_receivers.push(arg0);
             }
             return;
         }
 
         // overload 2
         if (typeof arg0 === "string" && arg1 instanceof Function) {
-            const receivers = __set_default(this.__receivers, arg0, () => []);
+            const receivers = __set_default(this.#receivers, arg0, () => []);
             if (!receivers.includes(arg1)) {
                 receivers.push(arg1);
             }
@@ -84,7 +84,7 @@ export class Comm {
     }
 
     unrecv(msg: string, fn: ReceiverFn_t): void {
-        const receivers = __get_default(this.__receivers, msg, null);
+        const receivers = __get_default(this.#receivers, msg, null);
 
         if (!receivers) {
             return;

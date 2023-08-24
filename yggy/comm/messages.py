@@ -6,4 +6,7 @@ COMM_REMOVE_CLIENT_MSG = "comm.remove_client"
 
 class Message(TypedDict, total=False):
     message_id: str
-    stop_propagation: bool
+
+
+class ModifyClientMessage(Message):
+    client_id: str

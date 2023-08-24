@@ -9,6 +9,7 @@ from watchdog.events import FileModifiedEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 from watchdog.utils.event_debouncer import EventDebouncer
 
+from ..comm import Message, create_message
 from ..logging import get_logger
 
 if TYPE_CHECKING:
@@ -43,13 +44,13 @@ class EventHandler(PatternMatchingEventHandler):
         self.__updating = True
         logger.info("build ts")
         subprocess.run("npx tsc".split(" "))
-        self.__app.comm.send("hot_reload", None)
+        self.__app.comm.send("hot_reload", create_message(Message, {}))
         self.__updating = False
 
     def copy_file(self, path: str) -> None:
         logger.info(f"copy {path}")
         self.__app.copy_static_files(path)
-        self.__app.comm.send("hot_reload", None)
+        self.__app.comm.send("hot_reload", create_message(Message, {}))
 
     def on_modified(self, event: FileModifiedEvent):
         self.__debouncer.handle_event(event)

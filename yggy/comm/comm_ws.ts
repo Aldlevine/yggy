@@ -1,84 +1,84 @@
 import { Comm } from "./comm.js";
 
 export class CommWS {
-    private __comm: Comm;
-    private __host: string;
-    private __port: number;
-    private __websocket!: WebSocket;
-    private __open!: boolean;
-    private __shutdown: boolean = false;
+    #comm: Comm;
+    #host: string;
+    #port: number;
+    #websocket!: WebSocket;
+    #open!: boolean;
+    #shutdown: boolean = false;
 
     constructor(comm: Comm, host: string = "localhost", port: number = 5678) {
-        this.__comm = comm;
-        this.__host = host;
-        this.__port = port;
+        this.#comm = comm;
+        this.#host = host;
+        this.#port = port;
 
-        this.__create_websocket();
+        this.#create_websocket();
 
-        comm.add_sender(this.__onsend.bind(this));
+        comm.add_sender(this.#onsend.bind(this));
     }
 
     get comm(): Comm {
-        return this.__comm;
+        return this.#comm;
     }
     get host(): string {
-        return this.__host;
+        return this.#host;
     }
     get port(): number {
-        return this.__port;
+        return this.#port;
     }
 
     close(): void {
-        this.__shutdown = true;
-        this.__websocket.close();
+        this.#shutdown = true;
+        this.#websocket.close();
     }
 
-    __create_websocket(): void {
-        if (this.__open) {
+    #create_websocket(): void {
+        if (this.#open) {
             console.trace("cannot create multiple websockets");
             return;
         }
-        this.__open = true;
+        this.#open = true;
 
         try {
-            this.__websocket = new WebSocket(`ws://${this.host}:${this.port}`);
+            this.#websocket = new WebSocket(`ws://${this.host}:${this.port}`);
 
-            this.__websocket.onopen = this.__onopen.bind(this);
-            this.__websocket.onerror = this.__onerror.bind(this);
-            this.__websocket.onclose = this.__onclose.bind(this);
-            this.__websocket.onmessage = this.__onmessage.bind(this);
+            this.#websocket.onopen = this.#onopen.bind(this);
+            this.#websocket.onerror = this.#onerror.bind(this);
+            this.#websocket.onclose = this.#onclose.bind(this);
+            this.#websocket.onmessage = this.#onmessage.bind(this);
         }
         catch (err: any) {
-            setTimeout(() => this.__create_websocket(), 1000);
+            setTimeout(() => this.#create_websocket(), 1000);
         }
     }
 
-    __onsend(msg: string, data: any): void {
-        this.__websocket.send(JSON.stringify({ msg, data }));
+    #onsend(msg: string, data: any): void {
+        this.#websocket.send(JSON.stringify({ msg, data }));
     }
 
-    __onmessage({ data: __data }: MessageEvent): void {
+    #onmessage({ data: __data }: MessageEvent): void {
         const { msg, data } = JSON.parse(__data);
-        this.__comm.notify(msg, data);
+        this.#comm.notify(msg, data);
     }
 
-    __onopen(ev: Event): void {
+    #onopen(ev: Event): void {
         console.log("OPEN");
     }
 
-    __onerror(ev: Event): void {
+    #onerror(ev: Event): void {
         console.log("ERROR");
     }
 
-    __onclose(ev: CloseEvent): void {
+    #onclose(ev: CloseEvent): void {
         console.log("CLOSE");
-        if (this.__open) {
-            this.__open = false;
-            if (this.__comm.open) {
-                this.__comm.notify("comm.closed", {});
+        if (this.#open) {
+            this.#open = false;
+            if (this.#comm.open) {
+                this.#comm.notify("comm.closed", {});
             }
-            if (!this.__shutdown) {
-                setTimeout(() => this.__create_websocket(), 1000);
+            if (!this.#shutdown) {
+                setTimeout(() => this.#create_websocket(), 1000);
             }
         }
     }

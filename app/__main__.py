@@ -4,7 +4,7 @@ from typing import Any
 
 from yggy.logging import get_logger
 
-from . import yggy
+from . import yg
 from .app import AppModel, GlobalModel
 from .qrcode import save_ip_qrcode
 
@@ -14,41 +14,39 @@ get_logger().level = level_id
 
 logger = get_logger(f"{__package__}.{__name__}")
 
+
+class CreateAppMessage(yg.Message):
+    schema: dict[str, Any]
+
+
 if __name__ == "__main__":
     global_model = GlobalModel()
 
-    apps: dict[str, AppModel] = {}
+    app_models: dict[str, AppModel] = {}
 
-    @yggy.manager.comm.recv(yggy.COMM_ADD_CLIENT_MSG)
-    def recv_add_client(id: str) -> None:
-        apps[id] = AppModel(gm=global_model)
-        logger.info(f"Create App {apps[id].id} for client {id}")
+    @yg.manager.comm.recv(yg.COMM_ADD_CLIENT_MSG)
+    def recv_add_client(msg: yg.ModifyClientMessage) -> None:
+        client_id = msg["client_id"]
+        app_model = app_models[client_id] = AppModel(global_model)
+        logger.info(f"Create App {app_model.id} for client {client_id}")
 
-    @yggy.manager.comm.recv(yggy.COMM_REMOVE_CLIENT_MSG)
-    def recv_remove_client(id: str) -> None:
-        logger.info(f"Delete App {apps[id].id} for client {id}")
-        apps.pop(id).close()
+        yg.manager.network.register(app_model.observables, [client_id])
+        yg.manager.comm.send(
+            "app.create",
+            yg.create_message(
+                CreateAppMessage,
+                {"schema": {**app_model.__json__(), **global_model.__json__()}},
+            ),
+            client_ids=[client_id],
+        )
 
-    @yggy.manager.comm.recv(yggy.OBSERVABLE_READY_MSG)
-    def recv_obs_ready(
-        msg: yggy.RegisterObjectMessage | yggy.RegisterValueMessage[Any],
-    ) -> None:
-        ...
+    @yg.manager.comm.recv(yg.COMM_REMOVE_CLIENT_MSG)
+    def recv_remove_client(msg: yg.ModifyClientMessage) -> None:
+        logger.info(
+            f"Delete App {app_models[msg['client_id']].id} for client"
+            f" {msg['client_id']}"
+        )
+        app_models.pop(msg["client_id"])
 
-    @yggy.manager.comm.recv(yggy.OBSERVABLE_REGISTER_MSG)
-    def recv_obs_reg(
-        msg: yggy.RegisterObjectMessage | yggy.RegisterValueMessage[Any],
-    ) -> None:
-        client_id: str | None = None
-        app_id: str | None = None
-        for id, app in apps.items():
-            if app.id == msg["data_id"]:
-                client_id = id
-                app_id = app.id
-
-        if client_id is not None and app_id is not None:
-            logger.info(f"Register App {app_id} for client {client_id}")
-            yggy.manager.comm.send("app.register", app_id, client_ids=[client_id])
-
-    save_ip_qrcode(yggy.web_root)
-    yggy.manager.run()
+    save_ip_qrcode(yg.web_root)
+    yg.manager.run()

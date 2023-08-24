@@ -1,22 +1,23 @@
-import { PropertiesOf } from "../yggy/basic/jsx.js";
-import type * as yggy from "../yggy/index.js";
-import type { AppModel } from "./app.js";
+import * as yg from "../yggy/__init__.js";
+import { AppModel, NOT_CONNECTED } from "./app.js";
 
-import { NOT_CONNECTED } from "./app.js";
-
-let comm: yggy.Comm | null = null;
-let comm_ws: yggy.CommWS | null = null;
+let comm: yg.Comm | null = null;
+let comm_ws: yg.CommWS | null = null;
 
 document.body.append(NOT_CONNECTED);
 
 const main = async () => {
-    const yggy = await import("../yggy/index.js");
+    const yg = await import("../yggy/__init__.js");
     const { App } = await import("./app.js");
 
 
-    comm = new yggy.Comm();
-    comm_ws = new yggy.CommWS(comm, location.hostname, 5678);
-    const obs_manager = new yggy.ObservableManager(comm);
+    comm = new yg.Comm();
+    comm_ws = new yg.CommWS(comm, location.hostname, 5678);
+    const onet = new yg.ObservableNetwork(comm);
+
+    // comm?.recv((msg, data) => {
+    //     console.log(msg, data);
+    // });
 
     comm?.recv("comm.closed", () => {
         if (!NOT_CONNECTED.isConnected) {
@@ -25,20 +26,21 @@ const main = async () => {
         }
     });
 
-    const app_register = (id: string) => {
-        console.log("APP_REGISTER")
-
-        const model: PropertiesOf<AppModel> = { ...<AppModel>obs_manager.get(id)! };
+    const app_create = (app_schema: yg.Message & { schema: yg.ModelSchema }) => {
+        const model = yg.Model.from_schema<AppModel>(app_schema.schema);
+        for (let observable of model.observables()) {
+            onet.register(observable);
+        }
         document.body.innerHTML = "";
         document.body.append(App(model));
 
         const hot_reload = async () => {
             console.log("HOT_RELOAD");
-            comm?.unrecv("app.register", app_register);
+            comm?.unrecv("app.create", app_create);
             comm?.unrecv("hot_reload", hot_reload);
 
             comm_ws?.close();
-            comm?.close();
+            comm?.stop();
 
             const html = document.createElement("html");
             html.innerHTML = (await (await fetch("")).text());
@@ -49,11 +51,9 @@ const main = async () => {
             import("./__main__.js");
         };
         comm?.recv("hot_reload", hot_reload);
+    }
 
-        document.body.classList.remove("hidden");
-    };
-
-    comm?.recv("app.register", app_register);
+    comm?.recv("app.create", app_create);
 };
 
 main();

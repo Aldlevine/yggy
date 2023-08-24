@@ -1,38 +1,40 @@
 /** @jsx h */
 
 import type { JSXInternal } from "@preact/src/jsx.js";
-import { ObservableObject, ObservableValue } from "../index.js";
+import { Model, Observable } from "../__init__.js";
 
 export type PropertiesOf<T> = {
-    [P in keyof Omit<T, keyof ObservableObject | keyof ObservableValue<any>>]:
-    T[P] extends ObservableValue<infer U>
+    [P in keyof Omit<T, keyof Model | keyof Observable<any>>]:
+    T[P] extends Observable<infer U> | undefined
+    ? T[P] | U | undefined
+    : T[P] extends Observable<infer U>
     ? T[P] | U
     : T[P];
 }
 
 export type ValuesOf<T> = {
-    [P in keyof T]: T[P] extends ObservableValue<infer U> | infer U ? U : T[P]
+    [P in keyof T]: T[P] extends Observable<infer U> | infer U ? U : T[P]
 }
 
 
 export class Binding {
-    obs: ObservableValue<any>;
+    obs: Observable<any>;
     events: string[];
 
-    constructor(obs: ObservableValue<any>, ...events: string[]) {
+    constructor(obs: Observable<any>, ...events: string[]) {
         this.obs = obs;
         this.events = events;
     }
 }
 
-export function bind<T>(obs: ObservableValue<T> | T, ...events: string[]): Binding | T {
-    if (obs instanceof ObservableValue) {
+export function bind<T>(obs: Observable<T> | T, ...events: string[]): Binding | T {
+    if (obs instanceof Observable) {
         return new Binding(obs, ...events);
     }
     return obs;
 }
 
-type __JSXElement<T> = T | Binding | ObservableValue<T>
+type __JSXElement<T> = T | Binding | Observable<T>
 
 declare global {
     namespace JSX {
@@ -48,7 +50,7 @@ declare global {
 // TODO: This should be less hacky
 export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [key: string]: any }, ...children: any): Element {
     if (name instanceof Function) {
-        return name(attrs, ...children);
+        return name(attrs || {}, ...children);
     }
 
     let element: Element & { [key: string]: any };
@@ -64,12 +66,12 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
         for (let key in attrs) {
             const attr = attrs[key];
             if (attr instanceof Binding) {
-                if (attr.obs instanceof ObservableValue) {
-                    attr.obs.watch(() => { element[key] = attr.obs(); })
-                    element[key] = attr.obs();
+                if (attr.obs instanceof Observable) {
+                    attr.obs.watch(() => { element[key] = attr.obs.get(); })
+                    element[key] = attr.obs.get();
                     if (attr.events) {
                         for (let evt of attr.events) {
-                            element.addEventListener(evt, () => { attr.obs(element[key]); });
+                            element.addEventListener(evt, () => { attr.obs.set(element[key]); });
                         }
                     }
                 }
@@ -79,10 +81,10 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
             }
             else {
                 const attr = attrs[key];
-                if (attr instanceof ObservableValue) {
-                    element.setAttribute(key, String(attr()));
+                if (attr instanceof Observable) {
+                    element.setAttribute(key, String(attr.get()));
                     attr.watch(() => {
-                        element.setAttribute(key, String(attr()));
+                        element.setAttribute(key, String(attr.get()));
                     });
                 }
                 else {
@@ -97,10 +99,10 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
             if (child instanceof Element) {
                 element.appendChild(child);
             }
-            else if (child instanceof ObservableValue) {
-                const text = document.createTextNode(String(child()));
+            else if (child instanceof Observable) {
+                const text = document.createTextNode(String(child.get()));
                 child.watch(() => {
-                    text.textContent = child();
+                    text.textContent = child.get();
                 });
                 element.append(text);
             }

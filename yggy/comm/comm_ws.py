@@ -12,7 +12,7 @@ from .comm import Comm, SendKwds
 
 __all__ = ["CommWS"]
 
-logger = get_logger(__loader__.name)
+logger = get_logger(f"{__package__}.{__name__}")
 
 
 @dataclass
@@ -69,9 +69,11 @@ class CommWS:
 
     async def __do_send(self, msg: str, data: Any, kwds: SendKwds) -> None:
         coros: list[Coroutine[Any, Any, Any]] = []
+        msg_str = json.dumps({"msg": msg, "data": data})
+        logger.debug(msg_str)
         for client_id, websocket in tuple(self.__connections.items()):
             if "client_ids" not in kwds or client_id in kwds["client_ids"]:
-                coros.append(websocket.send(json.dumps({"msg": msg, "data": data})))
+                coros.append(websocket.send(msg_str))
         await asyncio.gather(*coros)
 
     async def __on_connection(self, websocket: server.WebSocketServerProtocol) -> None:
@@ -85,7 +87,7 @@ class CommWS:
             try:
                 async for message in websocket:
                     event = CommWSMessage(**json.loads(message))
-                    self.__comm.send(event.msg, event.data)
+                    self.__comm.notify(event.msg, event.data)
             except ConnectionClosedError:
                 logger.info(f"CONNECTION CLOSED {client_id}")
 

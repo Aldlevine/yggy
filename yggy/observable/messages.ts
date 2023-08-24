@@ -1,8 +1,7 @@
-import { Message } from "../comm/index.js";
+import { Message } from "../comm/__init__.js";
 
 export const OBSERVABLE_CHANGE_MSG = "observable.change";
 export const OBSERVABLE_CLIENT_CHANGE_MSG = "observable.client_change";
-export const OBSERVABLE_READY_MSG = "observable.ready";
 export const OBSERVABLE_REGISTER_MSG = "observable.register";
 
 export type ChangeMessage<T> = Message & {
@@ -13,19 +12,7 @@ export type ChangeMessage<T> = Message & {
 
 export type ClientChangeMessage<T> = ChangeMessage<T> & {};
 
-export type RegisterMessage<T extends "value" | "object" = "value" | "object"> = Message & {
-    observable_type: T;
+export type RegisterMessage<T> = Message & {
     data_id: string;
-};
-
-export type RegisterValueMessage<T> = RegisterMessage<"value"> & {
     value: T;
-};
-
-export type RegisterObjectMessage = RegisterMessage<"object"> & {
-    attrs: { [key: string]: string };
-};
-
-export type ReadyMessage = Message & {
-    client_id: string;
 };

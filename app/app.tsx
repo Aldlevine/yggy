@@ -1,16 +1,19 @@
+import * as yg from "../yggy/__init__.js";
 import { PropertiesOf, bind, h } from "../yggy/basic/jsx.js";
-import * as yggy from "../yggy/index.js";
 
+import { Blur, Tint } from "./fx.js";
 import { Slider, SliderModel } from "./slider.js";
 
-export type AppModel = yggy.ObservableObject & {
+export type AppModel = {
     volume_slider: SliderModel,
-    other_slider: SliderModel,
-    fname: yggy.ObservableValue<string>;
-    fname_width: yggy.ObservableValue<number>;
-    lname: yggy.ObservableValue<string>;
-    lname_width: yggy.ObservableValue<number>;
-    full_name: yggy.ObservableValue<string>;
+    blur_slider: SliderModel,
+    fname: yg.Observable<string>;
+    fname_width: yg.Observable<number>;
+    lname: yg.Observable<string>;
+    lname_width: yg.Observable<number>;
+    full_name: yg.Observable<string>;
+    blur: yg.Observable<number>;
+    session_time: yg.Observable<number>;
 }
 
 export const NOT_CONNECTED: HTMLDivElement = (
@@ -36,6 +39,13 @@ export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
             <hr />
 
             <p>
+                <small>
+                    Session Time: {model.session_time}
+                </small>
+            </p>
+
+            <p>
+                <br />
                 <h3>text entry</h3>
 
                 <p>
@@ -62,7 +72,7 @@ export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
                 </p>
 
                 <p>
-                    <label><Slider {...{ label: "Volume: ", ...model.volume_slider }} /></label>
+                    <label><Slider {...model.volume_slider} label="Volume:" /></label>
                 </p>
 
                 <p>
@@ -70,11 +80,15 @@ export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
                 </p>
 
                 <p>
-                    <label><Slider {...{ label: "Other: ", ...model.other_slider, max: 100 }} /></label>
+                    <Tint r={2} g={0.5} b={0.5}>
+                        <Blur std_dev={model.blur_slider.value}>
+                            <label><Slider {...model.blur_slider} label="Blur:" max={1} /></label>
+                        </Blur>
+                    </Tint>
                 </p>
 
                 <p>
-                    The other slider value is: {model.other_slider.value}!
+                    The blur slider value is: {model.blur_slider.value}!
                 </p>
             </p>
 

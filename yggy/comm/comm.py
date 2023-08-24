@@ -14,16 +14,21 @@ from typing import (
     get_origin,
     overload,
 )
+# from weakref import WeakSet
 
 from ..logging import get_logger
-from .messages import COMM_ADD_CLIENT_MSG, COMM_REMOVE_CLIENT_MSG, Message
+from .messages import (
+    COMM_ADD_CLIENT_MSG,
+    COMM_REMOVE_CLIENT_MSG,
+    Message,
+    ModifyClientMessage,
+)
 
 __all__ = [
     "COMM_REMOVE_CLIENT_MSG",
     "Comm",
     "GlobalReceiverFn_t",
     "ReceiverFn_t",
-    "STOP_PROPAGATION",
     "SendKwds",
     "create_message",
 ]
@@ -32,11 +37,7 @@ logger = get_logger(__loader__.name)
 
 
 class SendKwds(TypedDict, total=False):
-    local_only: bool
     client_ids: Container[str] | Iterable[str]
-
-
-STOP_PROPAGATION = object()
 
 
 SenderFn_t = Callable[[str, Any, SendKwds], Coroutine[Any, Any, Any]]
@@ -50,7 +51,6 @@ def create_message[T: Message](message_type: type[T], kwds: T) -> T:
         T,
         {
             "message_id": uuid.uuid4().hex,
-            "stop_propagation": False,
             **{k: v for k, v in kwds.items() if k in origin.__annotations__.keys()},
         },
     )
@@ -58,19 +58,24 @@ def create_message[T: Message](message_type: type[T], kwds: T) -> T:
 
 class Comm:
     __id: str
-    __senders: list[SenderFn_t]
-    __receivers: dict[str, list[ReceiverFn_t]]
-    __global_receivers: list[GlobalReceiverFn_t]
+    __senders: set[SenderFn_t]
+    # __receivers: dict[str, WeakSet[ReceiverFn_t]]
+    __receivers: dict[str, set[ReceiverFn_t]]
+    # __global_receivers: WeakSet[GlobalReceiverFn_t]
+    __global_receivers: set[GlobalReceiverFn_t]
     __clients: set[str]
-    __msg_queue: SimpleQueue[tuple[str, Any, SendKwds]]
+    __msg_queue: SimpleQueue[tuple[str, Message, SendKwds]]
+    __revoked_msgs: set[str]
 
     def __init__(self) -> None:
         self.__id = uuid.uuid4().hex
-        self.__senders = []
+        self.__senders = set()
         self.__receivers = {}
-        self.__global_receivers = []
+        self.__global_receivers = set()
+        # self.__global_receivers = WeakSet()
         self.__clients = set()
         self.__msg_queue = SimpleQueue()
+        self.__revoked_msgs = set()
 
     @property
     def id(self) -> str:
@@ -89,7 +94,7 @@ class Comm:
 
     def add_sender(self, __sender: SenderFn_t) -> None:
         if __sender not in self.__senders:
-            self.__senders.append(__sender)
+            self.__senders.add(__sender)
 
     def new_client_id(self) -> str:
         client_id = uuid.uuid4().hex
@@ -97,14 +102,27 @@ class Comm:
 
     def add_client(self, __client_id: str) -> None:
         self.__clients.add(__client_id)
-        self.send(COMM_ADD_CLIENT_MSG, __client_id, local_only=True)
+        self.notify(COMM_ADD_CLIENT_MSG, ModifyClientMessage(client_id=__client_id))
 
     def remove_client(self, __client_id: str) -> None:
-        self.send(COMM_REMOVE_CLIENT_MSG, __client_id, local_only=True)
+        self.notify(COMM_REMOVE_CLIENT_MSG, ModifyClientMessage(client_id=__client_id))
         self.__clients.discard(__client_id)
 
-    def send(self, msg: str, data: Any, **kwds: Unpack[SendKwds]) -> None:
+    def send(self, msg: str, data: Message, **kwds: Unpack[SendKwds]) -> None:
+        self.notify(msg, data)
         self.__msg_queue.put((msg, data, kwds))
+
+    def revoke(self, id: str) -> None:
+        self.__revoked_msgs.add(id)
+
+    def notify(self, msg: str, data: Message) -> None:
+        for receiver in self.__global_receivers:
+            receiver(msg, data)
+
+        # receivers = self.__receivers.get(msg, WeakSet())
+        receivers = self.__receivers.get(msg, set())
+        for receiver in receivers:
+            receiver(data)
 
     @overload
     def recv(self, __fn: GlobalReceiverFn_t, /) -> None:
@@ -135,15 +153,16 @@ class Comm:
         # overload 1
         if isinstance(__arg0, Callable) and __arg1 is None:
             if __arg0 not in self.__global_receivers:
-                self.__global_receivers.append(__arg0)
+                self.__global_receivers.add(__arg0)
             return
 
         # overload 2
         if isinstance(__arg0, str) and isinstance(__arg1, Callable):
-            receivers = self.__receivers.setdefault(__arg0, [])
+            # receivers = self.__receivers.setdefault(__arg0, WeakSet())
+            receivers = self.__receivers.setdefault(__arg0, set())
             fn: ReceiverFn_t = __arg1
             if fn not in receivers:
-                receivers.append(fn)
+                receivers.add(fn)
             return
 
         # overload 3
@@ -151,7 +170,7 @@ class Comm:
 
             def __inner_fn_3(fn: GlobalReceiverFn_t) -> GlobalReceiverFn_t:
                 if fn not in self.__global_receivers:
-                    self.__global_receivers.append(fn)
+                    self.__global_receivers.add(fn)
                 return fn
 
             return __inner_fn_3
@@ -160,9 +179,10 @@ class Comm:
         if isinstance(__arg0, str) and __arg1 is None:
 
             def __inner_fn_4(fn: ReceiverFn_t) -> ReceiverFn_t:
-                receivers = self.__receivers.setdefault(__arg0, [])
+                # receivers = self.__receivers.setdefault(__arg0, WeakSet())
+                receivers = self.__receivers.setdefault(__arg0, set())
                 if fn not in receivers:
-                    receivers.append(fn)
+                    receivers.add(fn)
                 return fn
 
             return __inner_fn_4
@@ -177,6 +197,9 @@ class Comm:
         while True:
             try:
                 msg, data, kwds = self.__msg_queue.get(timeout=10)
+                if data["message_id"] in self.__revoked_msgs:
+                    self.__revoked_msgs.remove(data["message_id"])
+                    continue
                 await self.__do_send(msg, data, **kwds)
             except Empty:
                 continue
@@ -184,16 +207,8 @@ class Comm:
     async def __do_send(self, msg: str, data: Any, **kwds: Unpack[SendKwds]) -> None:
         logger.debug(f"{msg} {data} {kwds}")
 
-        stop_propagation = False
-        for receiver in self.__global_receivers:
-            if STOP_PROPAGATION == receiver(msg, data):
-                stop_propagation = True
-
-        receivers = self.__receivers.get(msg, [])
-        for receiver in receivers:
-            if STOP_PROPAGATION == receiver(data):
-                stop_propagation = True
-
-        if not kwds.get("local_only") and not stop_propagation:
-            for sender in self.__senders:
-                await sender(msg, data, kwds)
+        coros: list[Coroutine[Any, Any, Any]] = []
+        for sender in self.__senders:
+            coros.append(sender(msg, data, kwds))
+            # await sender(msg, data, kwds)
+        await asyncio.gather(*coros)

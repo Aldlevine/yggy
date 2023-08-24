@@ -1,31 +1,28 @@
-from . import yggy
+from . import yg
 
 
-class SliderModel(yggy.Object):
-    min: yggy.ObservableValue[int] = yggy.obs(0)
-    max: yggy.ObservableValue[int] = yggy.obs(100)
-    step: yggy.ObservableValue[int] = yggy.obs(1)
-    value: yggy.ObservableValue[int] = yggy.obs(50)
+class SliderModel(yg.Model):
+    min = yg.obs(0.0)
+    max = yg.obs(100.0)
+    step = yg.obs(1.0)
+    value = yg.obs(50.0)
 
-    @yggy.func(value)
-    def blur(self) -> float:
-        return (self.value() - self.min()) / (self.max() - self.min())
+    @yg.validate(min)
+    def _(self, __min: float) -> float:
+        return min(__min, self.value.get())
 
-    def __post_init__(self) -> None:
-        @self.step.watch
-        def _(change: yggy.ChangeMessage[int]) -> None:
-            if self.step() <= 0:
-                change["stop_propagation"] = True
-                self.step(1)
-            self.value(round(self.value() / self.step()) * self.step())
+    @yg.validate(max)
+    def _(self, __max: float) -> float:
+        return max(__max, self.value.get())
 
-        @self.min.watch
-        @self.max.watch
-        def _(change: yggy.ChangeMessage[int]) -> None:
-            if self.min() > self.value():
-                change["stop_propagation"] = True
-                self.min(self.value())
+    @yg.validate(step)
+    def _(self, __step: float) -> float:
+        if __step <= 0:
+            return self.step.get()
+        return __step
 
-            if self.max() < self.value():
-                change["stop_propagation"] = True
-                self.max(self.value())
+    @yg.watch(step)
+    def _step_change(self) -> None:
+        value = self.value.get()
+        step = self.step.get()
+        self.value.set(round(value / step) * step)
