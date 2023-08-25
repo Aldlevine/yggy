@@ -30,12 +30,16 @@ export class ObservableNetwork {
         return this.#registry[__id];
     }
 
-    public notify_change(__change: ChangeMessage<any>): void {
+    public send_change(__change: ChangeMessage<any>): void {
         if (this.#updating.has(__change.data_id)) {
             return;
         }
 
         this.#comm.send(OBSERVABLE_CLIENT_CHANGE_MSG, __change);
+    }
+
+    public notify_change(__change: ChangeMessage<any>): void {
+        this.#comm.notify(OBSERVABLE_CHANGE_MSG, __change);
     }
 
     public register(__obs: Observable<any>): void {

@@ -4,7 +4,7 @@ import { AppModel, NOT_CONNECTED } from "./app.js";
 let comm: yg.Comm | null = null;
 let comm_ws: yg.CommWS | null = null;
 
-document.body.append(NOT_CONNECTED);
+let not_connected_timout: number;
 
 const main = async () => {
     const yg = await import("../yggy/__init__.js");
@@ -13,41 +13,41 @@ const main = async () => {
 
     comm = new yg.Comm();
     comm_ws = new yg.CommWS(comm, location.hostname, 5678);
-    const onet = new yg.ObservableNetwork(comm);
+    const network = new yg.ObservableNetwork(comm);
 
     // comm?.recv((msg, data) => {
     //     console.log(msg, data);
     // });
 
     comm?.recv("comm.closed", () => {
-        if (!NOT_CONNECTED.isConnected) {
-            document.body.innerHTML = "";
-            document.body.append(NOT_CONNECTED);
-        }
+        not_connected_timout = setTimeout(() => {
+            if (!NOT_CONNECTED.isConnected) {
+                document.body.innerHTML = "";
+                document.body.append(NOT_CONNECTED);
+            }
+        }, 5000);
     });
 
     const app_create = (app_schema: yg.Message & { schema: yg.ModelSchema }) => {
+        clearTimeout(not_connected_timout);
+
         const model = yg.Model.from_schema<AppModel>(app_schema.schema);
         for (let observable of model.observables()) {
-            onet.register(observable);
+            network.register(observable);
         }
+        const app = App(model);
+        const [top, left] = [document.documentElement.scrollTop, document.documentElement.scrollLeft]
         document.body.innerHTML = "";
-        document.body.append(App(model));
+        document.body.append(app);
+        document.documentElement.scrollTop = top;
+        document.documentElement.scrollLeft = left;
 
         const hot_reload = async () => {
             console.log("HOT_RELOAD");
             comm?.unrecv("app.create", app_create);
             comm?.unrecv("hot_reload", hot_reload);
-
             comm_ws?.close();
             comm?.stop();
-
-            const html = document.createElement("html");
-            html.innerHTML = (await (await fetch("")).text());
-            document.documentElement.removeChild(document.head);
-            document.documentElement.removeChild(document.body);
-            document.documentElement.appendChild(html.getElementsByTagName("head")[0]!);
-            document.documentElement.appendChild(html.getElementsByTagName("body")[0]!);
             import("./__main__.js");
         };
         comm?.recv("hot_reload", hot_reload);

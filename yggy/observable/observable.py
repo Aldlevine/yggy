@@ -1,6 +1,6 @@
 import abc
 import uuid
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, cast
 from weakref import WeakKeyDictionary
 
 from ..comm import ReceiverFn_t, create_message
@@ -12,12 +12,21 @@ from .schema import ObservableSchema
 if TYPE_CHECKING:
     from .observable_network import ObservableNetwork
 
-__all__ = ["Observable", "Primitive"]
+__all__ = [
+    "Observable",
+    "Primitive",
+    "get",
+]
 
 logger = get_logger(f"{__package__}.{__name__}")
 
 type Primitive[T: (bool, int, float, str)] = T
 
+def get[T](obs: "Observable[T] | T") -> T:
+    if isinstance(obs, Observable):
+        return cast(Observable[T], obs).get()
+    return obs
+    
 
 class Observable[T: Primitive[Any]](abc.ABC):
     __network: "ObservableNetwork | None"
@@ -114,6 +123,7 @@ class Observable[T: Primitive[Any]](abc.ABC):
             },
         )
         # TODO: look into message revoking more, as it might still work
+        # TODO: followup: LazyMessage which evaluates the message when popped from queue
         # self.__network.send_change(self, change, revoke=self.__last_change)
         self.__network.send_change(self, change)
         self.__last_change = change.get("message_id", None)

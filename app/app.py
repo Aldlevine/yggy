@@ -1,21 +1,38 @@
 import datetime
-from asyncio import sleep
-from subprocess import call
+from asyncio import sleep, create_subprocess_exec, create_task, get_running_loop
 
 from . import yg
 from .slider import SliderModel
 
 
 class GlobalModel(yg.Model):
-    volume_slider = yg.obs(SliderModel)
-    blur_slider = yg.obs(SliderModel, min=0, max=2.5, value=0, step=0.01)
     fname = yg.obs("")
     lname = yg.obs("")
+
+    volume_slider = yg.obs(SliderModel)
+    blur_slider = yg.obs(SliderModel, min=0, max=5, value=0, step=0.01)
+
+    red = yg.obs(1.0)
+    green = yg.obs(1.0)
+    blue = yg.obs(1.0)
+    alpha = yg.obs(1.0)
+
+    morph_radius = yg.obs(0)
 
     @yg.watch(volume_slider.value)
     def _(self) -> None:
         volume = self.volume_slider.value.get()
-        call(f"amixer -q -D pulse sset Master {volume}%".split(" "))
+        try:
+            get_running_loop()
+            create_task(self.__set_voume_task(volume))
+        except RuntimeError:
+            ...
+
+    async def __set_voume_task(self, volume: float) -> None:
+        proc = await create_subprocess_exec(
+            *f"amixer -q -D pulse sset Master {volume}%".split(" ")
+        )
+        await proc.communicate()
 
     @yg.watch(fname)
     def fname_width(self) -> int:
@@ -28,10 +45,15 @@ class GlobalModel(yg.Model):
     @yg.watch(fname, lname)
     def full_name(self) -> str:
         return f"{self.fname.get()} {self.lname.get()}".strip()
+        # return "".join(reversed(f"{self.fname.get()} {self.lname.get()}".strip()))
+
+    @yg.watch(full_name)
+    def greeting(self) -> str:
+        return f"Hello, <b>{self.full_name.get()}</b>! How are you doing?"
 
 
 class SessionModel(yg.Model):
-    session_time = yg.obs("")
+    session_time = yg.obs(0.0)
 
     def __post_init__(self) -> None:
         from asyncio import create_task
@@ -43,9 +65,7 @@ class SessionModel(yg.Model):
         while True:
             now = datetime.datetime.now()
             diff = now - start
-            h, r = divmod(diff.total_seconds(), 60 * 60)
-            m, s = divmod(r, 60)
-            self.session_time.set(f"{int(h):02}:{int(m):02}:{int(s):02}")
+            self.session_time.set(diff.total_seconds() * 1000)
             await sleep(1)
 
 

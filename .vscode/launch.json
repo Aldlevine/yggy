@@ -5,11 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Module",
+            "name": "Python: Hot Reload",
+            "type": "python",
+            "request": "launch",
+            "module": "app.hot_reload",
+            "subProcess": false
+        },
+        {
+            "name": "Python: Debug",
             "type": "python",
             "request": "launch",
             "module": "app",
-            "justMyCode": true
+            "justMyCode": true,
         }
     ]
 }

@@ -14,8 +14,8 @@ from typing import (
     get_origin,
     overload,
 )
-# from weakref import WeakSet
 
+from ..utils import WeakMethodSet
 from ..logging import get_logger
 from .messages import (
     COMM_ADD_CLIENT_MSG,
@@ -59,10 +59,8 @@ def create_message[T: Message](message_type: type[T], kwds: T) -> T:
 class Comm:
     __id: str
     __senders: set[SenderFn_t]
-    # __receivers: dict[str, WeakSet[ReceiverFn_t]]
-    __receivers: dict[str, set[ReceiverFn_t]]
-    # __global_receivers: WeakSet[GlobalReceiverFn_t]
-    __global_receivers: set[GlobalReceiverFn_t]
+    __receivers: dict[str, WeakMethodSet[ReceiverFn_t]]
+    __global_receivers: WeakMethodSet[GlobalReceiverFn_t]
     __clients: set[str]
     __msg_queue: SimpleQueue[tuple[str, Message, SendKwds]]
     __revoked_msgs: set[str]
@@ -71,8 +69,7 @@ class Comm:
         self.__id = uuid.uuid4().hex
         self.__senders = set()
         self.__receivers = {}
-        self.__global_receivers = set()
-        # self.__global_receivers = WeakSet()
+        self.__global_receivers = WeakMethodSet()
         self.__clients = set()
         self.__msg_queue = SimpleQueue()
         self.__revoked_msgs = set()
@@ -119,8 +116,7 @@ class Comm:
         for receiver in self.__global_receivers:
             receiver(msg, data)
 
-        # receivers = self.__receivers.get(msg, WeakSet())
-        receivers = self.__receivers.get(msg, set())
+        receivers = self.__receivers.get(msg, WeakMethodSet())
         for receiver in receivers:
             receiver(data)
 
@@ -158,8 +154,7 @@ class Comm:
 
         # overload 2
         if isinstance(__arg0, str) and isinstance(__arg1, Callable):
-            # receivers = self.__receivers.setdefault(__arg0, WeakSet())
-            receivers = self.__receivers.setdefault(__arg0, set())
+            receivers = self.__receivers.setdefault(__arg0, WeakMethodSet())
             fn: ReceiverFn_t = __arg1
             if fn not in receivers:
                 receivers.add(fn)
@@ -179,8 +174,7 @@ class Comm:
         if isinstance(__arg0, str) and __arg1 is None:
 
             def __inner_fn_4(fn: ReceiverFn_t) -> ReceiverFn_t:
-                # receivers = self.__receivers.setdefault(__arg0, WeakSet())
-                receivers = self.__receivers.setdefault(__arg0, set())
+                receivers = self.__receivers.setdefault(__arg0, WeakMethodSet())
                 if fn not in receivers:
                     receivers.add(fn)
                 return fn
@@ -210,5 +204,4 @@ class Comm:
         coros: list[Coroutine[Any, Any, Any]] = []
         for sender in self.__senders:
             coros.append(sender(msg, data, kwds))
-            # await sender(msg, data, kwds)
         await asyncio.gather(*coros)

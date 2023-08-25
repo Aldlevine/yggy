@@ -1,4 +1,6 @@
+import json
 import os
+import signal
 from logging import getLevelNamesMapping
 from typing import Any
 
@@ -21,6 +23,19 @@ class CreateAppMessage(yg.Message):
 
 if __name__ == "__main__":
     global_model = GlobalModel()
+    yg.manager.network.register(global_model.observables)
+
+    if os.path.isfile("./global_model.json"):
+        with open("./global_model.json", "r") as f:
+            schema = json.load(f)
+            global_model.from_schema(schema)
+
+    def on_term(*args: Any) -> None:
+        logger.info("received SIGTERM - saving globals")
+        with open("./global_model.json", "w") as f:
+            json.dump(global_model.__json__(), f, indent="    ")
+        exit()
+    signal.signal(signal.SIGTERM, on_term)
 
     app_models: dict[str, AppModel] = {}
 

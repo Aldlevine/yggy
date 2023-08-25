@@ -4,20 +4,37 @@ import { ChangeMessage, OBSERVABLE_CHANGE_MSG } from "./messages.js";
 import { ObservableNetwork } from "./observable_network.js";
 import { ObservableSchema } from "./schema.js";
 
+type ObservableKwds = {
+    local?: boolean;
+}
+
+export function get<T>(obs: Observable<T> | T): T {
+    if (obs instanceof Observable) {
+        return obs.get();
+    }
+    return obs;
+}
+
 export class Observable<T> {
     #network?: ObservableNetwork;
     #id: string;
     #value: T;
     #receivers: IterableWeakMap<ReceiverFn_t, ReceiverFn_t>;
+    #local: boolean;
 
-    constructor(__id: string, __value: T) {
+    constructor(__id: string, __value: T, __kwds: ObservableKwds = {}) {
         this.#id = __id;
         this.#value = __value;
         this.#receivers = new IterableWeakMap();
+        this.#local = __kwds.local ?? false;
     }
 
     get id(): string {
         return this.#id;
+    }
+
+    get network(): ObservableNetwork | void {
+        return this.#network;
     }
 
     static from_schema<T>(__schema: ObservableSchema<T>): Observable<T> {
@@ -60,7 +77,12 @@ export class Observable<T> {
             old_value: old_value,
         });
 
-        this.#network?.notify_change(change);
+        if (this.#local) {
+            this.#network?.notify_change(change);
+        }
+        else {
+            this.#network?.send_change(change);
+        }
     }
 
     __recv_change(change: ChangeMessage<T>): void {

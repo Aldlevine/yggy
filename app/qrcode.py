@@ -4,7 +4,7 @@ import socket
 from pathlib import PurePath
 
 import qrcode.image.styles.moduledrawers.svg as drawers
-from qrcode.image.svg import SvgImage
+from qrcode.image.svg import SvgPathImage
 from qrcode.main import QRCode
 
 
@@ -22,13 +22,18 @@ def get_ip() -> str:
 
 
 def save_ip_qrcode(web_root: PurePath) -> None:
+    class MySvgPathImage(SvgPathImage):
+        QR_PATH_STYLE = {}
+
     ip = get_ip()
-    qr = QRCode()
+    qr = QRCode(border=0, box_size=12)
     qr.add_data(f"http://{ip}:8000")
     img = qr.make_image(
-        image_factory=SvgImage,
-        module_drawer=drawers.SvgCircleDrawer(),
-        attrib={"style": "fill: var(--text-color);"},
+        image_factory=MySvgPathImage,
+        module_drawer=drawers.SvgPathSquareDrawer(),
+        attrib={
+            "style": "fill: var(--text-color);",
+        },
     )
     with open(web_root / "qr.svg", "bw") as f:
         img.save(f)

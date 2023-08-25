@@ -1,5 +1,5 @@
 import * as yg from "../yggy/__init__.js";
-import { PropertiesOf, bind, h } from "../yggy/basic/jsx.js";
+import { PropertiesOf, bind, h, b } from "../yggy/basic/jsx.js";
 import { __uuid4 } from "../yggy/utils.js";
 import { SliderModel } from "./slider.g.js";
 export * from "./slider.g.js";

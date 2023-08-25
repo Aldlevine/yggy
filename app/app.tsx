@@ -1,19 +1,33 @@
 import * as yg from "../yggy/__init__.js";
-import { PropertiesOf, bind, h } from "../yggy/basic/jsx.js";
+import { PropertiesOf, bind, h, html } from "../yggy/basic/jsx.js";
 
-import { Blur, Tint } from "./fx.js";
+import { Blur, Morphology, Tint } from "./fx.js";
 import { Slider, SliderModel } from "./slider.js";
 
+// @ts-expect-error
+import { default as dayjs } from "https://esm.sh/dayjs@1.11.9/esm/index.js";
+// @ts-expect-error
+import { default as duration } from "https://esm.sh/dayjs@1.11.9/esm/plugin/duration.js";
+
+dayjs.extend(duration);
+
 export type AppModel = {
-    volume_slider: SliderModel,
-    blur_slider: SliderModel,
     fname: yg.Observable<string>;
     fname_width: yg.Observable<number>;
     lname: yg.Observable<string>;
     lname_width: yg.Observable<number>;
     full_name: yg.Observable<string>;
-    blur: yg.Observable<number>;
+
+    volume_slider: SliderModel;
+    blur_slider: SliderModel;
+    red: yg.Observable<number>;
+    green: yg.Observable<number>;
+    blue: yg.Observable<number>;
+    alpha: yg.Observable<number>;
+    morph_radius: yg.Observable<number>;
+
     session_time: yg.Observable<number>;
+    greeting: yg.Observable<string>;
 }
 
 export const NOT_CONNECTED: HTMLDivElement = (
@@ -40,8 +54,11 @@ export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
 
             <p>
                 <small>
-                    Session Time: {model.session_time}
+                    Session Time: {yg.watch([model.session_time], () => {
+                        return dayjs.duration(yg.get(model.session_time)).format("HH[h] mm[m] ss[s]");
+                    })}
                 </small>
+
             </p>
 
             <p>
@@ -57,7 +74,11 @@ export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
                 </p>
 
                 <p>
-                    Hello, {model.full_name}! How are you doing?
+                    Hello, <b>{model.full_name}</b>! How are you doing?
+                    <br />
+                    {html(model.greeting)}
+                    <br />
+                    {model.greeting}
                 </p>
             </p>
 
@@ -80,15 +101,37 @@ export function App(model: PropertiesOf<AppModel>): HTMLDivElement {
                 </p>
 
                 <p>
-                    <Tint r={2} g={0.5} b={0.5}>
-                        <Blur std_dev={model.blur_slider.value}>
-                            <label><Slider {...model.blur_slider} label="Blur:" max={1} /></label>
-                        </Blur>
-                    </Tint>
+                    <Blur std_dev={model.blur_slider.value}>
+                        <label><Slider {...model.blur_slider} label="Blur:" /></label>
+                    </Blur>
                 </p>
 
                 <p>
                     The blur slider value is: {model.blur_slider.value}!
+                </p>
+
+                <p>
+                    <Tint
+                        red={model.red}
+                        green={model.green}
+                        blue={model.blue}
+                        alpha={model.alpha}
+                    >
+                        <label><Slider value={model.red} label={"R:"} min={0} max={1} step={0.01} /></label><br />
+                        <label><Slider value={model.green} label={"G:"} min={0} max={1} step={0.01} /></label><br />
+                        <label><Slider value={model.blue} label={"B:"} min={0} max={1} step={0.01} /></label><br />
+                        <label><Slider value={model.alpha} label={"A:"} min={0} max={1} step={0.01} /></label><br />
+                    </Tint>
+                </p>
+
+                <p>
+                    The color slider values are ({model.red}, {model.green}, {model.blue}, {model.alpha})
+                </p>
+
+                <p>
+                    <Morphology radius={model.morph_radius}>
+                        <label><Slider value={model.morph_radius} label={"Morph Radius:"} min={-5} max={5} step={1} /></label><br />
+                    </Morphology>
                 </p>
             </p>
 

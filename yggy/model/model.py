@@ -1,3 +1,4 @@
+from enum import Enum
 import uuid
 from functools import partial
 from inspect import isclass, signature
@@ -14,13 +15,53 @@ from typing import (
 
 from ..comm import ReceiverFn_t
 from ..logging import get_logger
-from ..observable import Observable, Primitive
+from ..observable import Observable, Primitive, ObservableSchema, get
 from ..utils import noop
 from .schema import ModelSchema
 
 __all__ = ["Model", "coerce", "obs", "validate", "watch"]
 
 logger = get_logger(f"{__package__}.{__name__}")
+
+
+class _FnType(Enum):
+    FREE = 1
+    METHOD = 2
+    CLASS_METHOD = 3
+
+
+def _fn_type(fn: Callable[..., Any]) -> _FnType:
+    try:
+        sig = signature(fn)
+    except ValueError:
+        # assume if not a proper fn, must be free
+        return _FnType.FREE
+    
+    try:
+        p1 = list(sig.parameters.values()).pop()
+    except:
+        # assume no params, must be free
+        return _FnType.FREE
+
+    if p1.name == "self":
+        return _FnType.METHOD
+    if p1.name == "cls":
+        return _FnType.CLASS_METHOD
+    return _FnType.FREE
+
+
+def _bind_fn(fn: Callable[..., Any], self: object) -> Callable[..., Any]:
+    match _fn_type(fn):
+        case _FnType.FREE:
+            return fn
+        case _FnType.METHOD:
+            def __inner_fn(*args: Any, **kwargs: Any) -> Any:
+                return fn(self, *args, **kwargs)
+            return __inner_fn
+        case _FnType.CLASS_METHOD:
+            def __inner_fn(*args: Any, **kwargs: Any) -> Any:
+                return fn(type(self), *args, **kwargs)
+            return __inner_fn
 
 
 class Field:
@@ -80,9 +121,16 @@ class SubmodelField[T: "Model"](Field):
         return SubmodelProperty(self, __name)
 
 
-def watch[T: Callable[["Model"], Any]](*__observables: Observable[Any]) -> Callable[[Callable[[Any], Any]], Any]:
-    def __inner_fn(fn: Callable[["Model"], Any]) -> Observable[Any]:
-        fields = cast(list[ObservableField[Any] | WatchField[Any]], __observables)
+def watch[T: Primitive[Any]](*__observables: Observable[Any]) -> Callable[[Callable[..., T]], Observable[T]]:
+    def __inner_fn(fn: Callable[..., T]) -> Observable[T]:
+        observables = [obs for obs in __observables if isinstance(obs, Observable)] # type: ignore[We do need the isinstance because signature lies about type]
+        for obs in observables:
+            def __fn(*__args: Any, **__kwargs: Any) -> None:
+                fn()
+            obs.watch(__fn)
+
+        fields = [field for field in __observables if isinstance(field, (ObservableField, WatchField, SubmodelProperty))]
+        fields = cast(list[ObservableField[Any] | WatchField[Any]], fields)
         return cast(Observable[Any], WatchField(fn, fields))
 
     return __inner_fn
@@ -156,14 +204,7 @@ class Model:
             if isinstance(f, ObservableField):
                 f = cast(ObservableField[Any], f)
 
-                coerce_fn: Callable[[Any], Any]
-                try:
-                    if len(signature(f.coerce_fn).parameters) > 1:
-                        coerce_fn = partial(f.coerce_fn, self)
-                    else:
-                        coerce_fn = cast(Callable[[Any], Any], f.coerce_fn)
-                except ValueError:
-                    coerce_fn = cast(Callable[[Any], Any], f.coerce_fn)
+                coerce_fn: Callable[[Any], Any] = _bind_fn(f.coerce_fn, self)
 
                 validate_fn: Callable[[Any], Any]
                 try:
@@ -209,7 +250,7 @@ class Model:
                     "{key}: {typ} = {{\n{value}".format(key=key, typ=typ, value=value)
                 )
             else:
-                value = self.__observables[key].get()
+                value = get(self.__observables[key])
                 out.append(
                     "{key}: {typ} = {value}".format(
                         key=key, typ=type(value).__name__, value=value
@@ -228,6 +269,19 @@ class Model:
             else:
                 out[key] = self.__observables[key].__json__()
         return out
+    
+    def from_schema(self, __schema: ModelSchema) -> None:
+        for k, v in __schema.items():
+            if k in self.__observables:
+                if isinstance(self.__model_fields__[k], WatchField):
+                    continue
+                self.__observables[k].set(cast(ObservableSchema[Any], v)["value"])
+                continue
+            if hasattr(self, k):
+                sub_model = getattr(self, k)
+                assert isinstance(sub_model, Model)
+                sub_model.from_schema(cast(ModelSchema, v))
+        ...
 
     @property
     def id(self) -> str:
@@ -294,10 +348,11 @@ class Model:
         return field
 
     def __add_watch(self, k: str, f: WatchField[Any]) -> None:
-        self.__observables[k] = observable = Observable(f.fn(self), coerce=noop)
+        fn = _bind_fn(f.fn, self)
+        self.__observables[k] = observable = Observable(fn(), coerce=noop)
 
         def __fn(*__args: Any, **__kwargs: Any) -> None:
-            observable.set(f.fn(self))
+            observable.set(fn())
 
         self.__watchers[k] = __fn
         for o in [self.__find_observable(field) for field in f.observables]:
