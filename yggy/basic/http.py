@@ -11,7 +11,7 @@ from ..logging import get_logger
 if TYPE_CHECKING:
     from .manager import Manager
 
-_logger = get_logger(__loader__.name)
+_logger = get_logger(f"{__name__}")
 
 
 def get_handler_class(manager: "Manager") -> type[SimpleHTTPRequestHandler]:

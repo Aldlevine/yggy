@@ -1,41 +1,9 @@
-type Index_t = string | number | symbol;
-
-export function __get_default<V>(dict: { [k: Index_t]: V }, key: Index_t, default_value: V | (() => V)): V {
-    if (key in dict) {
-        return dict[key];
-    }
-
-    if (default_value instanceof Function) {
-        return default_value();
-    }
-
-    return default_value;
-}
-
-export function __set_default<V>(dict: { [k: Index_t]: V }, key: Index_t, default_value: V | (() => V)): V {
-    if (key in dict) {
-        return dict[key];
-    }
-
-    if (default_value instanceof Function) {
-        return dict[key] = default_value();
-    }
-
-    return dict[key] = default_value;
-}
-
-export function __uuid4(): string {
-    return (1e7.toString() + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c: any) =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    ).replace(/-/g, "");
-}
-
 export class IterableWeakMap<K extends object, V> {
-    #weak_map: WeakMap<K, { value: V, ref: WeakRef<K> }> = new WeakMap();
+    #weak_map: WeakMap<K, { value: V; ref: WeakRef<K>; }> = new WeakMap();
     #ref_set: Set<WeakRef<K>> = new Set();
-    #finalization_group: FinalizationRegistry<{ set: Set<WeakRef<K>>, ref: WeakRef<K> }> = new FinalizationRegistry(IterableWeakMap.#cleanup)
+    #finalization_group: FinalizationRegistry<{ set: Set<WeakRef<K>>; ref: WeakRef<K>; }> = new FinalizationRegistry(IterableWeakMap.#cleanup);
 
-    static #cleanup({ set, ref }: { set: Set<WeakRef<any>>, ref: WeakRef<any> }) {
+    static #cleanup({ set, ref }: { set: Set<WeakRef<any>>; ref: WeakRef<any>; }) {
         set.delete(ref);
     }
 
@@ -52,7 +20,7 @@ export class IterableWeakMap<K extends object, V> {
         this.#finalization_group.register(key, {
             set: this.#ref_set,
             ref
-        }, ref)
+        }, ref);
     }
 
     get(key: K): V | void {

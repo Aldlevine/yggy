@@ -1,9 +1,8 @@
+import weakref
 from inspect import ismethod
 from typing import Any, Callable, Iterator
-import weakref
 
-def noop[T](__x: T) -> T:
-    return __x
+__all__ = ["WeakMethodSet"]
 
 class WeakMethodSet[T: Callable[..., Any]]:
     __hashset: dict[int, weakref.ref[T]]

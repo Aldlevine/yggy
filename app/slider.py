@@ -1,3 +1,5 @@
+from typing import Any
+
 from . import yg
 
 
@@ -6,6 +8,10 @@ class SliderModel(yg.Model):
     max = yg.obs(100.0)
     step = yg.obs(1.0)
     value = yg.obs(50.0)
+
+    @yg.coerce(min)
+    def _(self, __min: Any) -> float:
+        return float(__min)
 
     @yg.validate(min)
     def _(self, __min: float) -> float:

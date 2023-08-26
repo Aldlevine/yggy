@@ -5,7 +5,7 @@ from weakref import WeakKeyDictionary
 
 from ..comm import ReceiverFn_t, create_message
 from ..logging import get_logger
-from ..utils import noop
+from ..utils.functools import noop
 from .messages import OBSERVABLE_CHANGE_MSG, ChangeMessage
 from .schema import ObservableSchema
 
@@ -18,7 +18,7 @@ __all__ = [
     "get",
 ]
 
-logger = get_logger(f"{__package__}.{__name__}")
+logger = get_logger(f"{__name__}")
 
 type Primitive[T: (bool, int, float, str)] = T
 

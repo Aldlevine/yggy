@@ -1,10 +1,10 @@
 import { Observable, ObservableNetwork, ObservableSchema } from "../__init__.js";
-import { __uuid4 } from "../utils.js";
+import { uuid4 } from "../utils/uuid.js";
 import { ModelSchema } from "./schema.js";
 
 export function watch<T>(args: any[], fn: () => T): Observable<T> {
     let network!: ObservableNetwork;
-    const obs = new Observable(__uuid4(), fn(), { local: true });
+    const obs = new Observable(uuid4(), fn(), { local: true });
     args.forEach((arg: any) => {
         if (arg instanceof Observable) {
             if (arg.network) {

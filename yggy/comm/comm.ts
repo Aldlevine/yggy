@@ -1,10 +1,10 @@
 export type GlobalReceiverFn_t = (msg: string, data: any) => any;
 export type ReceiverFn_t = (data: any) => any;
 
-import { __get_default, __set_default, __uuid4 } from "../utils.js";
+import { dicttools, uuid } from "../utils/__init__.js";
 
 export class Comm {
-    #id: string = __uuid4();
+    #id: string = uuid.uuid4();
     #senders: GlobalReceiverFn_t[] = [];
     #receivers: { [key: string]: ReceiverFn_t[] } = {};
     #global_receivers: GlobalReceiverFn_t[] = [];
@@ -51,7 +51,7 @@ export class Comm {
         for (let receiver of this.#global_receivers) {
             receiver(msg, data);
         }
-        const receivers = __get_default(this.#receivers, msg, () => []);
+        const receivers = dicttools.get_default(this.#receivers, msg, () => []);
         for (let receiver of receivers) {
             receiver(data);
         }
@@ -73,7 +73,7 @@ export class Comm {
 
         // overload 2
         if (typeof arg0 === "string" && arg1 instanceof Function) {
-            const receivers = __set_default(this.#receivers, arg0, () => []);
+            const receivers = dicttools.set_default(this.#receivers, arg0, () => []);
             if (!receivers.includes(arg1)) {
                 receivers.push(arg1);
             }
@@ -84,7 +84,7 @@ export class Comm {
     }
 
     unrecv(msg: string, fn: ReceiverFn_t): void {
-        const receivers = __get_default(this.#receivers, msg, null);
+        const receivers = dicttools.get_default(this.#receivers, msg, null);
 
         if (!receivers) {
             return;

@@ -12,7 +12,7 @@ from .comm import Comm, SendKwds
 
 __all__ = ["CommWS"]
 
-logger = get_logger(f"{__package__}.{__name__}")
+logger = get_logger(f"{__name__}")
 
 
 @dataclass

@@ -1,243 +1,155 @@
-from enum import Enum
 import uuid
-from functools import partial
-from inspect import isclass, signature
 from textwrap import indent
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Iterator,
-    cast,
-    dataclass_transform,
-    overload,
-)
+from typing import Any, ClassVar, Iterator, cast, dataclass_transform
 
-from ..comm import ReceiverFn_t
 from ..logging import get_logger
-from ..observable import Observable, Primitive, ObservableSchema, get
-from ..utils import noop
+from ..observable import Observable, ObservableSchema, get
+from .fields import (
+    Field,
+    ObservableField,
+    ObservableWatchField,
+    SubmodelField,
+    SubmodelProperty,
+)
 from .schema import ModelSchema
 
-__all__ = ["Model", "coerce", "obs", "validate", "watch"]
+__all__ = ["Model"]
 
-logger = get_logger(f"{__package__}.{__name__}")
-
-
-class _FnType(Enum):
-    FREE = 1
-    METHOD = 2
-    CLASS_METHOD = 3
-
-
-def _fn_type(fn: Callable[..., Any]) -> _FnType:
-    try:
-        sig = signature(fn)
-    except ValueError:
-        # assume if not a proper fn, must be free
-        return _FnType.FREE
-    
-    try:
-        p1 = list(sig.parameters.values()).pop()
-    except:
-        # assume no params, must be free
-        return _FnType.FREE
-
-    if p1.name == "self":
-        return _FnType.METHOD
-    if p1.name == "cls":
-        return _FnType.CLASS_METHOD
-    return _FnType.FREE
-
-
-def _bind_fn(fn: Callable[..., Any], self: object) -> Callable[..., Any]:
-    match _fn_type(fn):
-        case _FnType.FREE:
-            return fn
-        case _FnType.METHOD:
-            def __inner_fn(*args: Any, **kwargs: Any) -> Any:
-                return fn(self, *args, **kwargs)
-            return __inner_fn
-        case _FnType.CLASS_METHOD:
-            def __inner_fn(*args: Any, **kwargs: Any) -> Any:
-                return fn(type(self), *args, **kwargs)
-            return __inner_fn
-
-
-class Field:
-    ...
-
-
-class ObservableField[T](Field):
-    default: T
-    coerce_fn: Callable[["Model", Any], T] | Callable[[Any], T]
-    validate_fn: Callable[["Model", T], T] | Callable[[T], T]
-
-    def __init__(self, default: T) -> None:
-        super().__init__()
-        self.default = default
-        self.coerce_fn = type(default)
-        self.validate_fn = noop
-
-
-class WatchField[T](Field):
-    fn: Callable[..., T]
-    observables: list["ObservableField[Any] | WatchField[Any]"]
-
-    def __init__(
-        self,
-        fn: Callable[..., T],
-        observables: list["ObservableField[Any] | WatchField[Any]"],
-    ) -> None:
-        super().__init__()
-        self.fn = fn
-        self.observables = observables
-
-
-class SubmodelProperty:
-    root: "SubmodelField[Any] | SubmodelProperty"
-    name: str
-
-    def __init__(
-        self, __root: "SubmodelField[Any] | SubmodelProperty", __name: str
-    ) -> None:
-        self.root = __root
-        self.name = __name
-
-    def __getattr__(self, __name: str) -> Any:
-        return SubmodelProperty(self, __name)
-
-
-class SubmodelField[T: "Model"](Field):
-    factory: type[T]
-    kwds: dict[str, Any]
-
-    def __init__(self, factory: type[T], **kwds: Any) -> None:
-        super().__init__()
-        self.factory = factory
-        self.kwds = kwds
-
-    def __getattr__(self, __name: str) -> Any:
-        return SubmodelProperty(self, __name)
-
-
-def watch[T: Primitive[Any]](*__observables: Observable[Any]) -> Callable[[Callable[..., T]], Observable[T]]:
-    def __inner_fn(fn: Callable[..., T]) -> Observable[T]:
-        observables = [obs for obs in __observables if isinstance(obs, Observable)] # type: ignore[We do need the isinstance because signature lies about type]
-        for obs in observables:
-            def __fn(*__args: Any, **__kwargs: Any) -> None:
-                fn()
-            obs.watch(__fn)
-
-        fields = [field for field in __observables if isinstance(field, (ObservableField, WatchField, SubmodelProperty))]
-        fields = cast(list[ObservableField[Any] | WatchField[Any]], fields)
-        return cast(Observable[Any], WatchField(fn, fields))
-
-    return __inner_fn
-
-
-def coerce[T: Primitive[Any]](__obs: Observable[T]) -> Callable[[Callable[[Any, Any], T]], None]:
-    def __inner_fn(__fn: Callable[["Model", Any], T]) -> None:
-        assert isinstance(__obs, ObservableField)
-        __obs.coerce_fn = __fn
-
-    return __inner_fn
-
-
-def validate[T: Primitive[Any]](__obs: Observable[T]) -> Callable[[Callable[[Any, T], T]], None]:
-    def __inner_fn(__fn: Callable[["Model", T], T]) -> None:
-        assert isinstance(__obs, ObservableField)
-        __obs.validate_fn = __fn
-
-    return __inner_fn
-
-
-@overload
-def obs[T: "Model"](__factory: type[T], **__kwds: Any) -> T:
-    ...
-
-
-@overload
-def obs[T: Primitive[Any]](__value: T) -> Observable[T]:
-    ...
-
-
-def obs(__arg0: Any | type, **__kwds: Any) -> Any:
-    if isclass(__arg0) and issubclass(__arg0, Model):
-        return SubmodelField[Any](__arg0, **__kwds)
-    return ObservableField(__arg0)
+logger = get_logger(f"{__name__}")
 
 
 @dataclass_transform(eq_default=False, kw_only_default=True)
 class Model:
-    __model_fields__: ClassVar[dict[str, Field]]
+    """A base class for managing an observable data model.
+
+    This class is decorated with @dataclass_transform, and should
+    primarily be constructed with `.field.Field` attributes. Similar
+    to a standard dataclass, these will exist as field definition types
+    at class construction time, but at instance initialization, these
+    fields are realized into the observable defined by the field.
+
+    There are also a number of decorators that can modify the behavior
+    of fields, such as `yg.coerce` and `yg.validate`.
+
+    In order for `Observables` to be reactive, they must first be registered
+    with a `yg.ObservableNetwork` (itself with an active `yg.Comm`). Use
+    `Model.observables` to obtain an iterator of `Observable`s to pass to
+    the `yg.ObservableNetwork`.
+
+    Note that messages are sent through the `Comm` asynchronously, via
+    a message queue. So observables are not updated immediately after
+    updating their dependencies.
+
+    Example:
+    ```
+    import yggy as yg;
+
+    class PersonModel(Model):
+        fname = yg.obs("")
+        lname = yb.obs("")
+        age = yg.obs(0)
+
+        @yg.watch(fname, lname)
+        def full_name(self) -> str:
+            return f"{self.fname.get()} {self.lname.get()}"
+
+        @yg.validate(age)
+        def _(self, __age: int) -> int:
+            return min(max(__age, 0), 150)
+            
+    comm = yg.Comm()
+    network = yg.ObservableNetwork(comm)
+
+    person = PersonModel(fname="Raffi", lname="Cavoukian")
+
+    network.register(person.observables)
+
+    comm.start()
+    
+    person.fname.set("Caspar")
+    person.lname.set("Babypants")
+    person.full_name.get() # >> "Raffi Cavoukian"
+
+    ##### Some time later #####
+
+    person.full_name.get() # >> "Caspar Babypants"
+    ```
+    """
+
+    __model_fields__: ClassVar[dict[str, Field[Any]]]
 
     __id: str
     __observables: dict[str, Observable[Any]]
-    __watchers: dict[str, ReceiverFn_t]
+    __submodels: dict[str, "Model"]
 
+    @classmethod
     def __init_subclass__(cls) -> None:
         fields: dict[str, Any] = {}
         fields.update({k: v for k, v in cls.__dict__.items() if isinstance(v, Field)})
+
         for base in cls.__bases__:
             if hasattr(base, "__model_fields__"):
                 fields.update(getattr(base, "__model_fields__"))
+
         cls.__model_fields__ = fields
 
         for k, v in cls.__model_fields__.items():
-            if isinstance(v, (ObservableField, WatchField)):
-                cls.__add_observable_prop(k)
+            cls.__add_prop(k, v)
+
+    @classmethod
+    def __add_prop(cls, __key: str, __field: Field[Any]) -> None:
+        @property
+        def observable_prop(self: Model):
+            return self.__observables[__key]
+
+        @property
+        def submodel_prop(self: Model):
+            return self.__submodels[__key]
+
+        if isinstance(__field, ObservableField):
+            setattr(cls, __key, observable_prop)
+            return
+
+        if isinstance(__field, SubmodelField):
+            setattr(cls, __key, submodel_prop)
+            return
 
     def __init__(self, **__kwargs: Any) -> None:
         self.__id = uuid.uuid4().hex
         self.__observables = {}
-        self.__watchers = {}
+        self.__submodels = {}
+
         for k, f in self.__model_fields__.items():
             if k in __kwargs and isinstance(__kwargs[k], (Observable, Model)):
                 if isinstance(__kwargs[k], Observable):
                     self.__observables[k] = __kwargs[k]
                     continue
+
                 if isinstance(__kwargs[k], Model):
-                    setattr(self, k, __kwargs[k])
+                    self.__submodels[k] = __kwargs[k]
                     continue
 
             if isinstance(f, ObservableField):
                 f = cast(ObservableField[Any], f)
-
-                coerce_fn: Callable[[Any], Any] = _bind_fn(f.coerce_fn, self)
-
-                validate_fn: Callable[[Any], Any]
-                try:
-                    if len(signature(f.validate_fn).parameters) > 1:
-                        validate_fn = partial(f.validate_fn, self)
-                    else:
-                        validate_fn = cast(Callable[[Any], Any], f.validate_fn)
-                except ValueError:
-                    validate_fn = cast(Callable[[Any], Any], f.validate_fn)
-
-                default = __kwargs.get(k, f.default)
-                self.__observables[k] = Observable(
-                    default, coerce=coerce_fn, validate=validate_fn
-                )
+                self.__observables[k] = f.realize(self, k, **__kwargs)
                 continue
 
-            if isinstance(f, WatchField):
-                f = cast(WatchField[Any], f)
-                self.__add_watch(k, f)
-                continue
-
-            # TODO: this needs to be initializable with kwargs
             if isinstance(f, SubmodelField):
-                f = cast(SubmodelField[Any], f)
-                setattr(self, k, f.factory(**f.kwds))
+                self.__submodels[k] = f.realize(self, k, **__kwargs)
                 continue
 
         self.__post_init__()
 
     def __post_init__(self) -> None:
+        """Like a standard `@dataclass`, override `__post_init__`
+        to include custom initialization logic after the default
+        intialization is complete.
+        """
         ...
 
     def __str__(self) -> str:
+        """Returns a neatly nested hierarchy of fields"""
+
         out: list[str] = []
         for key, field in self.__model_fields__.items():
             if isinstance(field, SubmodelField):
@@ -245,7 +157,7 @@ class Model:
                 if not isinstance(sub_model, Model):
                     continue
                 value = "\n".join(str(sub_model).splitlines()[1:])
-                typ = cast(SubmodelField[Any], field).factory.__name__
+                typ = field.factory.__name__
                 out.append(
                     "{key}: {typ} = {{\n{value}".format(key=key, typ=typ, value=value)
                 )
@@ -257,8 +169,11 @@ class Model:
                     )
                 )
         return f"{self.__class__.__name__} {{\n{indent("\n".join(out), " " * 2)}\n}}"
+    __str__.__doc__ = object.__str__.__doc__
 
     def __json__(self) -> ModelSchema:
+        """Returns a json serializable `ModelSchema`"""
+
         out: dict[str, Any] = {"model_id": self.__id}
         for key, field in self.__model_fields__.items():
             if isinstance(field, SubmodelField):
@@ -269,38 +184,44 @@ class Model:
             else:
                 out[key] = self.__observables[key].__json__()
         return out
-    
-    def from_schema(self, __schema: ModelSchema) -> None:
-        for k, v in __schema.items():
-            if k in self.__observables:
-                if isinstance(self.__model_fields__[k], WatchField):
-                    continue
-                self.__observables[k].set(cast(ObservableSchema[Any], v)["value"])
-                continue
-            if hasattr(self, k):
-                sub_model = getattr(self, k)
-                assert isinstance(sub_model, Model)
-                sub_model.from_schema(cast(ModelSchema, v))
-        ...
 
     @property
     def id(self) -> str:
+        """The unique id for this `Model` instance"""
+
         return self.__id
 
     @property
     def field_values(self) -> dict[str, "Observable[Any] | Model"]:
+        """A `dict` mapping field names to their respective `Observable` or `Model`"""
+
         res: dict[str, Observable[Any] | Model] = {}
         for k, f in self.__model_fields__.items():
-            if isinstance(f, (ObservableField, WatchField)):
+            if isinstance(f, ObservableField):
                 res[k] = self.__observables[k]
                 continue
             if isinstance(f, SubmodelField):
-                res[k] = getattr(self, k)
+                res[k] = self.__submodels[k]
                 continue
         return res
 
     @property
     def observables(self) -> Iterator[Observable[Any]]:
+        """An iterator for all `Observable`s in the Model's hierarchy.
+        This includes both direct and indirect descendants.
+
+        ```
+        import yggy as yg
+
+        comm = yg.Comm()
+        network = yg.ObservableNetwork(comm)
+        person = PersonModel()
+
+        network.register(person.observables)
+        comm.start()
+        ```
+        """
+
         for obs in self.__observables.values():
             yield obs
         for key, field in self.__model_fields__.items():
@@ -309,51 +230,71 @@ class Model:
                 if isinstance(sub_obs, Model):
                     yield from sub_obs.observables
 
-    @classmethod
-    def __add_observable_prop(cls, __key: str) -> None:
-        @property
-        def prop(self: Model):
-            return self.__observables[__key]
+    def load_schema(self, __schema: ModelSchema) -> None:
+        """Loads values for all descendant `Observable`s.
 
-        setattr(cls, __key, prop)
+        This exlcudes fields defined by `ObservableWatchField`
+        as these will be recomputed anyway (and may have altered
+        callbacks since their last run).
+        """
 
-    def __find_observable(
-        self,
-        field: Observable[Any]
-        | ObservableField[Any]
-        | WatchField[Any]
-        | SubmodelProperty,
-    ) -> Observable[Any]:
+        for k, v in __schema.items():
+            if k in self.__observables:
+                if isinstance(self.__model_fields__[k], ObservableWatchField):
+                    continue
+                self.__observables[k].set(cast(ObservableSchema[Any], v)["value"])
+                continue
+            if k in self.__submodels:
+                self.__submodels[k].load_schema(cast(ModelSchema, v))
+
+    def find_observable[T](
+        self, field: Observable[T] | ObservableField[T] | SubmodelProperty[T]
+    ) -> Observable[T]:
+        """Finds an `Observable` based on a provided field.
+
+        The field may be:
+        - An `ObservableField` used to initialize an `Observable` on `self`
+        - A `SubmodelProperty` which resolves to a `SubmodelField` on `self`
+        - An existing `Observable` (which will be returned unaltered)
+
+        Arguments:
+            field: The field to lookup an `Observable` for
+
+        Returns:
+            The matched `Observable`
+        """
+
         if isinstance(field, SubmodelProperty):
-            root = field
-            keys: list[str] = []
-            while not isinstance(root, SubmodelField):
-                keys.append(root.name)
-                root = root.root
-            root_key = list(self.__model_fields__.keys())[
-                list(self.__model_fields__.values()).index(root)
-            ]
-            observable = getattr(self, root_key)
-            for key in keys:
-                observable = getattr(observable, key)
-            return observable
+            return self.__find_submodel_property(field)
 
-        if isinstance(field, (ObservableField, WatchField)):
-            root_key = list(self.__model_fields__.keys())[
-                list(self.__model_fields__.values()).index(field)
-            ]
-            return self.__observables[root_key]
+        if isinstance(field, ObservableField):
+            return self.__find_observable_field(field)
 
         assert isinstance(field, Observable)
         return field
 
-    def __add_watch(self, k: str, f: WatchField[Any]) -> None:
-        fn = _bind_fn(f.fn, self)
-        self.__observables[k] = observable = Observable(fn(), coerce=noop)
+    def __find_observable_field[T](
+        self,
+        __field: ObservableField[T],
+    ) -> Observable[T]:
+        root_key = list(self.__model_fields__.keys())[
+            list(self.__model_fields__.values()).index(__field)
+        ]
+        return self.__observables[root_key]
 
-        def __fn(*__args: Any, **__kwargs: Any) -> None:
-            observable.set(fn())
-
-        self.__watchers[k] = __fn
-        for o in [self.__find_observable(field) for field in f.observables]:
-            o.watch(__fn)
+    def __find_submodel_property[T](
+        self,
+        __field: SubmodelProperty[T],
+    ) -> Observable[T]:
+        root = __field
+        keys: list[str] = []
+        while not isinstance(root, SubmodelField):
+            keys.append(root.name)
+            root = root.root
+        root_key = list(self.__model_fields__.keys())[
+            list(self.__model_fields__.values()).index(root)
+        ]
+        observable = getattr(self, root_key)
+        for key in keys:
+            observable = getattr(observable, key)
+        return observable

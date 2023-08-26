@@ -15,7 +15,7 @@ from ..logging import get_logger
 if TYPE_CHECKING:
     from .manager import Manager
 
-logger = get_logger(__loader__.name)
+logger = get_logger(f"{__name__}")
 watchdog_logger = get_logger("watchdog")
 watchdog_logger.level = INFO
 

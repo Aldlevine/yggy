@@ -15,7 +15,7 @@ from typing import (
     overload,
 )
 
-from ..utils import WeakMethodSet
+from ..utils.weakref import WeakMethodSet
 from ..logging import get_logger
 from .messages import (
     COMM_ADD_CLIENT_MSG,
@@ -33,7 +33,7 @@ __all__ = [
     "create_message",
 ]
 
-logger = get_logger(__loader__.name)
+logger = get_logger(f"{__name__}")
 
 
 class SendKwds(TypedDict, total=False):

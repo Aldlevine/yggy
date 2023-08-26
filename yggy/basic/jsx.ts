@@ -2,7 +2,7 @@
 
 import type { JSXInternal } from "@preact/src/jsx.js";
 import { Model, Observable, ObservableNetwork, get, watch } from "../__init__.js";
-import { __uuid4 } from "../utils.js";
+import { uuid } from "../utils/__init__.js";
 
 export type PropertiesOf<T> = {
     [P in keyof Omit<T, keyof Model | keyof Observable<any>>]:
@@ -28,6 +28,19 @@ export class Binding {
     }
 }
 
+
+type __JSXElement<T> = T | Binding | Observable<T>
+
+declare global {
+    namespace JSX {
+        type IntrinsicElements = {
+            [K in keyof JSXInternal.IntrinsicElements as K extends string ? K | `svg-${K}` : K]: {
+                [K2 in keyof JSXInternal.IntrinsicElements[K]]: __JSXElement<JSXInternal.IntrinsicElements[K][K2]>
+            }
+        }
+    }
+}
+
 export function bind<T>(obs: Observable<T> | T, ...events: string[]): Binding | T {
     if (obs instanceof Observable) {
         return new Binding(obs, ...events);
@@ -35,7 +48,7 @@ export function bind<T>(obs: Observable<T> | T, ...events: string[]): Binding | 
     return obs;
 }
 
-export function b(strings: TemplateStringsArray, ...args: any[]): Observable<string> {
+export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<string> {
     let network!: ObservableNetwork;
     function render_str(): string {
         const result: string[] = [];
@@ -53,7 +66,7 @@ export function b(strings: TemplateStringsArray, ...args: any[]): Observable<str
         return result.join("");
     }
 
-    const obs = new Observable(__uuid4(), render_str(), { local: true });
+    const obs = new Observable(uuid.uuid4(), render_str(), { local: true });
     if (network) {
         network.register(obs);
     }
@@ -69,24 +82,10 @@ export function b(strings: TemplateStringsArray, ...args: any[]): Observable<str
     return obs;
 }
 
-type __JSXElement<T> = T | Binding | Observable<T>
-
-declare global {
-    namespace JSX {
-        type IntrinsicElements = {
-            [K in keyof JSXInternal.IntrinsicElements as K extends string ? K | `svg-${K}` : K]: {
-                [K2 in keyof JSXInternal.IntrinsicElements[K]]: __JSXElement<JSXInternal.IntrinsicElements[K][K2]>
-            }
-        }
-    }
-}
-
 type __NodeTree = Node | __NodeTree[];
 
 function __make_node(content: any): __NodeTree {
     if (content instanceof Node) {
-        // TODO: do we want to clone or handle node-reuse in h()?
-        // return content.cloneNode(true);
         return content;
     }
     else if (Array.isArray(content)) {

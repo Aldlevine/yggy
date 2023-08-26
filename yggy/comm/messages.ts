@@ -1,4 +1,4 @@
-import { __uuid4 } from "../utils.js";
+import { uuid4 } from "../utils/uuid.js";
 
 export type Message = {
     message_id: string;
@@ -9,6 +9,6 @@ export function create_message<T extends Message>(
 ): T {
     return <T>{
         ...kwds,
-        message_id: __uuid4(),
+        message_id: uuid4(),
     };
 }

@@ -1,5 +1,5 @@
 import { ReceiverFn_t, create_message } from "../comm/__init__.js";
-import { IterableWeakMap } from "../utils.js";
+import { weakref } from "../utils/__init__.js";
 import { ChangeMessage, OBSERVABLE_CHANGE_MSG } from "./messages.js";
 import { ObservableNetwork } from "./observable_network.js";
 import { ObservableSchema } from "./schema.js";
@@ -19,13 +19,13 @@ export class Observable<T> {
     #network?: ObservableNetwork;
     #id: string;
     #value: T;
-    #receivers: IterableWeakMap<ReceiverFn_t, ReceiverFn_t>;
+    #receivers: weakref.IterableWeakMap<ReceiverFn_t, ReceiverFn_t>;
     #local: boolean;
 
     constructor(__id: string, __value: T, __kwds: ObservableKwds = {}) {
         this.#id = __id;
         this.#value = __value;
-        this.#receivers = new IterableWeakMap();
+        this.#receivers = new weakref.IterableWeakMap();
         this.#local = __kwds.local ?? false;
     }
 
