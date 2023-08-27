@@ -4,10 +4,10 @@ from . import yg
 
 
 class SliderModel(yg.Model):
-    min = yg.obs(0.0)
-    max = yg.obs(100.0)
-    step = yg.obs(1.0)
-    value = yg.obs(50.0)
+    min: yg.Observable[float] = yg.obs(0.0)
+    max: yg.Observable[float] = yg.obs(100.0)
+    step: yg.Observable[float] = yg.obs(1.0)
+    value: yg.Observable[float] = yg.obs(50.0)
 
     @yg.coerce(min)
     def _(self, __min: Any) -> float:

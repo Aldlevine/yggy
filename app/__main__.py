@@ -25,14 +25,16 @@ if __name__ == "__main__":
     global_model = GlobalModel()
     yg.manager.network.register(global_model.observables)
 
-    if os.path.isfile("./global_model.json"):
-        with open("./global_model.json", "r") as f:
+    os.makedirs("./secret", exist_ok=True)
+
+    if os.path.isfile("./secret/global_model.json"):
+        with open("./secret/global_model.json", "r") as f:
             schema = json.load(f)
             global_model.load_schema(schema)
 
     def on_term(*args: Any) -> None:
         logger.info("received SIGTERM - saving globals")
-        with open("./global_model.json", "w") as f:
+        with open("./secret/global_model.json", "w") as f:
             json.dump(global_model.__json__(), f, indent="    ")
         exit()
 

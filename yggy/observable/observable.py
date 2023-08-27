@@ -1,6 +1,6 @@
 import abc
 import uuid
-from typing import TYPE_CHECKING, Any, Callable, cast
+from typing import TYPE_CHECKING, Any, Callable
 from weakref import WeakKeyDictionary
 
 from ..comm import ReceiverFn_t, create_message
@@ -20,15 +20,16 @@ __all__ = [
 
 logger = get_logger(f"{__name__}")
 
-type Primitive[T: (bool, int, float, str)] = T
+type Primitive = None | bool | int | float | str
 
-def get[T](obs: "Observable[T] | T") -> T:
+
+def get[T: Primitive](obs: "Observable[T] | T") -> T:
     if isinstance(obs, Observable):
-        return cast(Observable[T], obs).get()
+        return obs.get()
     return obs
-    
 
-class Observable[T: Primitive[Any]](abc.ABC):
+
+class Observable[T: Primitive](abc.ABC):
     __network: "ObservableNetwork | None"
     __id: str
     __value: T
@@ -49,7 +50,7 @@ class Observable[T: Primitive[Any]](abc.ABC):
         self.__network = None
         self.__id = uuid.uuid4().hex
         self.__value = __value
-        self.__coerce = coerce or type(__value)
+        self.__coerce = coerce or type(__value) if __value is not None else noop
         self.__validate = validate or noop
         self.__receivers = WeakKeyDictionary()
         self.__last_change = None

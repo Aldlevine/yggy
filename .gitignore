@@ -297,3 +297,4 @@ dist
 # yggy.gitignore
 
 /web
+/secret

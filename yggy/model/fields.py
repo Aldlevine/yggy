@@ -2,7 +2,7 @@ import abc
 from typing import TYPE_CHECKING, Any, Callable
 
 from ..observable import Observable
-from ..observable.observable import Observable
+from ..observable.observable import Observable, Primitive
 from ..utils.functools import bind_fn, noop
 
 if TYPE_CHECKING:
@@ -15,11 +15,11 @@ class Field[T](abc.ABC):
     Watchers, and SubModels at initialization.
 
     Treat these as `dataclasses.Field` and treat Model as
-    an implicit `@dataclass`. They are not meant to be
+    an implicit `dataclass`. They are not meant to be
     initialized directly. Users should typically use the
     respective exported functions: `watch` and `obs`.
 
-    Upon Model initialization, Fields and references to them
+    Upon Model initialization, `Field`s and references to them
     will be realized.
     """
 
@@ -28,15 +28,15 @@ class Field[T](abc.ABC):
         ...
 
 
-class ObservableField[T](Field[Observable[T]]):
-    """A common base class for all ObservableFields.
+class ObservableField[T: Primitive](Field[Observable[T]]):
+    """A common base class for all `ObservableField`s.
 
-    These are the fields that will end up in a Model's
-    __observables dictionary.
+    These are the fields that will end up in a `Model`'s
+    `__observables` dictionary.
     """
 
 
-class ObservableValueField[T](ObservableField[T]):
+class ObservableValueField[T: Primitive](ObservableField[T]):
     """Defines a simple `Observable[T]` field.
 
     When realized, it creates an `Observable` with the value
@@ -53,7 +53,7 @@ class ObservableValueField[T](ObservableField[T]):
     def __init__(self, default: T) -> None:
         super().__init__()
         self.default = default
-        self.coerce_fn = type(default)
+        self.coerce_fn = type(default) if default is not None else noop
         self.validate_fn = noop
 
     def realize(self, model: "Model", key: str, **__kwargs: Any) -> Observable[T]:
@@ -68,7 +68,7 @@ class SubmodelProperty[T]:
     """Defines a reference chain from a `SubmodelField` to an observable `Field`.
 
     Because we are following dataclass semantics, the class constructor is dealing
-    in Fields, while the types are described as the instance members
+    in `Field`s, while the types are described as the instance members
     (i.e. we're lying about what the types are).
 
     Because `SubmodelField`s will show up as `Model` instances,
@@ -91,13 +91,13 @@ class SubmodelProperty[T]:
         return SubmodelProperty(self, __name)
 
 
-class ObservableWatchField[T](ObservableField[T]):
+class ObservableWatchField[T: Primitive](ObservableField[T]):
     """Defines an `Observable[T]` which evaluates a callback
     in response to any changes to the provided observables.
 
     You can pass either Observables or observable Fields
     into the `observables` list. These will be realized when
-    the Model is initialized.
+    the `Model` is initialized.
     """
 
     fn: Callable[..., T]
@@ -128,22 +128,22 @@ class ObservableWatchField[T](ObservableField[T]):
 class SubmodelField[T: "Model"](Field[T]):
     """Defines a submodel.
 
-    Upon Model initialization, `factory` will be called with `kwds`
-    in order to construct a new child Model.
+    Upon Model initialization, `factory` will be called with `kwargs`
+    in order to construct a new child `Model`.
 
     Use `obs(__factory: Model, **kwargs)`
     """
 
     factory: type[T]
-    kwds: dict[str, Any]
+    kwargs: dict[str, Any]
 
-    def __init__(self, factory: type[T], **kwds: Any) -> None:
+    def __init__(self, factory: type[T], **kwargs: Any) -> None:
         super().__init__()
         self.factory = factory
-        self.kwds = kwds
+        self.kwargs = kwargs
 
     def __getattr__(self, __name: str) -> Any:
         return SubmodelProperty(self, __name)
 
     def realize(self, __model: "Model", __key: str, **__kwargs: Any) -> T:
-        return self.factory(**self.kwds, **__kwargs.get(__key, {}))
+        return self.factory(**self.kwargs, **__kwargs.get(__key, {}))

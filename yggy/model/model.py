@@ -1,9 +1,10 @@
 import uuid
 from textwrap import indent
-from typing import Any, ClassVar, Iterator, cast, dataclass_transform
+from typing import Any, ClassVar, Iterator, cast
 
 from ..logging import get_logger
 from ..observable import Observable, ObservableSchema, get
+from ..observable.observable import Primitive
 from .fields import (
     Field,
     ObservableField,
@@ -18,15 +19,13 @@ __all__ = ["Model"]
 logger = get_logger(f"{__name__}")
 
 
-@dataclass_transform(eq_default=False, kw_only_default=True)
 class Model:
     """A base class for managing an observable data model.
 
-    This class is decorated with @dataclass_transform, and should
-    primarily be constructed with `.field.Field` attributes. Similar
-    to a standard dataclass, these will exist as field definition types
-    at class construction time, but at instance initialization, these
-    fields are realized into the observable defined by the field.
+    This class is should primarily be constructed with `.field.Field` attributes.
+    Similar to a dataclass, these will exist as field definition types at class
+    construction time, but at instance initialization, these fields are realized
+    into the observable defined by the field.
 
     There are also a number of decorators that can modify the behavior
     of fields, such as `yg.coerce` and `yg.validate`.
@@ -41,7 +40,7 @@ class Model:
     updating their dependencies.
 
     Example:
-    ```
+    ```python
     import yggy as yg;
 
     class PersonModel(Model):
@@ -56,7 +55,7 @@ class Model:
         @yg.validate(age)
         def _(self, __age: int) -> int:
             return min(max(__age, 0), 150)
-            
+
     comm = yg.Comm()
     network = yg.ObservableNetwork(comm)
 
@@ -65,14 +64,14 @@ class Model:
     network.register(person.observables)
 
     comm.start()
-    
-    person.fname.set("Caspar")
-    person.lname.set("Babypants")
+
+    person.fname.set("Chris")
+    person.lname.set("Ballew")
     person.full_name.get() # >> "Raffi Cavoukian"
 
     ##### Some time later #####
 
-    person.full_name.get() # >> "Caspar Babypants"
+    person.full_name.get() # >> "Chris Ballew"
     ```
     """
 
@@ -168,7 +167,8 @@ class Model:
                         key=key, typ=type(value).__name__, value=value
                     )
                 )
-        return f"{self.__class__.__name__} {{\n{indent("\n".join(out), " " * 2)}\n}}"
+        return f"{self.__class__.__name__} {{\n{indent('\n'.join(out), ' ' * 2)}\n}}"
+
     __str__.__doc__ = object.__str__.__doc__
 
     def __json__(self) -> ModelSchema:
@@ -210,7 +210,7 @@ class Model:
         """An iterator for all `Observable`s in the Model's hierarchy.
         This includes both direct and indirect descendants.
 
-        ```
+        ```python
         import yggy as yg
 
         comm = yg.Comm()
@@ -247,7 +247,9 @@ class Model:
             if k in self.__submodels:
                 self.__submodels[k].load_schema(cast(ModelSchema, v))
 
-    def find_observable[T](
+    def find_observable[
+        T: Primitive
+    ](
         self, field: Observable[T] | ObservableField[T] | SubmodelProperty[T]
     ) -> Observable[T]:
         """Finds an `Observable` based on a provided field.
@@ -273,19 +275,17 @@ class Model:
         assert isinstance(field, Observable)
         return field
 
-    def __find_observable_field[T](
-        self,
-        __field: ObservableField[T],
-    ) -> Observable[T]:
+    def __find_observable_field[
+        T: Primitive
+    ](self, __field: ObservableField[T],) -> Observable[T]:
         root_key = list(self.__model_fields__.keys())[
             list(self.__model_fields__.values()).index(__field)
         ]
         return self.__observables[root_key]
 
-    def __find_submodel_property[T](
-        self,
-        __field: SubmodelProperty[T],
-    ) -> Observable[T]:
+    def __find_submodel_property[
+        T: Primitive
+    ](self, __field: SubmodelProperty[T],) -> Observable[T]:
         root = __field
         keys: list[str] = []
         while not isinstance(root, SubmodelField):

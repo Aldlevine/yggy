@@ -1,0 +1,13 @@
+loaders:
+- type: python
+  search_path: [.]
+processors:
+- type: filter
+  skip_empty_modules: true
+  exclude_private: true
+- type: google
+renderer:
+  type: markdown
+  data_code_block: true
+  render_toc: true
+  render_typehint_in_data_header: true

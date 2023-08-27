@@ -15,8 +15,8 @@ from typing import (
     overload,
 )
 
-from ..utils.weakref import WeakMethodSet
 from ..logging import get_logger
+from ..utils.weakref import WeakMethodSet
 from .messages import (
     COMM_ADD_CLIENT_MSG,
     COMM_REMOVE_CLIENT_MSG,

@@ -3,8 +3,13 @@ from typing import Any, Callable, cast, overload
 
 from ..observable import Observable
 from ..observable.observable import Primitive
-from .fields import (ObservableField, ObservableValueField,
-                     ObservableWatchField, SubmodelField, SubmodelProperty)
+from .fields import (
+    ObservableField,
+    ObservableValueField,
+    ObservableWatchField,
+    SubmodelField,
+    SubmodelProperty,
+)
 from .model import Model
 
 __all__ = ["obs", "watch", "coerce", "validate"]
@@ -12,53 +17,55 @@ __all__ = ["obs", "watch", "coerce", "validate"]
 
 @overload
 def obs[T: "Model"](__factory: type[T], **__kwds: Any) -> T:
-    """Creates a `SubmodelField[T]` which describes how to
-    initialize a sub-`Model` at `Model` initialization.
+    """Creates a ``SubmodelField[T]`` which describes how to
+    initialize a sub-``Model`` at ``Model`` initialization.
 
-    Any argument assignable to the `Model` constructor can be
+    Any argument assignable to the ``Model`` constructor can be
     passed in as additional arguments to this function.
 
-    This actually returns a `.fields.SubmodelField[T]` rather than
+    This actually returns a ``.fields.SubmodelField[T]`` rather than
     the indicated type. However, this field will be realized into
-    the indicated type at `Model` initialization. 
+    the indicated type at `Model` initialization.
 
     Arguments:
-        __factory: A subclass of `Model`
-        **__kwds: Arguments used to initialize `Model`
+        __factory: A subclass of ``Model``
+        **__kwds: Arguments used to initialize ``Model``
 
     Returns:
-        We pretend it returns `T`
-        but it really returns `SubmodelField[T]`
+        We pretend it returns ``T``
+        but it really returns ``SubmodelField[T]``
     """
     ...
 
 
 @overload
-def obs[T: Primitive[Any]](__value: T) -> Observable[T]:
-    """Creates an `ObservableField[T]` which describes how to
-    initialize an `Observable[T]` at `Model` initialization.
+def obs[T: Primitive](__value: T) -> Observable[T]:
+    """Creates an ``ObservableField[T]`` which describes how to
+    initialize an ``Observable[T]`` at ``Model`` initialization.
 
-    This actually returns a `.fields.ObservableValueField[T]` rather
+    This actually returns a ``.fields.ObservableValueField[T]`` rather
     than the indicated type. However, this field will be realized
-    into the indicated type at `Model` initialization. 
+    into the indicated type at ``Model`` initialization.
 
     Arguments:
-        __value: The initial value of the `Observable`
+        __value: The initial value of the ``Observable``
 
     Returns:
-        We pretend it returns `Observable[T]`
-        but it really returns `ObservableValueField[T]`
+        We pretend it returns ``Observable[T]``
+        but it really returns ``ObservableValueField[T]``
     """
     ...
 
 
-def obs(__arg0: Any | type, **__kwds: Any) -> Any:
+def obs(__arg0: Any | type, *__args: Any, **__kwds: Any) -> Any:
     if isclass(__arg0) and issubclass(__arg0, Model):
-        return SubmodelField[Any](__arg0, **__kwds)
+        return SubmodelField[Any](__arg0, *__args, **__kwds)
     return ObservableValueField(__arg0)
 
 
-def watch[T: Primitive[Any]](
+def watch[
+    T: Primitive
+](
     *__observables: Observable[Any] | ObservableField[Any] | SubmodelProperty[Any],
 ) -> Callable[[Callable[..., T]], Observable[T]]:
     def __inner_fn(fn: Callable[..., T]) -> Observable[T]:
@@ -80,9 +87,13 @@ def watch[T: Primitive[Any]](
     return __inner_fn
 
 
-def coerce[T: Primitive[Any]](
+def coerce[
+    T: Primitive
+](
     __obs: Observable[T] | ObservableValueField[T],
-) -> Callable[[Callable[[Any, Any], T]], None]:
+) -> Callable[
+    [Callable[[Any, Any], T]], None
+]:
     assert isinstance(__obs, ObservableValueField)
 
     def __inner_fn(__fn: Callable[["Model", Any], T]) -> None:
@@ -91,9 +102,13 @@ def coerce[T: Primitive[Any]](
     return __inner_fn
 
 
-def validate[T: Primitive[Any]](
+def validate[
+    T: Primitive
+](
     __obs: Observable[T] | ObservableValueField[T],
-) -> Callable[[Callable[[Any, T], T]], None]:
+) -> Callable[
+    [Callable[[Any, T], T]], None
+]:
     assert isinstance(__obs, ObservableValueField)
 
     def __inner_fn(__fn: Callable[["Model", T], T]) -> None:

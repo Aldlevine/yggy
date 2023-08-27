@@ -1,6 +1,7 @@
 # pyright: reportUnknownMemberType=false
 
 import subprocess
+
 from watchdog.events import FileModifiedEvent, PatternMatchingEventHandler
 from watchdog.observers import Observer
 from watchdog.utils.event_debouncer import EventDebouncer

@@ -1,4 +1,4 @@
 [tool.black]
-target-version=['py311']
-safe=true
-verbose=true
+target-version = ['py311']
+safe = true
+verbose = true
