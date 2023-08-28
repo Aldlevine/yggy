@@ -5,17 +5,21 @@ from typing import Any, Callable
 __all__ = ["fn_type", "bind_fn"]
 
 
-class _FnType(Enum):
-    FREE = 1
-    METHOD = 2
+class FnType(Enum):
+    FREE_FUNCTION = 1
+    """The function has no member argument"""
+    INSTANCE_METHOD = 2
+    """The function has a `self` member argument"""
     CLASS_METHOD = 3
+    """The function has a `cls` member argument"""
 
 
-def fn_type(fn: Callable[..., Any]) -> _FnType:
+def fn_type(fn: Callable[..., Any]) -> FnType:
     """Determines if a function should be treated as:
     - a free function (1st parameter neither `self` or `cls`)
     - a method (p1 `self`)
     - a class method (p1 `cls`)
+
     It's a highly opinionated function that makes many assumptions
 
     Args:
@@ -29,23 +33,23 @@ def fn_type(fn: Callable[..., Any]) -> _FnType:
         sig = signature(fn)
     except ValueError:
         # assume if not a proper fn, must be free
-        return _FnType.FREE
+        return FnType.FREE_FUNCTION
 
     try:
         p1 = list(sig.parameters.values()).pop(0)
     except:
         # assume no params, must be free
-        return _FnType.FREE
+        return FnType.FREE_FUNCTION
 
     if p1.name == "self":
         # assume if p1 is named "self" this is instance method
-        return _FnType.METHOD
+        return FnType.INSTANCE_METHOD
     if p1.name == "cls":
         # assume if p1 is named "cls" this is class method
-        return _FnType.CLASS_METHOD
+        return FnType.CLASS_METHOD
 
     # assume otherwise free
-    return _FnType.FREE
+    return FnType.FREE_FUNCTION
 
 
 def bind_fn(fn: Callable[..., Any], self: object) -> Callable[..., Any]:
@@ -61,17 +65,17 @@ def bind_fn(fn: Callable[..., Any], self: object) -> Callable[..., Any]:
     """
 
     match fn_type(fn):
-        case _FnType.FREE:
+        case FnType.FREE_FUNCTION:
             return fn
 
-        case _FnType.METHOD:
+        case FnType.INSTANCE_METHOD:
 
             def __inner_fn(*args: Any, **kwargs: Any) -> Any:
                 return fn(self, *args, **kwargs)
 
             return __inner_fn
 
-        case _FnType.CLASS_METHOD:
+        case FnType.CLASS_METHOD:
 
             def __inner_fn(*args: Any, **kwargs: Any) -> Any:
                 return fn(type(self), *args, **kwargs)

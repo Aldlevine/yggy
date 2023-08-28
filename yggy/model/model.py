@@ -35,10 +35,6 @@ class Model:
     `Model.observables` to obtain an iterator of `Observable`s to pass to
     the `yg.ObservableNetwork`.
 
-    Note that messages are sent through the `Comm` asynchronously, via
-    a message queue. So observables are not updated immediately after
-    updating their dependencies.
-
     Example:
     ```python
     import yggy as yg;
@@ -67,10 +63,6 @@ class Model:
 
     person.fname.set("Chris")
     person.lname.set("Ballew")
-    person.full_name.get() # >> "Raffi Cavoukian"
-
-    ##### Some time later #####
-
     person.full_name.get() # >> "Chris Ballew"
     ```
     """
@@ -259,7 +251,7 @@ class Model:
         - A `SubmodelProperty` which resolves to a `SubmodelField` on `self`
         - An existing `Observable` (which will be returned unaltered)
 
-        Arguments:
+        Args:
             field: The field to lookup an `Observable` for
 
         Returns:

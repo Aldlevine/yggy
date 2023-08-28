@@ -35,7 +35,7 @@ class Observable[T: Primitive](abc.ABC):
     __value: T
     __coerce: Callable[[Any], T]
     __validate: Callable[[T], T]
-    __receivers: WeakKeyDictionary[ReceiverFn_t, ReceiverFn_t]
+    __receivers: WeakKeyDictionary[ReceiverFn_t[Any], ReceiverFn_t[Any]]
     __last_change: str | None
 
     def __init__(
@@ -62,11 +62,13 @@ class Observable[T: Primitive](abc.ABC):
     def id(self) -> str:
         return self.__id
 
-    def watch(self, __fn: ReceiverFn_t) -> ReceiverFn_t:
+    def watch(
+        self, __fn: ReceiverFn_t[ChangeMessage[T]]
+    ) -> ReceiverFn_t[ChangeMessage[T]]:
         if __fn in self.__receivers:
             return __fn
 
-        def __recv_watch(__change: ChangeMessage[Any]) -> None:
+        def __recv_watch(__change: ChangeMessage[T]) -> None:
             if __change["data_id"] != self.id:
                 return
             __fn(__change)
@@ -78,7 +80,9 @@ class Observable[T: Primitive](abc.ABC):
 
         return __fn
 
-    def unwatch(self, __fn: ReceiverFn_t) -> ReceiverFn_t:
+    def unwatch(
+        self, __fn: ReceiverFn_t[ChangeMessage[T]]
+    ) -> ReceiverFn_t[ChangeMessage[T]]:
         if __fn in self.__receivers:
             if self.__network is not None:
                 self.__network.comm.unrecv(

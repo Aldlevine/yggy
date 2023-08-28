@@ -40,9 +40,9 @@ class SendKwds(TypedDict, total=False):
     client_ids: Container[str] | Iterable[str]
 
 
-SenderFn_t = Callable[[str, Any, SendKwds], Coroutine[Any, Any, Any]]
-ReceiverFn_t = Callable[[Any], Any]
-GlobalReceiverFn_t = Callable[[str, Any], Any]
+type SenderFn_t[T] = Callable[[str, T, SendKwds], Coroutine[Any, Any, Any]]
+type ReceiverFn_t[T] = Callable[[T], Any]
+type GlobalReceiverFn_t[T] = Callable[[str, T], Any]
 
 
 def create_message[T: Message](message_type: type[T], kwds: T) -> T:
@@ -57,10 +57,40 @@ def create_message[T: Message](message_type: type[T], kwds: T) -> T:
 
 
 class Comm:
+    """`Comm` manages communication for all objects in yggy.
+
+    A `Comm` can send messages both locally, or locally+remote.
+
+    Messages are notified locally immediately and synchronously,
+    while messages are sent remote through an asynchronous
+    message queue.
+
+    Example:
+    ```python
+    import yggy as yg
+
+    comm = yg.Comm()
+
+    class MyMessage(yg.Message):
+        data: str
+
+    @comm.recv("my.message")
+    def my_message(data: MyMessage) -> None:
+        print("got data:", data["data"])
+
+    comm.start()
+
+    comm.send(
+        "my.message",
+        yg.create_message(MyMessage, {"data": "Hello, world."})
+    ) # >> got data: Hello, world.
+    ```
+    """
+
     __id: str
-    __senders: set[SenderFn_t]
-    __receivers: dict[str, WeakMethodSet[ReceiverFn_t]]
-    __global_receivers: WeakMethodSet[GlobalReceiverFn_t]
+    __senders: set[SenderFn_t[Any]]
+    __receivers: dict[str, WeakMethodSet[ReceiverFn_t[Any]]]
+    __global_receivers: WeakMethodSet[GlobalReceiverFn_t[Any]]
     __clients: set[str]
     __msg_queue: SimpleQueue[tuple[str, Message, SendKwds]]
     __revoked_msgs: set[str]
@@ -76,75 +106,141 @@ class Comm:
 
     @property
     def id(self) -> str:
+        """The unique id for this `Comm` instance"""
+
         return self.__id
 
     def run(self) -> None:
+        """Run the message queue loop"""
+
         self.__loop = asyncio.new_event_loop()
         self.__loop.run_until_complete(self.__serve())
 
     def start(self) -> None:
+        """Run the message queue loop on a separate thread"""
         self.__thread = Thread(target=self.run, daemon=True)
         self.__thread.start()
 
     def stop(self) -> None:
+        """Stop the message queue loop"""
         self.__loop.stop()
 
-    def add_sender(self, __sender: SenderFn_t) -> None:
+    def add_sender(self, __sender: SenderFn_t[Message]) -> None:
+        """Add a sender callback to the senders list
+
+        Args:
+            __sender: The sender callback to add
+        """
         if __sender not in self.__senders:
             self.__senders.add(__sender)
 
     def new_client_id(self) -> str:
+        """Retrieve a new client id
+
+        Returns:
+            A new client id
+        """
         client_id = uuid.uuid4().hex
         return client_id
 
     def add_client(self, __client_id: str) -> None:
+        """Add a new client to the clients list and notify
+
+        Args:
+            __client_id: The client id to add
+        """
         self.__clients.add(__client_id)
         self.notify(COMM_ADD_CLIENT_MSG, ModifyClientMessage(client_id=__client_id))
 
     def remove_client(self, __client_id: str) -> None:
+        """Remove a client from the clients list and notify
+
+        Args:
+            __client_id: The client id to remove
+        """
         self.notify(COMM_REMOVE_CLIENT_MSG, ModifyClientMessage(client_id=__client_id))
         self.__clients.discard(__client_id)
 
-    def send(self, msg: str, data: Message, **kwds: Unpack[SendKwds]) -> None:
-        self.notify(msg, data)
-        self.__msg_queue.put((msg, data, kwds))
+    def send(self, __msg: str, __data: Message, **__kwargs: Unpack[SendKwds]) -> None:
+        """Notify and place message on message queue
 
-    def revoke(self, id: str) -> None:
-        self.__revoked_msgs.add(id)
+        Args:
+            __msg: The message to send
+            __data: The message data to send
+            **__kwargs: SendKwds
+                client_ids: The client ids to send to (all if blank)
+        """
+        self.notify(__msg, __data)
+        self.__msg_queue.put((__msg, __data, __kwargs))
 
-    def notify(self, msg: str, data: Message) -> None:
+    def revoke(self, __id: str) -> None:
+        """Mark a message as revoked. A revoked message
+        will be skipped when dequeued.
+
+        Args:
+            __id: The message id to revoke
+        """
+        self.__revoked_msgs.add(__id)
+
+    def notify(self, __msg: str, __data: Message) -> None:
+        """Notify local recievers with message
+
+        Args:
+            __msg: The message to notify
+            __data: The message data to notify
+        """
         for receiver in self.__global_receivers:
-            receiver(msg, data)
+            receiver(__msg, __data)
 
-        receivers = self.__receivers.get(msg, WeakMethodSet())
+        receivers = self.__receivers.get(__msg, WeakMethodSet())
         for receiver in receivers:
-            receiver(data)
+            receiver(__data)
 
     @overload
-    def recv(self, __fn: GlobalReceiverFn_t, /) -> None:
+    def recv[T: Message](self, __fn: GlobalReceiverFn_t[T], /) -> None:
+        """Add a global receiver.
+
+        Global receivers are called for all messages.
+
+        Args:
+            __fn: The global receiver to add
+        """
         ...
 
     @overload
-    def recv(self, __msg: str, __fn: ReceiverFn_t, /) -> None:
+    def recv[T: Message](self, __msg: str, __fn: ReceiverFn_t[T], /) -> None:
+        """Add a named receiver.
+
+        Named receivers are called for all messages
+        sent to the given message name.
+
+        Args:
+            __msg: The message name
+            __fn: The receiver to add
+        """
         ...
 
     @overload
-    def recv(self, /) -> Callable[[GlobalReceiverFn_t], GlobalReceiverFn_t]:
+    def recv[
+        T: Message
+    ](self, /) -> Callable[[GlobalReceiverFn_t[T]], GlobalReceiverFn_t[T]]:
         ...
 
     @overload
-    def recv(self, __msg: str, /) -> Callable[[ReceiverFn_t], ReceiverFn_t]:
+    def recv[
+        T: Message
+    ](self, __msg: str, /) -> Callable[[ReceiverFn_t[T]], ReceiverFn_t[T]]:
         ...
 
     def recv(
         self,
-        __arg0: str | GlobalReceiverFn_t | None = None,
-        __arg1: ReceiverFn_t | None = None,
+        __arg0: str | GlobalReceiverFn_t[Message] | None = None,
+        __arg1: ReceiverFn_t[Message] | None = None,
         /,
     ) -> (
         None
-        | Callable[[ReceiverFn_t], ReceiverFn_t]
-        | Callable[[GlobalReceiverFn_t], GlobalReceiverFn_t]
+        | Callable[[ReceiverFn_t[Message]], ReceiverFn_t[Message]]
+        | Callable[[GlobalReceiverFn_t[Message]], GlobalReceiverFn_t[Message]]
     ):
         # overload 1
         if isinstance(__arg0, Callable) and __arg1 is None:
@@ -155,7 +251,7 @@ class Comm:
         # overload 2
         if isinstance(__arg0, str) and isinstance(__arg1, Callable):
             receivers = self.__receivers.setdefault(__arg0, WeakMethodSet())
-            fn: ReceiverFn_t = __arg1
+            fn: ReceiverFn_t[Any] = __arg1
             if fn not in receivers:
                 receivers.add(fn)
             return
@@ -163,7 +259,9 @@ class Comm:
         # overload 3
         if __arg0 is None and __arg1 is None:
 
-            def __inner_fn_3(fn: GlobalReceiverFn_t) -> GlobalReceiverFn_t:
+            def __inner_fn_3(
+                fn: GlobalReceiverFn_t[Message],
+            ) -> GlobalReceiverFn_t[Message]:
                 if fn not in self.__global_receivers:
                     self.__global_receivers.add(fn)
                 return fn
@@ -173,7 +271,7 @@ class Comm:
         # overload 4
         if isinstance(__arg0, str) and __arg1 is None:
 
-            def __inner_fn_4(fn: ReceiverFn_t) -> ReceiverFn_t:
+            def __inner_fn_4(fn: ReceiverFn_t[Message]) -> ReceiverFn_t[Message]:
                 receivers = self.__receivers.setdefault(__arg0, WeakMethodSet())
                 if fn not in receivers:
                     receivers.add(fn)
@@ -182,7 +280,7 @@ class Comm:
             return __inner_fn_4
 
     # TODO: add unrecv overloads for corresponding recv overloads
-    def unrecv(self, msg: str, fn: ReceiverFn_t) -> None:
+    def unrecv(self, msg: str, fn: ReceiverFn_t[Message]) -> None:
         receivers = self.__receivers.get(msg, None)
         if receivers is not None:
             receivers.remove(fn)
