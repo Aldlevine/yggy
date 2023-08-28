@@ -44,33 +44,34 @@ class Resolver(MarkdownReferenceResolver):
                 return super().resolve_ref(scope, ref)
 
 
-context = Context("yggy")
-loader = PythonLoader(search_path=["."])
+def generate_docs() -> None:
+    context = Context("yggy")
+    loader = PythonLoader(search_path=["."])
 
-resolver = Resolver()
-processors = [
-    FilterProcessor(skip_empty_modules=True, documented_only=True),
-    GoogleProcessor(),
-    CrossrefProcessor(),
-]
+    resolver = Resolver()
+    processors = [
+        FilterProcessor(skip_empty_modules=True, documented_only=True),
+        GoogleProcessor(),
+        CrossrefProcessor(),
+    ]
 
-renderer = MarkdownRenderer(
-    filename="docs/api.md",
-    descriptive_class_title=False,
-    render_toc=True,
-    toc_maxdepth=1,
-)
+    renderer = MarkdownRenderer(
+        filename="docs/py/README.md",
+        descriptive_class_title=False,
+        render_toc=True,
+        toc_maxdepth=1,
+    )
 
-loader.init(context)
-for processor in processors:
-    processor.init(context)
-renderer.init(context)
+    loader.init(context)
+    for processor in processors:
+        processor.init(context)
+    renderer.init(context)
 
 
-modules = list(loader.load())
+    modules = list(loader.load())
 
-for processor in processors:
-    processor.process(modules, resolver)
+    for processor in processors:
+        processor.process(modules, resolver)
 
-renderer.process(modules, resolver)
-renderer.render(modules)
+    renderer.process(modules, resolver)
+    renderer.render(modules)

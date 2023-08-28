@@ -1,0 +1,14 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "./yggy/basic/*",
+        "yggy/comm/__init__.ts",
+        "yggy/model/__init__.ts",
+        "yggy/observable/__init__.ts",
+        "yggy/utils/__init__.ts"
+    ],
+    "plugin": [
+        "typedoc-plugin-markdown"
+    ],
+    "out": "./docs/ts"
+}

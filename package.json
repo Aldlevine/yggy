@@ -16,6 +16,8 @@
     "node": ">=14.17"
   },
   "devDependencies": {
-    "preact": "^10.17.0"
+    "preact": "^10.17.0",
+    "typedoc": "^0.25.0",
+    "typedoc-plugin-markdown": "^3.16.0"
   }
 }
