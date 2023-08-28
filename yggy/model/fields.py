@@ -10,16 +10,16 @@ if TYPE_CHECKING:
 
 
 class Field[T](abc.ABC):
-    """The base class for all Model fields.
-    These tell the Model how to construct Observables,
+    """The base class for all #Model fields.
+    These tell the #Model how to construct #Observable#s,
     Watchers, and SubModels at initialization.
 
-    Treat these as `dataclasses.Field` and treat Model as
+    Treat these as `dataclasses.Field` and treat #Model as
     an implicit `dataclass`. They are not meant to be
     initialized directly. Users should typically use the
-    respective exported functions: `watch` and `obs`.
+    respective exported functions: #watch and #obs.
 
-    Upon Model initialization, `Field`s and references to them
+    Upon #Model initialization, #Field#s and references to them
     will be realized.
     """
 
@@ -29,21 +29,21 @@ class Field[T](abc.ABC):
 
 
 class ObservableField[T: Primitive](Field[Observable[T]]):
-    """A common base class for all `ObservableField`s.
+    """A common base class for all #ObservableField#s.
 
-    These are the fields that will end up in a `Model`'s
+    These are the fields that will end up in a #Model#s
     `__observables` dictionary.
     """
 
 
 class ObservableValueField[T: Primitive](ObservableField[T]):
-    """Defines a simple `Observable[T]` field.
+    """Defines a simple #Observable[T] field.
 
-    When realized, it creates an `Observable` with the value
+    When realized, it creates an #Observable with the value
     set to `default`, and `coerce` / `validate` set to
     `coerce_fn` / `validate_fn` respectively.
 
-    Use `obs`, `coerce`, and `validate` to configure.
+    Use #obs, #coerce, and #validate to configure.
     """
 
     default: T
@@ -65,17 +65,17 @@ class ObservableValueField[T: Primitive](ObservableField[T]):
 
 
 class SubmodelProperty[T]:
-    """Defines a reference chain from a `SubmodelField` to an observable `Field`.
+    """Defines a reference chain from a #SubmodelField to an observable #Field.
 
     Because we are following dataclass semantics, the class constructor is dealing
-    in `Field`s, while the types are described as the instance members
+    in #Field#s, while the types are described as the instance members
     (i.e. we're lying about what the types are).
 
-    Because `SubmodelField`s will show up as `Model` instances,
-    the `Model` members are known to type checkers.`SubmodelField` and
-    `SubmodelProperty` will recursively emit `SubmodelProperty` for
+    Because #SubmodelField#s will show up as #Model instances,
+    the #Model members are known to type checkers. #SubmodelField and
+    #SubmodelProperty will recursively emit #SubmodelProperty for
     arbitrary attribute accesses. These property chains are walked at
-    Model initialization to realize the correct Observable.
+    #Model initialization to realize the correct #Observable.
     """
 
     root: "SubmodelField[Any] | SubmodelProperty[Any]"
@@ -92,12 +92,12 @@ class SubmodelProperty[T]:
 
 
 class ObservableWatchField[T: Primitive](ObservableField[T]):
-    """Defines an `Observable[T]` which evaluates a callback
+    """Defines an #Observable[T] which evaluates a callback
     in response to any changes to the provided observables.
 
-    You can pass either Observables or observable Fields
+    You can pass either #Observable#s or #ObservableField#s
     into the `observables` list. These will be realized when
-    the `Model` is initialized.
+    the #Model is initialized.
     """
 
     fn: Callable[..., T]
@@ -128,8 +128,8 @@ class ObservableWatchField[T: Primitive](ObservableField[T]):
 class SubmodelField[T: "Model"](Field[T]):
     """Defines a submodel.
 
-    Upon Model initialization, `factory` will be called with `kwargs`
-    in order to construct a new child `Model`.
+    Upon #Model initialization, `factory` will be called with `kwargs`
+    in order to construct a new child #Model.
 
     Use `obs(__factory: Model, **kwargs)`
     """

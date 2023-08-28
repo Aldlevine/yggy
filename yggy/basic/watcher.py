@@ -44,13 +44,13 @@ class EventHandler(PatternMatchingEventHandler):
         self.__updating = True
         logger.info("build ts")
         subprocess.run("npx tsc".split(" "))
-        self.__app.comm.send("hot_reload", create_message(Message, {}))
+        self.__app.comm.emit("hot_reload", create_message(Message, {}))
         self.__updating = False
 
     def copy_file(self, path: str) -> None:
         logger.info(f"copy {path}")
         self.__app.copy_static_files(path)
-        self.__app.comm.send("hot_reload", create_message(Message, {}))
+        self.__app.comm.emit("hot_reload", create_message(Message, {}))
 
     def on_modified(self, event: FileModifiedEvent):
         self.__debouncer.handle_event(event)

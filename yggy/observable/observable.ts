@@ -53,10 +53,9 @@ export class Observable<T> {
     }
 
     set(__value: T): void {
-        const old_value = this.#value;
         this.#value = __value;
 
-        this.#notify_change(old_value, __value);
+        this.#notify_change();
     }
 
 
@@ -70,11 +69,10 @@ export class Observable<T> {
         this.#network?.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_change);
     }
 
-    #notify_change<T>(old_value: T, new_value: T): void {
+    #notify_change(): void {
         const change = create_message<ChangeMessage<T>>({
-            data_id: this.id,
-            new_value: new_value,
-            old_value: old_value,
+            data_id: this.#id,
+            new_value: this.#value,
         });
 
         if (this.#local) {

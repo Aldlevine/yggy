@@ -1,58 +1,36 @@
 # Table of Contents
 
-* [yggy.model.model](#yggy.model.model)
-  * [Model](#yggy.model.model.Model)
-    * [\_\_post\_init\_\_](#yggy.model.model.Model.__post_init__)
-    * [\_\_str\_\_](#yggy.model.model.Model.__str__)
-    * [\_\_json\_\_](#yggy.model.model.Model.__json__)
-    * [id](#yggy.model.model.Model.id)
-    * [field\_values](#yggy.model.model.Model.field_values)
-    * [observables](#yggy.model.model.Model.observables)
-    * [load\_schema](#yggy.model.model.Model.load_schema)
-    * [find\_observable](#yggy.model.model.Model.find_observable)
-* [yggy.model.fields](#yggy.model.fields)
-  * [Field](#yggy.model.fields.Field)
-  * [ObservableField](#yggy.model.fields.ObservableField)
-  * [ObservableValueField](#yggy.model.fields.ObservableValueField)
-  * [SubmodelProperty](#yggy.model.fields.SubmodelProperty)
-  * [ObservableWatchField](#yggy.model.fields.ObservableWatchField)
-  * [SubmodelField](#yggy.model.fields.SubmodelField)
-* [yggy.model.field\_funcs](#yggy.model.field_funcs)
-  * [obs](#yggy.model.field_funcs.obs)
-  * [obs](#yggy.model.field_funcs.obs)
-  * [watch](#yggy.model.field_funcs.watch)
-  * [coerce](#yggy.model.field_funcs.coerce)
-  * [validate](#yggy.model.field_funcs.validate)
-* [yggy.utils.functools](#yggy.utils.functools)
-  * [FnType](#yggy.utils.functools.FnType)
-    * [FREE\_FUNCTION](#yggy.utils.functools.FnType.FREE_FUNCTION)
-    * [INSTANCE\_METHOD](#yggy.utils.functools.FnType.INSTANCE_METHOD)
-    * [CLASS\_METHOD](#yggy.utils.functools.FnType.CLASS_METHOD)
-  * [fn\_type](#yggy.utils.functools.fn_type)
-  * [bind\_fn](#yggy.utils.functools.bind_fn)
-* [yggy.comm.comm](#yggy.comm.comm)
-  * [Comm](#yggy.comm.comm.Comm)
-    * [id](#yggy.comm.comm.Comm.id)
-    * [run](#yggy.comm.comm.Comm.run)
-    * [start](#yggy.comm.comm.Comm.start)
-    * [stop](#yggy.comm.comm.Comm.stop)
-    * [add\_sender](#yggy.comm.comm.Comm.add_sender)
-    * [new\_client\_id](#yggy.comm.comm.Comm.new_client_id)
-    * [add\_client](#yggy.comm.comm.Comm.add_client)
-    * [remove\_client](#yggy.comm.comm.Comm.remove_client)
-    * [send](#yggy.comm.comm.Comm.send)
-    * [revoke](#yggy.comm.comm.Comm.revoke)
-    * [notify](#yggy.comm.comm.Comm.notify)
-    * [recv](#yggy.comm.comm.Comm.recv)
-    * [recv](#yggy.comm.comm.Comm.recv)
+* [model.model](#model.model)
+  * [Model](#model.model.Model)
+* [model.fields](#model.fields)
+  * [Field](#model.fields.Field)
+  * [ObservableField](#model.fields.ObservableField)
+  * [ObservableValueField](#model.fields.ObservableValueField)
+  * [SubmodelProperty](#model.fields.SubmodelProperty)
+  * [ObservableWatchField](#model.fields.ObservableWatchField)
+  * [SubmodelField](#model.fields.SubmodelField)
+* [model.field\_funcs](#model.field_funcs)
+  * [obs](#model.field_funcs.obs)
+  * [obs](#model.field_funcs.obs)
+  * [watch](#model.field_funcs.watch)
+  * [coerce](#model.field_funcs.coerce)
+  * [validate](#model.field_funcs.validate)
+* [observable.observable](#observable.observable)
+  * [Observable](#observable.observable.Observable)
+* [utils.functools](#utils.functools)
+  * [FnType](#utils.functools.FnType)
+  * [fn\_type](#utils.functools.fn_type)
+  * [bind\_fn](#utils.functools.bind_fn)
+* [comm.comm](#comm.comm)
+  * [Comm](#comm.comm.Comm)
 
-<a id="yggy.model.model"></a>
+<a id="model.model"></a>
 
-# yggy.model.model
+# model.model
 
-<a id="yggy.model.model.Model"></a>
+<a id="model.model.Model"></a>
 
-## Model Objects
+## Model
 
 ```python
 class Model()
@@ -60,18 +38,17 @@ class Model()
 
 A base class for managing an observable data model.
 
-This class is should primarily be constructed with `.field.Field` attributes.
+This class is should primarily be constructed with [`Field`](#model.fields.Field) attributes.
 Similar to a dataclass, these will exist as field definition types at class
-construction time, but at instance initialization, these fields are realized
-into the observable defined by the field.
+construction time, but at instance initialization, these fields are
+realized into the observable defined by the field.
 
-There are also a number of decorators that can modify the behavior
-of fields, such as `yg.coerce` and `yg.validate`.
+There are also a number of decorators that can modify the behavior of
+fields, such as [`coerce`](#model.field_funcs.coerce) and [`validate`](#model.field_funcs.validate).
 
-In order for `Observables` to be reactive, they must first be registered
-with a `yg.ObservableNetwork` (itself with an active `yg.Comm`). Use
-`Model.observables` to obtain an iterator of `Observable`s to pass to
-the `yg.ObservableNetwork`.
+In order for [`Observable`](#observable.observable.Observable) to be reactive, they must first be registered with
+a [`ObservableNetwork`](#observable.observable_network.ObservableNetwork) (itself with an active [`Comm`](#comm.comm.Comm)). Use [`Model.observables`](#model.model.Model.observables)
+to obtain an iterator of [`Observables`](#observable.observable.Observable) to pass to the [`ObservableNetwork`](#observable.observable_network.ObservableNetwork).
 
 **Example**:
 
@@ -105,7 +82,7 @@ person.lname.set("Ballew")
 person.full_name.get() # >> "Chris Ballew"
 ```
 
-<a id="yggy.model.model.Model.__post_init__"></a>
+<a id="model.model.Model.__post_init__"></a>
 
 #### \_\_post\_init\_\_
 
@@ -117,7 +94,7 @@ Like a standard `@dataclass`, override `__post_init__`
 to include custom initialization logic after the default
 intialization is complete.
 
-<a id="yggy.model.model.Model.__str__"></a>
+<a id="model.model.Model.__str__"></a>
 
 #### \_\_str\_\_
 
@@ -127,7 +104,7 @@ def __str__() -> str
 
 Returns a neatly nested hierarchy of fields
 
-<a id="yggy.model.model.Model.__json__"></a>
+<a id="model.model.Model.__json__"></a>
 
 #### \_\_json\_\_
 
@@ -135,9 +112,9 @@ Returns a neatly nested hierarchy of fields
 def __json__() -> ModelSchema
 ```
 
-Returns a json serializable `ModelSchema`
+Returns a json serializable [`ModelSchema`](#builtins.ModelSchema)
 
-<a id="yggy.model.model.Model.id"></a>
+<a id="model.model.Model.id"></a>
 
 #### id
 
@@ -146,9 +123,9 @@ Returns a json serializable `ModelSchema`
 def id() -> str
 ```
 
-The unique id for this `Model` instance
+The unique id for this [`Model`](#model.model.Model) instance
 
-<a id="yggy.model.model.Model.field_values"></a>
+<a id="model.model.Model.field_values"></a>
 
 #### field\_values
 
@@ -157,9 +134,9 @@ The unique id for this `Model` instance
 def field_values() -> dict[str, "Observable[Any] | Model"]
 ```
 
-A `dict` mapping field names to their respective `Observable` or `Model`
+A `dict` mapping field names to their respective [`Observable`](#observable.observable.Observable) or [`Model`](#model.model.Model)
 
-<a id="yggy.model.model.Model.observables"></a>
+<a id="model.model.Model.observables"></a>
 
 #### observables
 
@@ -168,8 +145,8 @@ A `dict` mapping field names to their respective `Observable` or `Model`
 def observables() -> Iterator[Observable[Any]]
 ```
 
-An iterator for all `Observable`s in the Model's hierarchy.
-This includes both direct and indirect descendants.
+An iterator for all [`Observables`](#observable.observable.Observable) in the [`Model`](#model.model.Model)'s hierarchy. This
+includes both direct and indirect descendants.
 
 ```python
 import yggy as yg
@@ -182,7 +159,7 @@ network.register(person.observables)
 comm.start()
 ```
 
-<a id="yggy.model.model.Model.load_schema"></a>
+<a id="model.model.Model.load_schema"></a>
 
 #### load\_schema
 
@@ -190,13 +167,12 @@ comm.start()
 def load_schema(__schema: ModelSchema) -> None
 ```
 
-Loads values for all descendant `Observable`s.
+Loads values for all descendant [`Observables`](#observable.observable.Observable).
 
-This exlcudes fields defined by `ObservableWatchField`
-as these will be recomputed anyway (and may have altered
-callbacks since their last run).
+This exlcudes fields defined by [`ObservableWatchField`](#model.fields.ObservableWatchField) as these will be
+recomputed anyway (and may have altered callbacks since their last run).
 
-<a id="yggy.model.model.Model.find_observable"></a>
+<a id="model.model.Model.find_observable"></a>
 
 #### find\_observable
 
@@ -206,113 +182,115 @@ def find_observable(
 ) -> Observable[T]
 ```
 
-Finds an `Observable` based on a provided field.
+Finds an [`Observable`](#observable.observable.Observable) based
+on a provided field.
 
 The field may be:
-- An `ObservableField` used to initialize an `Observable` on `self`
-- A `SubmodelProperty` which resolves to a `SubmodelField` on `self`
-- An existing `Observable` (which will be returned unaltered)
+- A [`ObservableField`](#model.fields.ObservableField) used to initialize an [`Observable`](#observable.observable.Observable) on `self`
+- A [`SubmodelProperty`](#model.fields.SubmodelProperty) which resolves to a [`SubmodelField`](#model.fields.SubmodelField) on
+`self`
+- An existing [`Observable`](#observable.observable.Observable) (which will be returned unaltered)
 
 **Arguments**:
 
-- `field` - The field to lookup an `Observable` for
+- `field` - The field to lookup an [`Observable`](#observable.observable.Observable) for
   
 
 **Returns**:
 
-  The matched `Observable`
+  The matched [`Observable`](#observable.observable.Observable)
 
-<a id="yggy.model.fields"></a>
+<a id="model.fields"></a>
 
-# yggy.model.fields
+# model.fields
 
-<a id="yggy.model.fields.Field"></a>
+<a id="model.fields.Field"></a>
 
-## Field Objects
+## Field
 
 ```python
 class Field()
 ```
 
-The base class for all Model fields.
-These tell the Model how to construct Observables,
+The base class for all [`Model`](#model.model.Model) fields.
+These tell the [`Model`](#model.model.Model) how to construct [`Observables`](#observable.observable.Observable),
 Watchers, and SubModels at initialization.
 
-Treat these as `dataclasses.Field` and treat Model as
+Treat these as `dataclasses.Field` and treat [`Model`](#model.model.Model) as
 an implicit `dataclass`. They are not meant to be
 initialized directly. Users should typically use the
-respective exported functions: `watch` and `obs`.
+respective exported functions: [`watch`](#model.field_funcs.watch) and [`obs`](#model.field_funcs.obs).
 
-Upon Model initialization, `Field`s and references to them
+Upon [`Model`](#model.model.Model) initialization, [`Fields`](#model.fields.Field) and references to them
 will be realized.
 
-<a id="yggy.model.fields.ObservableField"></a>
+<a id="model.fields.ObservableField"></a>
 
-## ObservableField Objects
+## ObservableField
 
 ```python
 class ObservableField()
 ```
 
-A common base class for all `ObservableField`s.
+A common base class for all [`ObservableFields`](#model.fields.ObservableField).
 
-These are the fields that will end up in a `Model`'s
+These are the fields that will end up in a [`Models`](#model.model.Model)
 `__observables` dictionary.
 
-<a id="yggy.model.fields.ObservableValueField"></a>
+<a id="model.fields.ObservableValueField"></a>
 
-## ObservableValueField Objects
+## ObservableValueField
 
 ```python
 class ObservableValueField()
 ```
 
-Defines a simple `Observable[T]` field.
+Defines a simple [`Observable`](#observable.observable.Observable)[T] field.
 
-When realized, it creates an `Observable` with the value
+When realized, it creates an [`Observable`](#observable.observable.Observable) with the value
 set to `default`, and `coerce` / `validate` set to
 `coerce_fn` / `validate_fn` respectively.
 
-Use `obs`, `coerce`, and `validate` to configure.
+Use [`obs`](#model.field_funcs.obs), [`coerce`](#model.field_funcs.coerce), and [`validate`](#model.field_funcs.validate) to configure.
 
-<a id="yggy.model.fields.SubmodelProperty"></a>
+<a id="model.fields.SubmodelProperty"></a>
 
-## SubmodelProperty Objects
+## SubmodelProperty
 
 ```python
 class SubmodelProperty()
 ```
 
-Defines a reference chain from a `SubmodelField` to an observable `Field`.
+Defines a reference chain from a [`SubmodelField`](#model.fields.SubmodelField) to an observable [`Field`](#model.fields.Field).
 
 Because we are following dataclass semantics, the class constructor is dealing
-in `Field`s, while the types are described as the instance members
+in [`Fields`](#model.fields.Field), while the types are described as the instance members
 (i.e. we're lying about what the types are).
 
-Because `SubmodelField`s will show up as `Model` instances,
-the `Model` members are known to type checkers.`SubmodelField` and
-`SubmodelProperty` will recursively emit `SubmodelProperty` for
+Because [`SubmodelFields`](#model.fields.SubmodelField) will show up as [`Model`](#model.model.Model) instances,
+the [`Model`](#model.model.Model) members are known to type checkers. [`SubmodelField`](#model.fields.SubmodelField) and
+[`SubmodelProperty`](#model.fields.SubmodelProperty) will recursively emit [`SubmodelProperty`](#model.fields.SubmodelProperty) for
 arbitrary attribute accesses. These property chains are walked at
-Model initialization to realize the correct Observable.
+[`Model`](#model.model.Model) initialization to realize the correct [`Observable`](#observable.observable.Observable).
 
-<a id="yggy.model.fields.ObservableWatchField"></a>
+<a id="model.fields.ObservableWatchField"></a>
 
-## ObservableWatchField Objects
+## ObservableWatchField
 
 ```python
 class ObservableWatchField()
 ```
 
-Defines an `Observable[T]` which evaluates a callback
+Defines an [`Observable`](#observable.observable.Observable)[T] which evaluates a callback
 in response to any changes to the provided observables.
 
-You can pass either Observables or observable Fields
+You can pass either [`Observables`](#observable.observable.Observable) or [`ObservableFields`](#model.fields.ObservableField)
 into the `observables` list. These will be realized when
-the `Model` is initialized.
+the [`Model`](#model.model.Model) is initialized.
 
-<a id="yggy.model.fields.SubmodelField"></a>
+<a id="model.fields.SubmodelField"></a>
 
-## SubmodelField Objects
+## SubmodelField
 
 ```python
 class SubmodelField()
@@ -320,16 +298,16 @@ class SubmodelField()
 
 Defines a submodel.
 
-Upon Model initialization, `factory` will be called with `kwargs`
-in order to construct a new child `Model`.
+Upon [`Model`](#model.model.Model) initialization, `factory` will be called with `kwargs`
+in order to construct a new child [`Model`](#model.model.Model).
 
 Use `obs(__factory: Model, **kwargs)`
 
-<a id="yggy.model.field_funcs"></a>
+<a id="model.field_funcs"></a>
 
-# yggy.model.field\_funcs
+# model.field\_funcs
 
-<a id="yggy.model.field_funcs.obs"></a>
+<a id="model.field_funcs.obs"></a>
 
 #### obs
 
@@ -338,28 +316,28 @@ Use `obs(__factory: Model, **kwargs)`
 def obs(__factory: type[T], **__kwds: Any) -> T
 ```
 
-Creates a `SubmodelField[T]` which describes how to
-initialize a sub-`Model` at `Model` initialization.
+Creates a [`SubmodelField`](#model.fields.SubmodelField)[T] which describes how to
+initialize a sub-[`Model`](#model.model.Model) at [`Model`](#model.model.Model) initialization.
 
-Any argument assignable to the `Model` constructor can be
+Any argument assignable to the [`Model`](#model.model.Model) constructor can be
 passed in as additional arguments to this function.
 
-This actually returns a `.fields.SubmodelField[T]` rather than
+This actually returns a [`SubmodelField`](#model.fields.SubmodelField)[T] rather than
 the indicated type. However, this field will be realized into
-the indicated type at `Model` initialization.
+the indicated type at [`Model`](#model.model.Model) initialization.
 
 **Arguments**:
 
-- `__factory` - A subclass of `Model`
-- `**__kwds` - Arguments used to initialize `Model`
+- `__factory` - A subclass of [`Model`](#model.model.Model)
+- `**__kwds` - Arguments used to initialize [`Model`](#model.model.Model)
   
 
 **Returns**:
 
   We pretend it returns `T`
-  but it really returns `SubmodelField[T]`
+  but it really returns [`SubmodelField`](#model.fields.SubmodelField)[T]
 
-<a id="yggy.model.field_funcs.obs"></a>
+<a id="model.field_funcs.obs"></a>
 
 #### obs
 
@@ -368,24 +346,24 @@ the indicated type at `Model` initialization.
 def obs(__value: T) -> Observable[T]
 ```
 
-Creates an `ObservableValueField[T]` which describes how to
-initialize an `Observable[T]` at `Model` initialization.
+Creates a [`ObservableValueField`](#model.fields.ObservableValueField)[T] which describes how to
+initialize an [`Observable`](#observable.observable.Observable)[T] at [`Model`](#model.model.Model) initialization.
 
-This actually returns a `.fields.ObservableValueField[T]` rather
+This actually returns a [`ObservableValueField`](#model.fields.ObservableValueField)[T] rather
 than the indicated type. However, this field will be realized
-into the indicated type at `Model` initialization.
+into the indicated type at [`Model`](#model.model.Model) initialization.
 
 **Arguments**:
 
-- `__value` - The initial value of the `Observable`
+- `__value` - The initial value of the [`Observable`](#observable.observable.Observable)
   
 
 **Returns**:
 
-  We pretend it returns `Observable[T]`
-  but it really returns `ObservableValueField[T]`
+  We pretend it returns [`Observable`](#observable.observable.Observable)[T]
+  but it really returns [`ObservableValueField`](#model.fields.ObservableValueField)[T]
 
-<a id="yggy.model.field_funcs.watch"></a>
+<a id="model.field_funcs.watch"></a>
 
 #### watch
 
@@ -396,21 +374,21 @@ def watch(
 ) -> Callable[[Callable[..., T]], Observable[T]]
 ```
 
-Creates an `ObservableWatchField[T]` which describes how to
-initialize an `Observable[T]` which is automatically updated based
-on a callback function at `Model` initialization.
+Creates a [`ObservableWatchField`](#model.fields.ObservableWatchField)[T] which describes how to
+initialize an [`Observable`](#observable.observable.Observable)[T] which is automatically updated based
+on a callback function at [`Model`](#model.model.Model) initialization.
 
 Can be used for either simple callbacks that respond to the provided
-`Observable`s, or to create a computed `Observable` who's value is the
+[`Observables`](#observable.observable.Observable), or to create a computed [`Observable`](#observable.observable.Observable) who's value is the
 result of that callback function.
 
-This actually returns a `.fields.ObservableWatchField[T]` rather
+This actually returns a [`ObservableWatchField`](#model.fields.ObservableWatchField)[T] rather
 than the indicated type. However, this field will be realized
-into the indicated type at `Model` initialization.
+into the indicated type at [`Model`](#model.model.Model) initialization.
 
 **Arguments**:
 
-- `*__observables` - The `Observable`s to watch
+- `*__observables` - The [`Observables`](#observable.observable.Observable) to watch
   
 
 **Returns**:
@@ -431,7 +409,7 @@ class Person(yg.Model):
         return f"{self.fname.get()} {self.lname.get()}"
 ```
 
-<a id="yggy.model.field_funcs.coerce"></a>
+<a id="model.field_funcs.coerce"></a>
 
 #### coerce
 
@@ -441,7 +419,7 @@ def coerce(
 ) -> Callable[[Callable[[Any, Any], T]], None]
 ```
 
-Declares a custom coerce function for an `Observable`.
+Declares a custom coerce function for an [`Observable`](#observable.observable.Observable).
 
 **Returns**:
 
@@ -460,7 +438,7 @@ class Foo(yg.Model):
         return int(float(__bar)) # parse float strings to int
 ```
 
-<a id="yggy.model.field_funcs.validate"></a>
+<a id="model.field_funcs.validate"></a>
 
 #### validate
 
@@ -470,7 +448,7 @@ def validate(
 ) -> Callable[[Callable[[Any, T], T]], None]
 ```
 
-Declares a custom validate function for an `Observable`.
+Declares a custom validate function for an [`Observable`](#observable.observable.Observable).
 
 **Returns**:
 
@@ -493,49 +471,62 @@ class Slider(yg.Model):
         return __value
 ```
 
-<a id="yggy.utils.functools"></a>
+<a id="observable.observable"></a>
 
-# yggy.utils.functools
+# observable.observable
 
-<a id="yggy.utils.functools.FnType"></a>
+<a id="observable.observable.Observable"></a>
 
-## FnType Objects
+## Observable
+
+```python
+class Observable()
+```
+
+An observable primitive value.
+
+When registered with an [`ObservableNetwork`](#observable.observable_network.ObservableNetwork) it will emit and receive
+change messages through the [`Comm`](#comm.comm.Comm). When an [`Observable`](#observable.observable.Observable) recieves
+a client change message, it will update its value and in turn
+emit a change message.
+
+While an [`Observable`](#observable.observable.Observable) may be created and registered manually,
+it is advised to construct them as part of a [`Model`](#model.model.Model) through
+the use of [`obs`](#model.field_funcs.obs) and related configuration functions.
+
+TODO: make lazy messaging optional
+
+<a id="utils.functools"></a>
+
+# utils.functools
+
+<a id="utils.functools.FnType"></a>
+
+## FnType
 
 ```python
 class FnType(Enum)
 ```
 
-<a id="yggy.utils.functools.FnType.FREE_FUNCTION"></a>
+<a id="utils.functools.FnType.FREE_FUNCTION"></a>
 
 #### FREE\_FUNCTION
 
-```python
-FREE_FUNCTION = 1
-```
-
 The function has no member argument
 
-<a id="yggy.utils.functools.FnType.INSTANCE_METHOD"></a>
+<a id="utils.functools.FnType.INSTANCE_METHOD"></a>
 
 #### INSTANCE\_METHOD
 
-```python
-INSTANCE_METHOD = 2
-```
-
 The function has a `self` member argument
 
-<a id="yggy.utils.functools.FnType.CLASS_METHOD"></a>
+<a id="utils.functools.FnType.CLASS_METHOD"></a>
 
 #### CLASS\_METHOD
 
-```python
-CLASS_METHOD = 3
-```
-
 The function has a `cls` member argument
 
-<a id="yggy.utils.functools.fn_type"></a>
+<a id="utils.functools.fn_type"></a>
 
 #### fn\_type
 
@@ -559,7 +550,7 @@ It's a highly opinionated function that makes many assumptions
 
   an enum classification
 
-<a id="yggy.utils.functools.bind_fn"></a>
+<a id="utils.functools.bind_fn"></a>
 
 #### bind\_fn
 
@@ -567,8 +558,9 @@ It's a highly opinionated function that makes many assumptions
 def bind_fn(fn: Callable[..., Any], self: object) -> Callable[..., Any]
 ```
 
-Given an unbound function, binds it to the given `self` object (if applicable).
-This is used to normalize free function / method / class method calls downstream.
+Given an unbound function, binds it to the given `self` object (if
+applicable). This is used to normalize free function / method / class
+method calls downstream.
 
 **Arguments**:
 
@@ -580,21 +572,21 @@ This is used to normalize free function / method / class method calls downstream
 
   The bound (or original) function
 
-<a id="yggy.comm.comm"></a>
+<a id="comm.comm"></a>
 
-# yggy.comm.comm
+# comm.comm
 
-<a id="yggy.comm.comm.Comm"></a>
+<a id="comm.comm.Comm"></a>
 
-## Comm Objects
+## Comm
 
 ```python
 class Comm()
 ```
 
-`Comm` manages communication for all objects in yggy.
+[`Comm`](#comm.comm.Comm) manages communication for all objects in yggy.
 
-A `Comm` can send messages both locally, or locally+remote.
+A [`Comm`](#comm.comm.Comm) can send messages both locally, or locally+remote.
 
 Messages are notified locally immediately and synchronously,
 while messages are sent remote through an asynchronous
@@ -622,7 +614,7 @@ comm.send(
 ) # >> got data: Hello, world.
 ```
 
-<a id="yggy.comm.comm.Comm.id"></a>
+<a id="comm.comm.Comm.id"></a>
 
 #### id
 
@@ -631,9 +623,9 @@ comm.send(
 def id() -> str
 ```
 
-The unique id for this `Comm` instance
+The unique id for this [`Comm`](#comm.comm.Comm) instance
 
-<a id="yggy.comm.comm.Comm.run"></a>
+<a id="comm.comm.Comm.run"></a>
 
 #### run
 
@@ -643,7 +635,7 @@ def run() -> None
 
 Run the message queue loop
 
-<a id="yggy.comm.comm.Comm.start"></a>
+<a id="comm.comm.Comm.start"></a>
 
 #### start
 
@@ -653,7 +645,7 @@ def start() -> None
 
 Run the message queue loop on a separate thread
 
-<a id="yggy.comm.comm.Comm.stop"></a>
+<a id="comm.comm.Comm.stop"></a>
 
 #### stop
 
@@ -663,7 +655,7 @@ def stop() -> None
 
 Stop the message queue loop
 
-<a id="yggy.comm.comm.Comm.add_sender"></a>
+<a id="comm.comm.Comm.add_sender"></a>
 
 #### add\_sender
 
@@ -677,7 +669,7 @@ Add a sender callback to the senders list
 
 - `__sender` - The sender callback to add
 
-<a id="yggy.comm.comm.Comm.new_client_id"></a>
+<a id="comm.comm.Comm.new_client_id"></a>
 
 #### new\_client\_id
 
@@ -691,7 +683,7 @@ Retrieve a new client id
 
   A new client id
 
-<a id="yggy.comm.comm.Comm.add_client"></a>
+<a id="comm.comm.Comm.add_client"></a>
 
 #### add\_client
 
@@ -705,7 +697,7 @@ Add a new client to the clients list and notify
 
 - `__client_id` - The client id to add
 
-<a id="yggy.comm.comm.Comm.remove_client"></a>
+<a id="comm.comm.Comm.remove_client"></a>
 
 #### remove\_client
 
@@ -719,39 +711,7 @@ Remove a client from the clients list and notify
 
 - `__client_id` - The client id to remove
 
-<a id="yggy.comm.comm.Comm.send"></a>
-
-#### send
-
-```python
-def send(__msg: str, __data: Message, **__kwargs: Unpack[SendKwds]) -> None
-```
-
-Notify and place message on message queue
-
-**Arguments**:
-
-- `__msg` - The message to send
-- `__data` - The message data to send
-- `**__kwargs` - SendKwds
-- `client_ids` - The client ids to send to (all if blank)
-
-<a id="yggy.comm.comm.Comm.revoke"></a>
-
-#### revoke
-
-```python
-def revoke(__id: str) -> None
-```
-
-Mark a message as revoked. A revoked message
-will be skipped when dequeued.
-
-**Arguments**:
-
-- `__id` - The message id to revoke
-
-<a id="yggy.comm.comm.Comm.notify"></a>
+<a id="comm.comm.Comm.notify"></a>
 
 #### notify
 
@@ -766,7 +726,58 @@ Notify local recievers with message
 - `__msg` - The message to notify
 - `__data` - The message data to notify
 
-<a id="yggy.comm.comm.Comm.recv"></a>
+<a id="comm.comm.Comm.send"></a>
+
+#### send
+
+```python
+def send(__msg: str, __data: Message | LazyMessage[Any],
+         **__kwargs: Unpack[SendKwds]) -> None
+```
+
+Place message on message queue
+
+**Arguments**:
+
+- `__msg` - The message to send
+- `__data` - The message data to send
+- `**__kwargs` - [`SendKwds`](#comm.comm.SendKwds)
+- `client_ids` - The client ids to send to (all if blank)
+
+<a id="comm.comm.Comm.emit"></a>
+
+#### emit
+
+```python
+def emit(__msg: str, __data: Message | LazyMessage[Any],
+         **__kwargs: Unpack[SendKwds]) -> None
+```
+
+Notify and send message
+
+**Arguments**:
+
+- `__msg` - The message to emit
+- `__data` - The message data to emit
+- `**__kwargs` - [`SendKwds`](#comm.comm.SendKwds)
+- `client_ids` - The client ids to send to (all if blank)
+
+<a id="comm.comm.Comm.revoke"></a>
+
+#### revoke
+
+```python
+def revoke(__id: str) -> None
+```
+
+Mark a message as revoked. A revoked message
+will be skipped when dequeued.
+
+**Arguments**:
+
+- `__id` - The message id to revoke
+
+<a id="comm.comm.Comm.recv"></a>
 
 #### recv
 
@@ -783,7 +794,7 @@ Global receivers are called for all messages.
 
 - `__fn` - The global receiver to add
 
-<a id="yggy.comm.comm.Comm.recv"></a>
+<a id="comm.comm.Comm.recv"></a>
 
 #### recv
 

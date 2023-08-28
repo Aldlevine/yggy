@@ -17,6 +17,7 @@ from typing import (
 
 from ..logging import get_logger
 from ..utils.weakref import WeakMethodSet
+from .lazy_message import LazyMessage
 from .messages import (
     COMM_ADD_CLIENT_MSG,
     COMM_REMOVE_CLIENT_MSG,
@@ -57,9 +58,9 @@ def create_message[T: Message](message_type: type[T], kwds: T) -> T:
 
 
 class Comm:
-    """`Comm` manages communication for all objects in yggy.
+    """#Comm manages communication for all objects in yggy.
 
-    A `Comm` can send messages both locally, or locally+remote.
+    A #Comm can send messages both locally, or locally+remote.
 
     Messages are notified locally immediately and synchronously,
     while messages are sent remote through an asynchronous
@@ -92,7 +93,7 @@ class Comm:
     __receivers: dict[str, WeakMethodSet[ReceiverFn_t[Any]]]
     __global_receivers: WeakMethodSet[GlobalReceiverFn_t[Any]]
     __clients: set[str]
-    __msg_queue: SimpleQueue[tuple[str, Message, SendKwds]]
+    __msg_queue: SimpleQueue[tuple[str, Message | LazyMessage[Any], SendKwds]]
     __revoked_msgs: set[str]
 
     def __init__(self) -> None:
@@ -106,7 +107,7 @@ class Comm:
 
     @property
     def id(self) -> str:
-        """The unique id for this `Comm` instance"""
+        """The unique id for this #Comm instance"""
 
         return self.__id
 
@@ -161,27 +162,6 @@ class Comm:
         self.notify(COMM_REMOVE_CLIENT_MSG, ModifyClientMessage(client_id=__client_id))
         self.__clients.discard(__client_id)
 
-    def send(self, __msg: str, __data: Message, **__kwargs: Unpack[SendKwds]) -> None:
-        """Notify and place message on message queue
-
-        Args:
-            __msg: The message to send
-            __data: The message data to send
-            **__kwargs: SendKwds
-                client_ids: The client ids to send to (all if blank)
-        """
-        self.notify(__msg, __data)
-        self.__msg_queue.put((__msg, __data, __kwargs))
-
-    def revoke(self, __id: str) -> None:
-        """Mark a message as revoked. A revoked message
-        will be skipped when dequeued.
-
-        Args:
-            __id: The message id to revoke
-        """
-        self.__revoked_msgs.add(__id)
-
     def notify(self, __msg: str, __data: Message) -> None:
         """Notify local recievers with message
 
@@ -195,6 +175,54 @@ class Comm:
         receivers = self.__receivers.get(__msg, WeakMethodSet())
         for receiver in receivers:
             receiver(__data)
+
+    def send(
+        self,
+        __msg: str,
+        __data: Message | LazyMessage[Any],
+        **__kwargs: Unpack[SendKwds],
+    ) -> None:
+        """Place message on message queue
+
+        Args:
+            __msg: The message to send
+            __data: The message data to send
+            **__kwargs: #SendKwds
+                client_ids: The client ids to send to (all if blank)
+        """
+        if isinstance(__data, LazyMessage) and not __data.begin():
+            return
+        self.__msg_queue.put((__msg, __data, __kwargs))
+
+    def emit(
+        self,
+        __msg: str,
+        __data: Message | LazyMessage[Any],
+        **__kwargs: Unpack[SendKwds],
+    ) -> None:
+        """Notify and send message
+
+        Args:
+            __msg: The message to emit
+            __data: The message data to emit
+            **__kwargs: #SendKwds
+                client_ids: The client ids to send to (all if blank)
+        """
+        self.send(__msg, __data, **__kwargs)
+        if isinstance(__data, LazyMessage):
+            data = __data.peek()
+        else:
+            data = __data
+        self.notify(__msg, data)
+
+    def revoke(self, __id: str) -> None:
+        """Mark a message as revoked. A revoked message
+        will be skipped when dequeued.
+
+        Args:
+            __id: The message id to revoke
+        """
+        self.__revoked_msgs.add(__id)
 
     @overload
     def recv[T: Message](self, __fn: GlobalReceiverFn_t[T], /) -> None:
@@ -289,6 +317,8 @@ class Comm:
         while True:
             try:
                 msg, data, kwds = self.__msg_queue.get(timeout=10)
+                if isinstance(data, LazyMessage):
+                    data = data.complete()
                 if data["message_id"] in self.__revoked_msgs:
                     self.__revoked_msgs.remove(data["message_id"])
                     continue

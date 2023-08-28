@@ -6,7 +6,6 @@ export const OBSERVABLE_REGISTER_MSG = "observable.register";
 
 export type ChangeMessage<T> = Message & {
     data_id: string;
-    old_value: T;
     new_value: T;
 };
 

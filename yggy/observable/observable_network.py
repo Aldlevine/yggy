@@ -1,7 +1,7 @@
 from typing import Any, Iterable
 from weakref import WeakKeyDictionary, WeakValueDictionary
 
-from ..comm import Comm
+from ..comm import Comm, LazyMessage
 from .messages import OBSERVABLE_CHANGE_MSG, OBSERVABLE_CLIENT_CHANGE_MSG, ChangeMessage
 from .observable import Observable
 
@@ -38,7 +38,7 @@ class ObservableNetwork:
 
         for observable in observables:
             self.__registry[observable.id] = observable
-            observable._register(self)  # type: ignore
+            observable._register(self)  # type: ignore[friends til the end]
 
         if clients is None:
             return
@@ -50,16 +50,16 @@ class ObservableNetwork:
     # def unregister(self, __observable: Observable[Any]) -> None:
     #     del self.__registry[__observable.id]
 
-    def send_change(
+    def emit_change(
         self,
         __observable: Observable[Any],
-        __change: ChangeMessage[Any],
+        __change: ChangeMessage[Any] | LazyMessage[ChangeMessage[Any]],
         *,
         revoke: str | None = None,
     ) -> None:
         if revoke is not None:
             self.__comm.revoke(revoke)
-        self.__comm.send(
+        self.__comm.emit(
             OBSERVABLE_CHANGE_MSG,
             __change,
             client_ids=self.__client_registry.get(__observable, []),

@@ -1,0 +1,14 @@
+loaders:
+  - type: python
+    search_path: [.]
+processors:
+  - type: filter
+    skip_empty_modules: true
+  - type: google
+  - type: crossref
+renderer:
+  type: markdown
+  filename: docs/api.md
+  descriptive_class_title: false
+  render_toc: true
+  toc_maxdepth: 1

@@ -1,9 +1,8 @@
-import abc
 import uuid
 from typing import TYPE_CHECKING, Any, Callable
 from weakref import WeakKeyDictionary
 
-from ..comm import ReceiverFn_t, create_message
+from ..comm import LazyMessage, ReceiverFn_t, create_message
 from ..logging import get_logger
 from ..utils.functools import noop
 from .messages import OBSERVABLE_CHANGE_MSG, ChangeMessage
@@ -29,14 +28,29 @@ def get[T: Primitive](obs: "Observable[T] | T") -> T:
     return obs
 
 
-class Observable[T: Primitive](abc.ABC):
+class Observable[T: Primitive]:
+    """An observable primitive value.
+
+    When registered with an #ObservableNetwork it will emit and receive
+    change messages through the #Comm. When an #Observable recieves
+    a client change message, it will update its value and in turn
+    emit a change message.
+
+    While an #Observable may be created and registered manually,
+    it is advised to construct them as part of a #Model through
+    the use of #obs and related configuration functions.
+
+    TODO: make lazy messaging optional
+
+    """
+
     __network: "ObservableNetwork | None"
     __id: str
     __value: T
     __coerce: Callable[[Any], T]
     __validate: Callable[[T], T]
     __receivers: WeakKeyDictionary[ReceiverFn_t[Any], ReceiverFn_t[Any]]
-    __last_change: str | None
+    __lazy_message: LazyMessage[ChangeMessage[T]]
 
     def __init__(
         self,
@@ -53,7 +67,17 @@ class Observable[T: Primitive](abc.ABC):
         self.__coerce = coerce or type(__value) if __value is not None else noop
         self.__validate = validate or noop
         self.__receivers = WeakKeyDictionary()
-        self.__last_change = None
+        self.__lazy_message = LazyMessage()
+
+        @self.__lazy_message.configure
+        def _() -> ChangeMessage[T]:
+            return create_message(
+                ChangeMessage[T],
+                {
+                    "data_id": self.id,
+                    "new_value": self.__value,
+                },
+            )
 
     def __json__(self) -> ObservableSchema[T]:
         return {"data_id": self.id, "value": self.get()}
@@ -102,13 +126,12 @@ class Observable[T: Primitive](abc.ABC):
     def set(self, __value: T) -> None:
         try:
             __value = self.__validate(self.__coerce(__value))
-            old_value = self.get()
         except BaseException as e:
             logger.error(e)
-            old_value = __value = self.get()
+            __value = self.get()
 
         self._set(__value)
-        self._notify_change(old_value, __value)
+        self._emit_change()
 
     def _get(self) -> T:
         return self.__value
@@ -116,19 +139,7 @@ class Observable[T: Primitive](abc.ABC):
     def _set(self, __value: T) -> None:
         self.__value = __value
 
-    def _notify_change(self, old_value: T, new_value: T) -> None:
+    def _emit_change(self) -> None:
         if self.__network is None:
             return
-        change = create_message(
-            ChangeMessage[T],
-            {
-                "data_id": self.id,
-                "new_value": new_value,
-                "old_value": old_value,
-            },
-        )
-        # TODO: look into message revoking more, as it might still work
-        # TODO: followup: LazyMessage which evaluates the message when popped from queue
-        # self.__network.send_change(self, change, revoke=self.__last_change)
-        self.__network.send_change(self, change)
-        self.__last_change = change.get("message_id", None)
+        self.__network.emit_change(self, self.__lazy_message)

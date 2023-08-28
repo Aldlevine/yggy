@@ -22,18 +22,17 @@ logger = get_logger(f"{__name__}")
 class Model:
     """A base class for managing an observable data model.
 
-    This class is should primarily be constructed with `.field.Field` attributes.
+    This class is should primarily be constructed with #Field attributes.
     Similar to a dataclass, these will exist as field definition types at class
-    construction time, but at instance initialization, these fields are realized
-    into the observable defined by the field.
+    construction time, but at instance initialization, these fields are
+    realized into the observable defined by the field.
 
-    There are also a number of decorators that can modify the behavior
-    of fields, such as `yg.coerce` and `yg.validate`.
+    There are also a number of decorators that can modify the behavior of
+    fields, such as #coerce and #validate.
 
-    In order for `Observables` to be reactive, they must first be registered
-    with a `yg.ObservableNetwork` (itself with an active `yg.Comm`). Use
-    `Model.observables` to obtain an iterator of `Observable`s to pass to
-    the `yg.ObservableNetwork`.
+    In order for #Observable to be reactive, they must first be registered with
+    a #ObservableNetwork (itself with an active #Comm). Use #Model.observables
+    to obtain an iterator of #Observable#s to pass to the #ObservableNetwork.
 
     Example:
     ```python
@@ -164,7 +163,7 @@ class Model:
     __str__.__doc__ = object.__str__.__doc__
 
     def __json__(self) -> ModelSchema:
-        """Returns a json serializable `ModelSchema`"""
+        """Returns a json serializable #ModelSchema"""
 
         out: dict[str, Any] = {"model_id": self.__id}
         for key, field in self.__model_fields__.items():
@@ -179,13 +178,13 @@ class Model:
 
     @property
     def id(self) -> str:
-        """The unique id for this `Model` instance"""
+        """The unique id for this #Model instance"""
 
         return self.__id
 
     @property
     def field_values(self) -> dict[str, "Observable[Any] | Model"]:
-        """A `dict` mapping field names to their respective `Observable` or `Model`"""
+        """A `dict` mapping field names to their respective #Observable or #Model"""
 
         res: dict[str, Observable[Any] | Model] = {}
         for k, f in self.__model_fields__.items():
@@ -199,8 +198,8 @@ class Model:
 
     @property
     def observables(self) -> Iterator[Observable[Any]]:
-        """An iterator for all `Observable`s in the Model's hierarchy.
-        This includes both direct and indirect descendants.
+        """An iterator for all #Observable#s in the #Model's hierarchy. This
+        includes both direct and indirect descendants.
 
         ```python
         import yggy as yg
@@ -223,11 +222,10 @@ class Model:
                     yield from sub_obs.observables
 
     def load_schema(self, __schema: ModelSchema) -> None:
-        """Loads values for all descendant `Observable`s.
+        """Loads values for all descendant #Observable#s.
 
-        This exlcudes fields defined by `ObservableWatchField`
-        as these will be recomputed anyway (and may have altered
-        callbacks since their last run).
+        This exlcudes fields defined by #ObservableWatchField as these will be
+        recomputed anyway (and may have altered callbacks since their last run).
         """
 
         for k, v in __schema.items():
@@ -244,18 +242,20 @@ class Model:
     ](
         self, field: Observable[T] | ObservableField[T] | SubmodelProperty[T]
     ) -> Observable[T]:
-        """Finds an `Observable` based on a provided field.
+        """Finds an #Observable based
+        on a provided field.
 
         The field may be:
-        - An `ObservableField` used to initialize an `Observable` on `self`
-        - A `SubmodelProperty` which resolves to a `SubmodelField` on `self`
-        - An existing `Observable` (which will be returned unaltered)
+        - A #ObservableField used to initialize an #Observable on `self`
+        - A #SubmodelProperty which resolves to a #SubmodelField on
+          `self`
+        - An existing #Observable (which will be returned unaltered)
 
         Args:
-            field: The field to lookup an `Observable` for
+            field: The field to lookup an #Observable for
 
         Returns:
-            The matched `Observable`
+            The matched #Observable
         """
 
         if isinstance(field, SubmodelProperty):

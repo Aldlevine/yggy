@@ -17,42 +17,42 @@ __all__ = ["obs", "watch", "coerce", "validate"]
 
 @overload
 def obs[T: "Model"](__factory: type[T], **__kwds: Any) -> T:
-    """Creates a `SubmodelField[T]` which describes how to
-    initialize a sub-`Model` at `Model` initialization.
+    """Creates a #SubmodelField[T] which describes how to
+    initialize a sub-#Model at #Model initialization.
 
-    Any argument assignable to the `Model` constructor can be
+    Any argument assignable to the #Model constructor can be
     passed in as additional arguments to this function.
 
-    This actually returns a `.fields.SubmodelField[T]` rather than
+    This actually returns a #SubmodelField[T] rather than
     the indicated type. However, this field will be realized into
-    the indicated type at `Model` initialization.
+    the indicated type at #Model initialization.
 
     Args:
-        __factory: A subclass of `Model`
-        **__kwds: Arguments used to initialize `Model`
+        __factory: A subclass of #Model
+        **__kwds: Arguments used to initialize #Model
 
     Returns:
         We pretend it returns `T`
-        but it really returns `SubmodelField[T]`
+        but it really returns #SubmodelField[T]
     """
     ...
 
 
 @overload
 def obs[T: Primitive](__value: T) -> Observable[T]:
-    """Creates an `ObservableValueField[T]` which describes how to
-    initialize an `Observable[T]` at `Model` initialization.
+    """Creates a #ObservableValueField[T] which describes how to
+    initialize an #Observable[T] at #Model initialization.
 
-    This actually returns a `.fields.ObservableValueField[T]` rather
+    This actually returns a #ObservableValueField[T] rather
     than the indicated type. However, this field will be realized
-    into the indicated type at `Model` initialization.
+    into the indicated type at #Model initialization.
 
     Args:
-        __value: The initial value of the `Observable`
+        __value: The initial value of the #Observable
 
     Returns:
-        We pretend it returns `Observable[T]`
-        but it really returns `ObservableValueField[T]`
+        We pretend it returns #Observable[T]
+        but it really returns #ObservableValueField[T]
     """
     ...
 
@@ -68,20 +68,20 @@ def watch[
 ](
     *__observables: Observable[Any] | ObservableField[Any] | SubmodelProperty[Any],
 ) -> Callable[[Callable[..., T]], Observable[T]]:
-    """Creates an `ObservableWatchField[T]` which describes how to
-    initialize an `Observable[T]` which is automatically updated based
-    on a callback function at `Model` initialization.
+    """Creates a #ObservableWatchField[T] which describes how to
+    initialize an #Observable[T] which is automatically updated based
+    on a callback function at #Model initialization.
 
     Can be used for either simple callbacks that respond to the provided
-    `Observable`s, or to create a computed `Observable` who's value is the
+    #Observable#s, or to create a computed #Observable who's value is the
     result of that callback function.
 
-    This actually returns a `.fields.ObservableWatchField[T]` rather
+    This actually returns a #ObservableWatchField[T] rather
     than the indicated type. However, this field will be realized
-    into the indicated type at `Model` initialization.
+    into the indicated type at #Model initialization.
 
     Arguments:
-        *__observables: The `Observable`s to watch
+        *__observables: The #Observable#s to watch
 
     Returns:
         A function which takes the callback function as it's only parameter.
@@ -125,7 +125,7 @@ def coerce[
 ) -> Callable[
     [Callable[[Any, Any], T]], None
 ]:
-    """Declares a custom coerce function for an `Observable`.
+    """Declares a custom coerce function for an #Observable.
 
     Returns:
         A function which takes the coerce function as its only parameter.
@@ -156,7 +156,7 @@ def validate[
 ) -> Callable[
     [Callable[[Any, T], T]], None
 ]:
-    """Declares a custom validate function for an `Observable`.
+    """Declares a custom validate function for an #Observable.
 
     Returns:
         A function which takes the validate function as its only parameter.

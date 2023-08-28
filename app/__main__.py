@@ -49,7 +49,7 @@ if __name__ == "__main__":
         logger.info(f"Create App {app_model.id} for client {client_id}")
 
         yg.manager.network.register(app_model.observables, [client_id])
-        yg.manager.comm.send(
+        yg.manager.comm.emit(
             "app.create",
             yg.create_message(
                 CreateAppMessage,

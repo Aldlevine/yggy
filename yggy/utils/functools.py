@@ -53,8 +53,9 @@ def fn_type(fn: Callable[..., Any]) -> FnType:
 
 
 def bind_fn(fn: Callable[..., Any], self: object) -> Callable[..., Any]:
-    """Given an unbound function, binds it to the given `self` object (if applicable).
-    This is used to normalize free function / method / class method calls downstream.
+    """Given an unbound function, binds it to the given `self` object (if
+    applicable). This is used to normalize free function / method / class
+    method calls downstream.
 
     Args:
         fn: The function to bind

@@ -7,7 +7,6 @@ OBSERVABLE_REGISTER_MSG = "observable.register"
 
 class ChangeMessage[T](Message):
     data_id: str
-    old_value: T
     new_value: T
 
 
