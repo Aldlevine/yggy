@@ -8,7 +8,7 @@
             "ES2022"
         ],
         "rootDirs": [
-            "./yggy"
+            "./src"
         ],
         "baseUrl": ".",
         "outDir": "esm",
@@ -17,14 +17,8 @@
         "jsx": "react",
         "jsxFactory": "h",
         "alwaysStrict": true,
-        "paths": {
-            "@preact/*": [
-                "./node_modules/preact/*"
-            ]
-        }
     },
     "include": [
-        "./yggy/**/*"
+        "./src/**/*"
     ],
-    "compileOnSave": true
 }

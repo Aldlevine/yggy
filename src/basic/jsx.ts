@@ -1,6 +1,6 @@
 /** @jsx h */
 
-import type { JSXInternal } from "@preact/src/jsx.js";
+import type { JSX as JSXInternal } from "preact";
 import { Model, Observable, ObservableNetwork, get, watch } from "../__init__.js";
 import { uuid } from "../utils/__init__.js";
 
