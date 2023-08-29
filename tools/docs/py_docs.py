@@ -17,7 +17,7 @@ class Resolver(MarkdownReferenceResolver):
         return self.__get_parent_module(scope.parent)
 
     def resolve_ref(self, scope: docspec.ApiObject, ref: str) -> str | None:
-        import yggy
+        import src
 
         ref_split = ref.split(".")
 
@@ -33,7 +33,7 @@ class Resolver(MarkdownReferenceResolver):
         except:
             # then try from root
             try:
-                cur_obj = yggy
+                cur_obj = src
                 for piece in ref_split:
                     cur_obj = getattr(cur_obj, piece)
                 assert isinstance(cur_obj, object)

@@ -10,7 +10,7 @@
   "author": "Aaron Levine",
   "license": "ISC",
   "files": [
-    "yggy/**/*.ts",
+    "src/**/*.ts",
     "esm/**/*.js"
   ],
   "dependencies": {
