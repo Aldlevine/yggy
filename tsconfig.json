@@ -17,6 +17,8 @@
         "jsx": "react",
         "jsxFactory": "h",
         "alwaysStrict": true,
+        "declaration": true,
+        "declarationDir": "esm"
     },
     "include": [
         "./src/**/*"
