@@ -10,6 +10,7 @@
         "rootDirs": [
             "./yggy"
         ],
+        "baseUrl": ".",
         "outDir": "esm",
         "sourceMap": false,
         "strict": true,
