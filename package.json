@@ -9,6 +9,10 @@
   "type": "module",
   "author": "Aaron Levine",
   "license": "ISC",
+  "files": [
+    "yggy/**/*.ts",
+    "esm/**/*.js"
+  ],
   "dependencies": {
     "typescript": "^5.1.6"
   },

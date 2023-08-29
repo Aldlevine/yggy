@@ -16,6 +16,7 @@ class Manager:
 
     __app_root: str
     __web_root: str
+    __web_paths: dict[str, str]
     __static_file_exts: list[str]
 
     __comm: Comm
@@ -29,11 +30,13 @@ class Manager:
         self,
         app_root: str,
         web_root: str,
+        web_paths: dict[str, str] = {},
         static_file_exts: Iterable[str] = ("html", "js", "css", "ico", "png"),
         singleton: bool = False,
     ) -> None:
         self.__app_root = app_root
         self.__web_root = web_root
+        self.__web_paths = web_paths
         self.__static_file_exts = list(static_file_exts)
 
         makedirs(self.__web_root, exist_ok=True)
@@ -64,6 +67,10 @@ class Manager:
     @property
     def web_root(self) -> str:
         return self.__web_root
+
+    @property
+    def web_paths(self) -> dict[str, str]:
+        return self.__web_paths
 
     @property
     def static_file_exts(self) -> list[str]:

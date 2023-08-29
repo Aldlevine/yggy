@@ -1,4 +1,30 @@
+[project]
+name = "yggy"
+version = "1.0.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Aaron Levine", email = "ald.levine@gmail.com" }]
+dependencies = ["watchdog", "websockets", "PyYAML"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [tool.black]
 target-version = ['py311']
 safe = true
 verbose = true
+
+[tool.setuptools]
+packages = [
+    "yggy",
+    "yggy.basic",
+    "yggy.comm",
+    "yggy.model",
+    "yggy.observable",
+    "yggy.utils",
+]
+
+[tool.setuptools.package-data]
+yggy = ["**/*.yaml", "**/py.typed"]

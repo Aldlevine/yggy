@@ -8,9 +8,9 @@
             "ES2022"
         ],
         "rootDirs": [
-            "./"
+            "./yggy"
         ],
-        "outDir": "web",
+        "outDir": "esm",
         "sourceMap": false,
         "strict": true,
         "jsx": "react",
@@ -22,5 +22,8 @@
             ]
         }
     },
+    "include": [
+        "./yggy/**/*"
+    ],
     "compileOnSave": true
 }

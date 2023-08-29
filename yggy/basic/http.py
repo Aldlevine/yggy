@@ -3,6 +3,7 @@ import re
 from http import HTTPStatus
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from os import path
+from pathlib import PurePath
 from threading import Thread
 from typing import TYPE_CHECKING, Any
 
@@ -13,15 +14,31 @@ if TYPE_CHECKING:
 
 _logger = get_logger(f"{__name__}")
 
+yggy_root = PurePath(__file__).parent.parent
+
 
 def get_handler_class(manager: "Manager") -> type[SimpleHTTPRequestHandler]:
+    web_paths = manager.web_paths
     web_root = manager.web_root
 
     class HTTPRequestHandler(SimpleHTTPRequestHandler):
         def do_GET(self) -> None:
             if self.path == "/":
                 self.path = "index.html"
-            self.path = "./" + path.relpath(web_root + "/" + self.path, path.curdir)
+
+            found_path = False
+            for prefix, mapped_path in web_paths.items():
+                if self.path.startswith(prefix):
+                    self.path = "./" + path.relpath(
+                        mapped_path + "/" + self.path.removeprefix(prefix), path.curdir
+                    )
+                    found_path = True
+                    break
+
+            if not found_path:
+                self.path = "./" + path.relpath(
+                    web_root + "/" + self.path.removeprefix("/"), path.curdir
+                )
 
             fp = self.translate_path(self.path)
             if not path.exists(fp) or path.isdir(fp):

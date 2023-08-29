@@ -3,6 +3,7 @@
 import subprocess
 from logging import INFO
 from os import path
+from pathlib import PurePath
 from typing import TYPE_CHECKING
 
 from watchdog.events import FileModifiedEvent, PatternMatchingEventHandler
@@ -18,6 +19,9 @@ if TYPE_CHECKING:
 logger = get_logger(f"{__name__}")
 watchdog_logger = get_logger("watchdog")
 watchdog_logger.level = INFO
+
+yggy_root = PurePath(__file__).parent.parent
+tsconfig = yggy_root / "tsconfig.json"
 
 
 class EventHandler(PatternMatchingEventHandler):
@@ -44,6 +48,10 @@ class EventHandler(PatternMatchingEventHandler):
         self.__updating = True
         logger.info("build ts")
         subprocess.run("npx tsc".split(" "))
+        # subprocess.run(
+        #     f"npx tsc -p {tsconfig} --outDir {self.__app.web_root}/yggy".split(" "),
+        #     capture_output=True,
+        # )
         self.__app.comm.emit("hot_reload", create_message(Message, {}))
         self.__updating = False
 
