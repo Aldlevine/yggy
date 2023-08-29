@@ -2,16 +2,14 @@
   "name": "yggy",
   "version": "1.0.0",
   "description": "",
-  "main": "yggy/index.js",
+  "main": "__init__.js",
+  "module": "__init__.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
   "author": "Aaron Levine",
   "license": "ISC",
-  "files": [
-    "esm"
-  ],
   "dependencies": {
     "preact": "^10.17.0",
     "typescript": "^5.1.6"
