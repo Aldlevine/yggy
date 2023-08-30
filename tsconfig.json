@@ -10,15 +10,14 @@
         "rootDirs": [
             "./src"
         ],
-        "baseUrl": ".",
         "outDir": "esm",
-        "sourceMap": false,
-        "strict": true,
+        "declaration": true,
+        "declarationDir": "esm",
         "jsx": "react",
         "jsxFactory": "h",
+        "strict": true,
         "alwaysStrict": true,
-        "declaration": true,
-        "declarationDir": "esm"
+        "sourceMap": false,
     },
     "include": [
         "./src/**/*"

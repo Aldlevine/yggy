@@ -2,12 +2,18 @@
   "name": "yggy",
   "version": "1.0.0",
   "description": "",
-  "main": "__init__.js",
-  "module": "__init__.js",
+  "type": "module",
+  "main": "./esm/__init__.js",
+  "module": "./esm/__init__.js",
+  "exports": {
+    "./*": "./esm/*"
+  },
+  "files": [
+    "./esm/**/*"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "type": "module",
   "author": "Aaron Levine",
   "license": "ISC",
   "dependencies": {
