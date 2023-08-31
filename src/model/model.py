@@ -2,9 +2,10 @@ import uuid
 from textwrap import indent
 from typing import Any, ClassVar, Iterator, cast
 
+from ..codegen import AddInterface, Attr_t, Iface_t
 from ..logging import get_logger
 from ..observable import Observable, ObservableSchema, get
-from ..observable.observable import Primitive
+from ..types import Primitive
 from .fields import (
     Field,
     ObservableField,
@@ -19,7 +20,7 @@ __all__ = ["Model"]
 logger = get_logger(f"{__name__}")
 
 
-class Model:
+class Model(AddInterface, exclude=True):
     """A base class for managing an observable data model.
 
     This class is should primarily be constructed with #Field attributes.
@@ -66,7 +67,7 @@ class Model:
     ```
     """
 
-    __model_fields__: ClassVar[dict[str, Field[Any]]]
+    __model_fields__: ClassVar[dict[str, Field[Any]]] = {}
 
     __id: str
     __observables: dict[str, Observable[Any]]
@@ -74,12 +75,14 @@ class Model:
 
     @classmethod
     def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
         fields: dict[str, Any] = {}
-        fields.update({k: v for k, v in cls.__dict__.items() if isinstance(v, Field)})
 
-        for base in cls.__bases__:
+        for base in reversed(cls.__bases__):
             if hasattr(base, "__model_fields__"):
                 fields.update(getattr(base, "__model_fields__"))
+
+        fields.update({k: v for k, v in cls.__dict__.items() if isinstance(v, Field)})
 
         cls.__model_fields__ = fields
 
@@ -176,11 +179,22 @@ class Model:
                 out[key] = self.__observables[key].__json__()
         return out
 
-    @property
-    def id(self) -> str:
-        """The unique id for this #Model instance"""
-
-        return self.__id
+    @classmethod
+    def __iface_codegen__(cls) -> Iface_t:
+        return {
+            k: t
+            for k, v in cls.__model_fields__.items()
+            if (
+                t := cast(
+                    Attr_t,
+                    (
+                        Observable[v.type]
+                        if isinstance(v, ObservableField)
+                        else v.factory if isinstance(v, SubmodelField) else False
+                    ),
+                )
+            )
+        }
 
     @property
     def field_values(self) -> dict[str, "Observable[Any] | Model"]:
@@ -195,6 +209,12 @@ class Model:
                 res[k] = self.__submodels[k]
                 continue
         return res
+
+    @property
+    def id(self) -> str:
+        """The unique id for this #Model instance"""
+
+        return self.__id
 
     @property
     def observables(self) -> Iterator[Observable[Any]]:

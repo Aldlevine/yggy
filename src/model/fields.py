@@ -1,8 +1,10 @@
 import abc
+from inspect import signature
 from typing import TYPE_CHECKING, Any, Callable
 
 from ..observable import Observable
-from ..observable.observable import Observable, Primitive
+from ..observable.observable import Observable
+from ..types import Primitive
 from ..utils.functools import bind_fn, noop
 
 if TYPE_CHECKING:
@@ -35,6 +37,11 @@ class ObservableField[T: Primitive](Field[Observable[T]]):
     `__observables` dictionary.
     """
 
+    @property
+    @abc.abstractmethod
+    def type(self) -> type:
+        ...
+
 
 class ObservableValueField[T: Primitive](ObservableField[T]):
     """Defines a simple #Observable[T] field.
@@ -55,6 +62,10 @@ class ObservableValueField[T: Primitive](ObservableField[T]):
         self.default = default
         self.coerce_fn = type(default) if default is not None else noop
         self.validate_fn = noop
+
+    @property
+    def type(self) -> type:
+        return type(self.default)
 
     def realize(self, model: "Model", key: str, **__kwargs: Any) -> Observable[T]:
         coerce_fn: Callable[[Any], Any] = bind_fn(self.coerce_fn, model)
@@ -111,6 +122,10 @@ class ObservableWatchField[T: Primitive](ObservableField[T]):
         super().__init__()
         self.fn = fn
         self.observables = observables
+
+    @property
+    def type(self) -> type:
+        return signature(self.fn).return_annotation
 
     def realize(self, __model: "Model", __key: str, **__kwargs: Any) -> Observable[T]:
         fn = bind_fn(self.fn, __model)

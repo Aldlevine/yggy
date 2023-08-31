@@ -4,6 +4,7 @@ from weakref import WeakKeyDictionary
 
 from ..comm import LazyMessage, ReceiverFn_t, create_message
 from ..logging import get_logger
+from ..types import Primitive
 from ..utils.functools import noop
 from .messages import OBSERVABLE_CHANGE_MSG, ChangeMessage
 from .schema import ObservableSchema
@@ -13,13 +14,10 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Observable",
-    "Primitive",
     "get",
 ]
 
 logger = get_logger(f"{__name__}")
-
-type Primitive = None | bool | int | float | str
 
 
 def get[T: Primitive](obs: "Observable[T] | T") -> T:
@@ -81,6 +79,10 @@ class Observable[T: Primitive]:
 
     def __json__(self) -> ObservableSchema[T]:
         return {"data_id": self.id, "value": self.get()}
+
+    @classmethod
+    def __builtin_codegen__(cls) -> str:
+        return cls.__name__
 
     @property
     def id(self) -> str:
