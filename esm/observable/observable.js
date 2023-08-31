@@ -51,6 +51,18 @@ export class Observable {
         this.#receivers.set(__fn, __recv_change);
         this.#network?.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_change);
     }
+    // add(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
+    //     return watch([this, other], () => get(this) + get(other));
+    // }
+    // sub(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
+    //     return watch([this, other], () => get(this) - get(other));
+    // }
+    // mul(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
+    //     return watch([this, other], () => get(this) * get(other));
+    // }
+    // div(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
+    //     return watch([this, other], () => get(this) / get(other));
+    // }
     #notify_change() {
         const change = create_message({
             data_id: this.#id,

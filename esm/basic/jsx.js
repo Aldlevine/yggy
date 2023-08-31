@@ -18,7 +18,7 @@ export function bind(obs, ...events) {
 export function tmpl(strings, ...args) {
     let network;
     function render_str() {
-        const result = [];
+        const result = [strings[0]];
         args.forEach((obs, i) => {
             if (obs instanceof Observable) {
                 if (obs.network) {
@@ -44,6 +44,25 @@ export function tmpl(strings, ...args) {
         }
     }
     return obs;
+}
+const __expr_stanitize_reg = /[^\d.()*/+-\s]/g;
+export function expr(strs, ...args) {
+    if (__expr_stanitize_reg.test(strs.join(""))) {
+        throw new Error(`Invalid expr: "${strs.join("${...}")}"`);
+    }
+    const body_arr = [`return (`];
+    for (let i = 0; i < strs.length; i++) {
+        body_arr.push(strs[i]);
+        if (i < args.length) {
+            body_arr.push(`a[${i}]`);
+        }
+    }
+    body_arr.push(`);`);
+    const body = body_arr.join("");
+    const fn = new Function("a", body);
+    return watch(args, () => {
+        return fn(args.map(a => get(a)));
+    });
 }
 function __make_node(content) {
     if (content instanceof Node) {
@@ -148,12 +167,22 @@ export function h(name, attrs, ...children) {
                 }
             }
             else {
-                const attr = attrs[key];
                 if (attr instanceof Observable) {
                     element.setAttribute(key, String(attr.get()));
                     attr.watch(() => {
                         element.setAttribute(key, String(attr.get()));
                     });
+                }
+                else if (attr && typeof attr === "object") {
+                    for (let subkey in attr) {
+                        const subattr = attr[subkey];
+                        element[key][subkey] = get(subattr);
+                        if (subattr instanceof Observable) {
+                            subattr.watch(() => {
+                                element[key][subkey] = get(subattr);
+                            });
+                        }
+                    }
                 }
                 else {
                     element.setAttribute(key, String(attrs[key]));

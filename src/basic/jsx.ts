@@ -1,21 +1,8 @@
 /** @jsx h */
 
 import type { JSX as JSXInternal } from "preact";
-import { Model, Observable, ObservableNetwork, get, watch } from "../__init__.js";
+import { Observable, ObservableNetwork, ObservableOr, get, watch } from "../__init__.js";
 import { uuid } from "../utils/__init__.js";
-
-export type PropertiesOf<T> = {
-    [P in keyof Omit<T, keyof Model | keyof Observable<any>>]:
-    T[P] extends Observable<infer U>
-    ? T[P] | U
-    : T[P] extends Observable<infer U> | undefined
-    ? T[P] | U | undefined
-    : T[P];
-}
-
-export type ValuesOf<T> = {
-    [P in keyof T]: T[P] extends Observable<infer U> | infer U ? U : T[P]
-}
 
 
 export class Binding {
@@ -29,7 +16,7 @@ export class Binding {
 }
 
 
-type __JSXElement<T> = T | Binding | Observable<T>
+type __JSXElement<T> = T | Binding | Observable<T> | { [P in keyof T]: __JSXElement<T[P]> };
 
 declare global {
     namespace JSX {
@@ -51,7 +38,7 @@ export function bind<T>(obs: Observable<T> | T, ...events: string[]): Binding | 
 export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<string> {
     let network!: ObservableNetwork;
     function render_str(): string {
-        const result: string[] = [];
+        const result: string[] = [strings[0]];
         args.forEach((obs: any, i: number) => {
             if (obs instanceof Observable) {
                 if (obs.network) {
@@ -80,6 +67,26 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
     }
 
     return obs;
+}
+
+const __expr_stanitize_reg = /[^\d.()*/+-\s]/g;
+export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]): Observable<number> {
+    if (__expr_stanitize_reg.test(strs.join(""))) {
+        throw new Error(`Invalid expr: "${strs.join("${...}")}"`)
+    }
+    const body_arr: string[] = [`return (`];
+    for (let i = 0; i < strs.length; i++) {
+        body_arr.push(strs[i]);
+        if (i < args.length) {
+            body_arr.push(`a[${i}]`)
+        }
+    }
+    body_arr.push(`);`);
+    const body = body_arr.join("");
+    const fn = new Function("a", body);
+    return watch(args, () => {
+        return fn(args.map(a => get(a)));
+    });
 }
 
 type __NodeTree = Node | __NodeTree[];
@@ -198,12 +205,23 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
                 }
             }
             else {
-                const attr = attrs[key];
                 if (attr instanceof Observable) {
                     element.setAttribute(key, String(attr.get()));
                     attr.watch(() => {
                         element.setAttribute(key, String(attr.get()));
                     });
+                }
+                else if (attr && typeof attr === "object") {
+                    for (let subkey in attr) {
+                        const subattr = attr[subkey];
+                        element[key][subkey] = get(subattr);
+                        if (subattr instanceof Observable) {
+                            subattr.watch(() => {
+                                element[key][subkey] = get(subattr);
+                            });
+                        }
+
+                    }
                 }
                 else {
                     element.setAttribute(key, String(attrs[key]));

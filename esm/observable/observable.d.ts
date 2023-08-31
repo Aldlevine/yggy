@@ -2,6 +2,11 @@ import { ReceiverFn_t } from "../comm/__init__.js";
 import { ChangeMessage } from "./messages.js";
 import { ObservableNetwork } from "./observable_network.js";
 import { ObservableSchema } from "./schema.js";
+export type ObservableOr<T> = T extends {
+    [key: string]: any;
+} ? {
+    [P in keyof T]: Observable<Exclude<T[P], undefined>> | Exclude<T[P], undefined>;
+} : (Observable<T> | T);
 type ObservableKwds = {
     local?: boolean;
 };
