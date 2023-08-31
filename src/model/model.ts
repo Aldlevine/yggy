@@ -21,8 +21,8 @@ export function watch<T>(args: any[], fn: () => T): Observable<T> {
 
 export class Model {
 
-    static from_schema<T = never>(schema: ModelSchema): Model & T {
-        const result = <Model & T>new Model();
+    static from_schema<T extends Model>(schema: ModelSchema): T {
+        const result = <T>new Model();
 
         for (let key in schema) {
             const item = schema[key];

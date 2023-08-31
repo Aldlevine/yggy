@@ -1,5 +1,6 @@
 import abc
 from inspect import isclass
+from io import StringIO
 from typing import (
     Any,
     Generic,
@@ -29,11 +30,9 @@ class HasBuiltinCodegen(Protocol):
         ...
 
 
-type Codegen_t = type[Primitive] | HasIfaceCodegen | dict[str, Codegen_t]
-
-type Attr_t = TypeVar | type[Primitive] | type[HasIfaceCodegen] | type[
-    HasBuiltinCodegen
-]
+type Attr_t = (
+    TypeVar | type[Primitive] | type[HasIfaceCodegen] | type[HasBuiltinCodegen]
+)
 type Iface_t = dict[str, Attr_t]
 
 
@@ -51,24 +50,35 @@ class CodeGenerator:
         return t
 
     def generate_interface(self, iface: type[HasIfaceCodegen]) -> str:
-        result: list[str] = []
+        buffer = StringIO()
         generic_str = self.__get_generic_decl_str(iface)
-        result.append(
-            f"export interface {self.__get_type_ref_str(iface)}{generic_str} {{"
+        extends = [b for b in iface.__bases__ if issubclass(b, HasIfaceCodegen)]
+        super_keys = [k for e in extends for k in e.__iface_codegen__().keys()]
+        if len(extends) > 0:
+            extends_str = " extends " + ", ".join(map(self.__get_type_ref_str, extends))
+        else:
+            extends_str = ""
+
+        print(
+            "export interface"
+            f" {self.__get_type_decl_str(iface)}{generic_str}{extends_str} {{",
+            file=buffer,
         )
         for key, t in iface.__iface_codegen__().items():
-            result.append(f"    {key}: {self.__get_type_decl_str(t)};")
-            ...
-        result.append("}")
-        return "\n".join(result)
+            if key in super_keys:
+                continue
+            print(f"    {key}: {self.__get_type_ref_str(t)};", file=buffer)
+        print("}", file=buffer)
+        return buffer.getvalue()
 
     def generate_interfaces(self) -> list[str]:
-        return [self.generate_interface(iface) for iface in self.__interfaces]
+        ifaces = sorted(self.__interfaces, key=lambda i: i.__name__)
+        return [self.generate_interface(iface) for iface in ifaces]
 
-    def __get_type_ref_str(self, t: type[HasIfaceCodegen | HasBuiltinCodegen]) -> str:
+    def __get_type_decl_str(self, t: type[HasIfaceCodegen | HasBuiltinCodegen]) -> str:
         return t.__name__
 
-    def __get_type_decl_str(self, t: Attr_t) -> str:
+    def __get_type_ref_str(self, t: Attr_t) -> str:
         primitive = self.__get_primitive_str(t)
         if primitive is not None:
             return primitive
@@ -76,7 +86,7 @@ class CodeGenerator:
         args = get_args(t) or tuple()
         if isclass(origin) and issubclass(origin, (HasIfaceCodegen, HasBuiltinCodegen)):
             generic_str = self.__get_generic_ref_str(args)
-            return f"{self.__get_type_ref_str(origin)}{generic_str}"
+            return f"{self.__get_type_decl_str(origin)}{generic_str}"
         return "unknown"
 
     def __get_generic_decl_str(self, t: type[HasIfaceCodegen]) -> str:
@@ -87,7 +97,7 @@ class CodeGenerator:
     def __get_generic_ref_str(self, args: tuple[type, ...]) -> str:
         if len(args) == 0:
             return ""
-        return f"<{", ".join(map(self.__get_type_decl_str, args))}>"
+        return f"<{", ".join(map(self.__get_type_ref_str, args))}>"
 
     def __get_primitive_str(self, t: Attr_t) -> str | None:
         if isinstance(t, TypeVar):
@@ -104,10 +114,10 @@ class CodeGenerator:
             return "boolean"
         if cls in [list]:
             arg = args[0] if len(args) > 0 else Any
-            return f"{self.__get_type_decl_str(arg)}[]"
+            return f"{self.__get_type_ref_str(arg)}[]"
         if is_typeddict(cls):
             types = [
-                f"{k}: {self.__get_type_decl_str(v)}"
+                f"{k}: {self.__get_type_ref_str(v)}"
                 for k, v in cls.__annotations__.items()
             ]
             return f"{{ {', '.join(types)} }}"
@@ -115,15 +125,15 @@ class CodeGenerator:
             if len(args) == 1:
                 assert isinstance(args, dict)
                 args = cast(dict[str, type], args[0])
-                types = [f"{k}: {self.__get_type_decl_str(v)}" for k, v in args.items()]
+                types = [f"{k}: {self.__get_type_ref_str(v)}" for k, v in args.items()]
                 return f"{{ {', '.join(types)} }}"
             else:
                 if len(args) == 2:
-                    key = self.__get_type_decl_str(args[0])
-                    val = self.__get_type_decl_str(args[1])
+                    key = self.__get_type_ref_str(args[0])
+                    val = self.__get_type_ref_str(args[1])
                 else:
-                    key = self.__get_type_decl_str(Any)
-                    val = self.__get_type_decl_str(Any)
+                    key = self.__get_type_ref_str(Any)
+                    val = self.__get_type_ref_str(Any)
                 return f"{{[key: {key}]: {val}}}"
         return None
 
@@ -147,16 +157,3 @@ class AnnotateInterface(AddInterface, exclude=True):
     @classmethod
     def __iface_codegen__(cls) -> Iface_t:
         return cls.__annotations__
-
-
-# class MyChildClass[T](AnnotateInterface):
-#     _t: T
-
-
-# class MyClass(AnnotateInterface):
-#     _int: int
-#     _str: str
-#     _child: MyChildClass[int]
-
-
-# print(*cgen.generate_interfaces(), sep="\n")
