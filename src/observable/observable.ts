@@ -1,3 +1,4 @@
+import { watch } from "../__init__.js";
 import { ReceiverFn_t, create_message } from "../comm/__init__.js";
 import { weakref } from "../utils/__init__.js";
 import { ChangeMessage, OBSERVABLE_CHANGE_MSG } from "./messages.js";
@@ -17,11 +18,44 @@ type ObservableKwds = {
     local?: boolean;
 }
 
+export type ObservableProxy<T> = {
+    [P in keyof T]:
+    T[P] extends (..._: infer A) => infer R
+    ? (..._: A) => Observable<R> & ObservableProxy<R>
+    : never
+};
+
+
 export function get<T>(obs: Observable<T> | T): T {
     if (obs instanceof Observable) {
         return obs.get();
     }
     return obs;
+}
+
+class ObservableProxyHandler<T extends Observable<any>> implements ProxyHandler<T> {
+    get(target: T, p: string | symbol, receiver: any) {
+        {
+            const value = target.get();
+            const attr = value && value[p as keyof T];
+            if (attr) {
+                if (typeof attr === "function") {
+                    return (...args: any[]) => watch([target], () => {
+                        return attr.call(target.get(), ...args);
+                    });
+                }
+            }
+        }
+
+        {
+            const attr = target[p as keyof T];
+            if (typeof attr === "function") {
+                return (...args: any[]) => attr.call(target, ...args);
+            }
+            return attr;
+        }
+
+    }
 }
 
 export class Observable<T> {
@@ -31,11 +65,20 @@ export class Observable<T> {
     #receivers: weakref.IterableWeakMap<ReceiverFn_t, ReceiverFn_t>;
     #local: boolean;
 
-    constructor(__id: string, __value: T, __kwds: ObservableKwds = {}) {
+    private constructor(__id: string, __value: T, __kwds: ObservableKwds = {}) {
         this.#id = __id;
         this.#value = __value;
         this.#receivers = new weakref.IterableWeakMap();
         this.#local = __kwds.local ?? false;
+    }
+
+    static create<U>(__id: string, __value: U, __kwds: ObservableKwds = {}): Observable<U> & ObservableProxy<U> {
+        const obs = new Observable(__id, __value, __kwds);
+        return this.create_proxy(obs);
+    }
+
+    static create_proxy<U>(obs: Observable<U>): Observable<U> & ObservableProxy<U> {
+        return <Observable<U> & ObservableProxy<U>>new Proxy(obs, new ObservableProxyHandler());
     }
 
     get id(): string {
@@ -46,8 +89,8 @@ export class Observable<T> {
         return this.#network;
     }
 
-    static from_schema<T>(__schema: ObservableSchema<T>): Observable<T> {
-        return new Observable(__schema.data_id, __schema.value);
+    static from_schema<T>(__schema: ObservableSchema<T>): Observable<T> & ObservableProxy<T> {
+        return this.create(__schema.data_id, __schema.value);
     }
 
     register(__network: ObservableNetwork): void {

@@ -10,13 +10,18 @@ export type ObservableOr<T> = T extends {
 type ObservableKwds = {
     local?: boolean;
 };
+export type ObservableProxy<T> = {
+    [P in keyof T]: T[P] extends (..._: infer A) => infer R ? (..._: A) => Observable<R> & ObservableProxy<R> : never;
+};
 export declare function get<T>(obs: Observable<T> | T): T;
 export declare class Observable<T> {
     #private;
-    constructor(__id: string, __value: T, __kwds?: ObservableKwds);
+    private constructor();
+    static create<U>(__id: string, __value: U, __kwds?: ObservableKwds): Observable<U> & ObservableProxy<U>;
+    static create_proxy<U>(obs: Observable<U>): Observable<U> & ObservableProxy<U>;
     get id(): string;
     get network(): ObservableNetwork | void;
-    static from_schema<T>(__schema: ObservableSchema<T>): Observable<T>;
+    static from_schema<T>(__schema: ObservableSchema<T>): Observable<T> & ObservableProxy<T>;
     register(__network: ObservableNetwork): void;
     get(): T;
     set(__value: T): void;

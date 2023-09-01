@@ -2,7 +2,7 @@ import { Observable } from "../__init__.js";
 import { uuid4 } from "../utils/uuid.js";
 export function watch(args, fn) {
     let network;
-    const obs = new Observable(uuid4(), fn(), { local: true });
+    const obs = Observable.create(uuid4(), fn(), { local: true });
     args.forEach((arg) => {
         if (arg instanceof Observable) {
             if (arg.network) {
@@ -17,6 +17,7 @@ export function watch(args, fn) {
     return obs;
 }
 export class Model {
+    // static from_schema<T extends Model>(schema: ModelSchema): T {
     static from_schema(schema) {
         const result = new Model();
         for (let key in schema) {

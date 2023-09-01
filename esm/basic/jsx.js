@@ -32,7 +32,7 @@ export function tmpl(strings, ...args) {
         });
         return result.join("");
     }
-    const obs = new Observable(uuid.uuid4(), render_str(), { local: true });
+    const obs = Observable.create(uuid.uuid4(), render_str(), { local: true });
     if (network) {
         network.register(obs);
     }
@@ -60,9 +60,10 @@ export function expr(strs, ...args) {
     body_arr.push(`);`);
     const body = body_arr.join("");
     const fn = new Function("a", body);
-    return watch(args, () => {
+    const out = watch(args, () => {
         return fn(args.map(a => get(a)));
     });
+    return out;
 }
 function __make_node(content) {
     if (content instanceof Node) {

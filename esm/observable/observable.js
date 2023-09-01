@@ -1,3 +1,4 @@
+import { watch } from "../__init__.js";
 import { create_message } from "../comm/__init__.js";
 import { weakref } from "../utils/__init__.js";
 import { OBSERVABLE_CHANGE_MSG } from "./messages.js";
@@ -6,6 +7,28 @@ export function get(obs) {
         return obs.get();
     }
     return obs;
+}
+class ObservableProxyHandler {
+    get(target, p, receiver) {
+        {
+            const value = target.get();
+            const attr = value && value[p];
+            if (attr) {
+                if (typeof attr === "function") {
+                    return (...args) => watch([target], () => {
+                        return attr.call(target.get(), ...args);
+                    });
+                }
+            }
+        }
+        {
+            const attr = target[p];
+            if (typeof attr === "function") {
+                return (...args) => attr.call(target, ...args);
+            }
+            return attr;
+        }
+    }
 }
 export class Observable {
     #network;
@@ -19,6 +42,13 @@ export class Observable {
         this.#receivers = new weakref.IterableWeakMap();
         this.#local = __kwds.local ?? false;
     }
+    static create(__id, __value, __kwds = {}) {
+        const obs = new Observable(__id, __value, __kwds);
+        return this.create_proxy(obs);
+    }
+    static create_proxy(obs) {
+        return new Proxy(obs, new ObservableProxyHandler());
+    }
     get id() {
         return this.#id;
     }
@@ -26,7 +56,7 @@ export class Observable {
         return this.#network;
     }
     static from_schema(__schema) {
-        return new Observable(__schema.data_id, __schema.value);
+        return this.create(__schema.data_id, __schema.value);
     }
     register(__network) {
         this.#network = __network;
@@ -51,18 +81,6 @@ export class Observable {
         this.#receivers.set(__fn, __recv_change);
         this.#network?.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_change);
     }
-    // add(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
-    //     return watch([this, other], () => get(this) + get(other));
-    // }
-    // sub(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
-    //     return watch([this, other], () => get(this) - get(other));
-    // }
-    // mul(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
-    //     return watch([this, other], () => get(this) * get(other));
-    // }
-    // div(this: Observable<number>, other: ObservableOr<number>): Observable<number> {
-    //     return watch([this, other], () => get(this) / get(other));
-    // }
     #notify_change() {
         const change = create_message({
             data_id: this.#id,

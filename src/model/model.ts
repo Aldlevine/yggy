@@ -1,10 +1,10 @@
-import { Observable, ObservableNetwork, ObservableSchema } from "../__init__.js";
+import { Observable, ObservableNetwork, ObservableProxy, ObservableSchema } from "../__init__.js";
 import { uuid4 } from "../utils/uuid.js";
 import { ModelSchema } from "./schema.js";
 
-export function watch<T>(args: any[], fn: () => T): Observable<T> {
+export function watch<T>(args: any[], fn: () => T): Observable<T> & ObservableProxy<T> {
     let network!: ObservableNetwork;
-    const obs = new Observable(uuid4(), fn(), { local: true });
+    const obs = Observable.create(uuid4(), fn(), { local: true });
     args.forEach((arg: any) => {
         if (arg instanceof Observable) {
             if (arg.network) {
@@ -19,9 +19,17 @@ export function watch<T>(args: any[], fn: () => T): Observable<T> {
     return obs;
 }
 
+export type ProxiedModel<T extends Model> = T & {
+    [P in keyof T]:
+    T[P] extends Observable<infer V> ?
+    Observable<V> & ObservableProxy<V> :
+    T[P]
+}
+
 export class Model {
 
-    static from_schema<T extends Model>(schema: ModelSchema): T {
+    // static from_schema<T extends Model>(schema: ModelSchema): T {
+    static from_schema<T extends Model>(schema: ModelSchema): ProxiedModel<T> {
         const result = <T>new Model();
 
         for (let key in schema) {
@@ -52,7 +60,7 @@ export class Model {
             }
         }
 
-        return result;
+        return <ProxiedModel<T>>result;
     }
 
     *observables(): Generator<Observable<any>> {

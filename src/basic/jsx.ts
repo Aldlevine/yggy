@@ -1,7 +1,7 @@
 /** @jsx h */
 
 import type { JSX as JSXInternal } from "preact";
-import { Observable, ObservableNetwork, ObservableOr, get, watch } from "../__init__.js";
+import { Observable, ObservableNetwork, ObservableOr, ObservableProxy, get, watch } from "../__init__.js";
 import { uuid } from "../utils/__init__.js";
 
 
@@ -53,7 +53,7 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
         return result.join("");
     }
 
-    const obs = new Observable(uuid.uuid4(), render_str(), { local: true });
+    const obs = Observable.create(uuid.uuid4(), render_str(), { local: true });
     if (network) {
         network.register(obs);
     }
@@ -70,7 +70,7 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
 }
 
 const __expr_stanitize_reg = /[^\d.()*/+-\s]/g;
-export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]): Observable<number> {
+export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]): Observable<number> & ObservableProxy<number> {
     if (__expr_stanitize_reg.test(strs.join(""))) {
         throw new Error(`Invalid expr: "${strs.join("${...}")}"`)
     }
@@ -84,9 +84,10 @@ export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]
     body_arr.push(`);`);
     const body = body_arr.join("");
     const fn = new Function("a", body);
-    return watch(args, () => {
-        return fn(args.map(a => get(a)));
+    const out = watch(args, () => {
+        return <number>fn(args.map(a => get(a)));
     });
+    return out;
 }
 
 type __NodeTree = Node | __NodeTree[];

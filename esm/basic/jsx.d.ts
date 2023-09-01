@@ -1,6 +1,6 @@
 /** @jsx h */
 import type { JSX as JSXInternal } from "preact";
-import { Observable, ObservableOr } from "../__init__.js";
+import { Observable, ObservableOr, ObservableProxy } from "../__init__.js";
 export declare class Binding {
     obs: Observable<any>;
     events: string[];
@@ -20,7 +20,7 @@ declare global {
 }
 export declare function bind<T>(obs: Observable<T> | T, ...events: string[]): Binding | T;
 export declare function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<string>;
-export declare function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]): Observable<number>;
+export declare function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]): Observable<number> & ObservableProxy<number>;
 type __NodeTree = Node | __NodeTree[];
 export declare function html(__html: Observable<string> | string): Observable<__NodeTree> | __NodeTree;
 export declare function h(name: string | ((...args: any[]) => HTMLElement), attrs?: {
