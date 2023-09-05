@@ -180,7 +180,7 @@ class Model(AddInterface, exclude=True):
         return out
 
     @classmethod
-    def __iface_codegen__(cls) -> Iface_t:
+    def __codegen_iface__(cls) -> Iface_t:
         return {
             k: t
             for k, v in cls.__model_fields__.items()

@@ -2,6 +2,7 @@ import uuid
 from typing import TYPE_CHECKING, Any, Callable
 from weakref import WeakKeyDictionary
 
+from ..codegen import HasCodegenBuiltin
 from ..comm import LazyMessage, ReceiverFn_t, create_message
 from ..logging import get_logger
 from ..types import Primitive
@@ -26,7 +27,7 @@ def get[T: Primitive](obs: "Observable[T] | T") -> T:
     return obs
 
 
-class Observable[T: Primitive]:
+class Observable[T: Primitive](HasCodegenBuiltin):
     """An observable primitive value.
 
     When registered with an #ObservableNetwork it will emit and receive
@@ -81,7 +82,7 @@ class Observable[T: Primitive]:
         return {"data_id": self.id, "value": self.get()}
 
     @classmethod
-    def __builtin_codegen__(cls) -> str:
+    def __codegen_builtin__(cls) -> str:
         return cls.__name__
 
     @property

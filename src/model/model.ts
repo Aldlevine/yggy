@@ -1,9 +1,9 @@
-import { Observable, ObservableNetwork, ObservableProxy, ObservableSchema } from "../__init__.js";
+import { ObservableNetwork, Observable as Observable, ObservableSchema } from "../__init__.js";
 import { uuid4 } from "../utils/uuid.js";
 import { ModelSchema } from "./schema.js";
 
-export function watch<T>(args: any[], fn: () => T): Observable<T> & ObservableProxy<T> {
-    let network!: ObservableNetwork;
+export function watch<T>(args: any[], fn: () => T): Observable<T> {
+    let network: ObservableNetwork | undefined;
     const obs = Observable.create(uuid4(), fn(), { local: true });
     args.forEach((arg: any) => {
         if (arg instanceof Observable) {
@@ -19,17 +19,18 @@ export function watch<T>(args: any[], fn: () => T): Observable<T> & ObservablePr
     return obs;
 }
 
-export type ProxiedModel<T extends Model> = T & {
-    [P in keyof T]:
-    T[P] extends Observable<infer V> ?
-    Observable<V> & ObservableProxy<V> :
-    T[P]
-}
+// export type ModelProxy<T extends Model> = T & {
+//     [P in keyof T]:
+//     T[P] extends Observable<infer V> ?
+//     Observable<V> & ObservableProxy<V> :
+//     T[P]
+// }
 
 export class Model {
+    private constructor() { }
 
-    // static from_schema<T extends Model>(schema: ModelSchema): T {
-    static from_schema<T extends Model>(schema: ModelSchema): ProxiedModel<T> {
+    // static from_schema<T extends Model>(schema: ModelSchema): ModelProxy<T> {
+    static from_schema<T extends Model>(schema: ModelSchema): T {
         const result = <T>new Model();
 
         for (let key in schema) {
@@ -60,7 +61,8 @@ export class Model {
             }
         }
 
-        return <ProxiedModel<T>>result;
+        // return <ModelProxy<T>>result;
+        return result;
     }
 
     *observables(): Generator<Observable<any>> {
@@ -68,7 +70,7 @@ export class Model {
             const item = this[key];
 
             if (item instanceof Observable) {
-                yield item;
+                yield <Observable<any>>item;
                 continue
             }
 

@@ -1,5 +1,6 @@
 # pyright: reportUnknownMemberType=false
 
+import os
 import subprocess
 from logging import INFO
 from os import path
@@ -57,7 +58,8 @@ class EventHandler(PatternMatchingEventHandler):
 
     def copy_file(self, path: str) -> None:
         logger.info(f"copy {path}")
-        self.__app.copy_static_files(path)
+        app_path = os.path.relpath(os.path.abspath(path), self.__app.app_root)
+        self.__app.copy_static_files(app_path)
         self.__app.comm.emit("hot_reload", create_message(Message, {}))
 
     def on_modified(self, event: FileModifiedEvent):

@@ -1,5 +1,5 @@
 /** @jsx h */
-import { Observable, get, watch } from "../__init__.js";
+import { Observable as Observable, get, watch } from "../__init__.js";
 import { uuid } from "../utils/__init__.js";
 export class Binding {
     obs;
@@ -131,6 +131,14 @@ function __html_to_dom(__html) {
     doc.body.innerHTML = "";
     return result;
 }
+function __set_property(__node, __property, __value) {
+    if (typeof __value === "boolean" || typeof __value === "number" || typeof __value === "string") {
+        __node.setAttribute(__property, String(__value));
+    }
+    else {
+        __node[__property] = __value;
+    }
+}
 export function html(__html) {
     if (__html instanceof Observable) {
         return watch([__html], () => __html_to_dom(get(__html)));
@@ -155,23 +163,27 @@ export function h(name, attrs, ...children) {
             const attr = attrs[key];
             if (attr instanceof Binding) {
                 if (attr.obs instanceof Observable) {
-                    attr.obs.watch(() => { element[key] = attr.obs.get(); });
-                    element[key] = attr.obs.get();
+                    attr.obs.watch(() => {
+                        __set_property(element, key, attr.obs.get());
+                    });
+                    __set_property(element, key, attr.obs.get());
                     if (attr.events) {
                         for (let evt of attr.events) {
-                            element.addEventListener(evt, () => { attr.obs.set(element[key]); });
+                            element.addEventListener(evt, () => {
+                                attr.obs.set(element[key]);
+                            });
                         }
                     }
                 }
                 else {
-                    element[key] = String(attr.obs);
+                    __set_property(element, key, attr.obs);
                 }
             }
             else {
                 if (attr instanceof Observable) {
-                    element.setAttribute(key, String(attr.get()));
+                    __set_property(element, key, attr.get());
                     attr.watch(() => {
-                        element.setAttribute(key, String(attr.get()));
+                        __set_property(element, key, attr.get());
                     });
                 }
                 else if (attr && typeof attr === "object") {
@@ -186,7 +198,7 @@ export function h(name, attrs, ...children) {
                     }
                 }
                 else {
-                    element.setAttribute(key, String(attrs[key]));
+                    __set_property(element, key, attrs[key]);
                 }
             }
         }

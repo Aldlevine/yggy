@@ -9,10 +9,10 @@ export function get(obs) {
     return obs;
 }
 class ObservableProxyHandler {
-    get(target, p, receiver) {
+    static get(target, p, receiver) {
         {
             const value = target.get();
-            const attr = value && value[p];
+            const attr = (value !== undefined && value !== null) && value[p];
             if (attr) {
                 if (typeof attr === "function") {
                     return (...args) => watch([target], () => {
@@ -44,19 +44,16 @@ export class Observable {
     }
     static create(__id, __value, __kwds = {}) {
         const obs = new Observable(__id, __value, __kwds);
-        return this.create_proxy(obs);
+        return new Proxy(obs, ObservableProxyHandler);
     }
-    static create_proxy(obs) {
-        return new Proxy(obs, new ObservableProxyHandler());
+    static from_schema(__schema) {
+        return this.create(__schema.data_id, __schema.value);
     }
     get id() {
         return this.#id;
     }
     get network() {
         return this.#network;
-    }
-    static from_schema(__schema) {
-        return this.create(__schema.data_id, __schema.value);
     }
     register(__network) {
         this.#network = __network;
@@ -80,6 +77,11 @@ export class Observable {
         };
         this.#receivers.set(__fn, __recv_change);
         this.#network?.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_change);
+    }
+    map(__fn) {
+        return watch([this], () => {
+            return __fn(this.get());
+        });
     }
     #notify_change() {
         const change = create_message({

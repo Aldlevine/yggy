@@ -1,4 +1,4 @@
-import { Observable } from "../__init__.js";
+import { Observable as Observable } from "../__init__.js";
 import { uuid4 } from "../utils/uuid.js";
 export function watch(args, fn) {
     let network;
@@ -16,8 +16,15 @@ export function watch(args, fn) {
     }
     return obs;
 }
+// export type ModelProxy<T extends Model> = T & {
+//     [P in keyof T]:
+//     T[P] extends Observable<infer V> ?
+//     Observable<V> & ObservableProxy<V> :
+//     T[P]
+// }
 export class Model {
-    // static from_schema<T extends Model>(schema: ModelSchema): T {
+    constructor() { }
+    // static from_schema<T extends Model>(schema: ModelSchema): ModelProxy<T> {
     static from_schema(schema) {
         const result = new Model();
         for (let key in schema) {
@@ -45,6 +52,7 @@ export class Model {
                 continue;
             }
         }
+        // return <ModelProxy<T>>result;
         return result;
     }
     *observables() {

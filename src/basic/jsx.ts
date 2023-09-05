@@ -1,7 +1,7 @@
 /** @jsx h */
 
 import type { JSX as JSXInternal } from "preact";
-import { Observable, ObservableNetwork, ObservableOr, ObservableProxy, get, watch } from "../__init__.js";
+import { ObservableNetwork, ObservableOr, Observable as Observable, get, watch } from "../__init__.js";
 import { uuid } from "../utils/__init__.js";
 
 
@@ -15,14 +15,20 @@ export class Binding {
     }
 }
 
-
 type __JSXElement<T> = T | Binding | Observable<T> | { [P in keyof T]: __JSXElement<T[P]> };
 
 declare global {
     namespace JSX {
         type IntrinsicElements = {
-            [K in keyof JSXInternal.IntrinsicElements as K extends string ? K | `svg-${K}` : K]: {
-                [K2 in keyof JSXInternal.IntrinsicElements[K]]: __JSXElement<JSXInternal.IntrinsicElements[K][K2]>
+            [
+            K in keyof JSXInternal.IntrinsicElements
+            as K extends string ? K | `svg-${K}` : K
+            ]: {
+                [
+                K2 in keyof JSXInternal.IntrinsicElements[K]
+                as K2 extends `on${string}` ? Lowercase<K2> : K2
+                ]:
+                __JSXElement<JSXInternal.IntrinsicElements[K][K2]>
             }
         }
     }
@@ -55,7 +61,7 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
 
     const obs = Observable.create(uuid.uuid4(), render_str(), { local: true });
     if (network) {
-        network.register(obs);
+        network.register(obs as unknown as Observable<any>);
     }
 
     for (let arg of args) {
@@ -70,7 +76,7 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
 }
 
 const __expr_stanitize_reg = /[^\d.()*/+-\s]/g;
-export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]): Observable<number> & ObservableProxy<number> {
+export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]): Observable<number> {
     if (__expr_stanitize_reg.test(strs.join(""))) {
         throw new Error(`Invalid expr: "${strs.join("${...}")}"`)
     }
@@ -166,6 +172,23 @@ function __html_to_dom(__html: string): __NodeTree {
     return result;
 }
 
+type IfEquals<X, Y, A = X, B = never> =
+    (<T>() => T extends X ? 1 : 2) extends
+    (<T>() => T extends Y ? 1 : 2) ? A : B;
+
+type WritableKeys<T> = {
+    [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P>
+}[keyof T];
+
+function __set_property(__node: Element, __property: string, __value: any): void {
+    if (typeof __value === "boolean" || typeof __value === "number" || typeof __value === "string") {
+        __node.setAttribute(__property, String(__value));
+    }
+    else {
+        __node[__property as WritableKeys<Node>] = __value;
+    }
+}
+
 export function html(__html: Observable<string> | string): Observable<__NodeTree> | __NodeTree {
     if (__html instanceof Observable) {
         return watch([__html], () => __html_to_dom(get(__html)));
@@ -193,23 +216,27 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
             const attr = attrs[key];
             if (attr instanceof Binding) {
                 if (attr.obs instanceof Observable) {
-                    attr.obs.watch(() => { element[key] = attr.obs.get(); })
-                    element[key] = attr.obs.get();
+                    attr.obs.watch(() => {
+                        __set_property(element, key, attr.obs.get());
+                    });
+                    __set_property(element, key, attr.obs.get());
                     if (attr.events) {
                         for (let evt of attr.events) {
-                            element.addEventListener(evt, () => { attr.obs.set(element[key]); });
+                            element.addEventListener(evt, () => {
+                                attr.obs.set(element[key]);
+                            });
                         }
                     }
                 }
                 else {
-                    element[key] = String(attr.obs);
+                    __set_property(element, key, attr.obs)
                 }
             }
             else {
                 if (attr instanceof Observable) {
-                    element.setAttribute(key, String(attr.get()));
+                    __set_property(element, key, attr.get());
                     attr.watch(() => {
-                        element.setAttribute(key, String(attr.get()));
+                        __set_property(element, key, attr.get());
                     });
                 }
                 else if (attr && typeof attr === "object") {
@@ -225,7 +252,7 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
                     }
                 }
                 else {
-                    element.setAttribute(key, String(attrs[key]));
+                    __set_property(element, key, attrs[key]);
                 }
             }
         }

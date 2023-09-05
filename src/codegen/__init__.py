@@ -17,27 +17,34 @@ from ..types import Primitive
 
 
 @runtime_checkable
-class HasIfaceCodegen(Protocol):
+class HasCodegenIface(Protocol):
     @classmethod
-    def __iface_codegen__(cls) -> "Iface_t":
+    def __codegen_iface__(cls) -> "Iface_t":
         ...
 
 
 @runtime_checkable
-class HasBuiltinCodegen(Protocol):
+class HasCodegenName(Protocol):
     @classmethod
-    def __builtin_codegen__(cls) -> str:
+    def __codegen_name__(cls) -> str:
+        ...
+
+
+@runtime_checkable
+class HasCodegenBuiltin(Protocol):
+    @classmethod
+    def __codegen_builtin__(cls) -> str:
         ...
 
 
 type Attr_t = (
-    TypeVar | type[Primitive] | type[HasIfaceCodegen] | type[HasBuiltinCodegen]
+    TypeVar | type[Primitive] | type[HasCodegenIface] | type[HasCodegenBuiltin]
 )
 type Iface_t = dict[str, Attr_t]
 
 
 class CodeGenerator:
-    __interfaces: set[type[HasIfaceCodegen]]
+    __interfaces: set[type[HasCodegenIface]]
 
     def __init__(self) -> None:
         self.__interfaces = set()
@@ -45,15 +52,15 @@ class CodeGenerator:
     def clear_interfaces(self) -> None:
         self.__interfaces.clear()
 
-    def add_interface[T: type[HasIfaceCodegen]](self, t: T) -> T:
+    def add_interface[T: type[HasCodegenIface]](self, t: T) -> T:
         self.__interfaces.add(t)
         return t
 
-    def generate_interface(self, iface: type[HasIfaceCodegen]) -> str:
+    def generate_interface(self, iface: type[HasCodegenIface]) -> str:
         buffer = StringIO()
         generic_str = self.__get_generic_decl_str(iface)
-        extends = [b for b in iface.__bases__ if issubclass(b, HasIfaceCodegen)]
-        super_keys = [k for e in extends for k in e.__iface_codegen__().keys()]
+        extends = [b for b in iface.__bases__ if issubclass(b, HasCodegenIface)]
+        super_keys = [k for e in extends for k in e.__codegen_iface__().keys()]
         if len(extends) > 0:
             extends_str = " extends " + ", ".join(map(self.__get_type_ref_str, extends))
         else:
@@ -64,7 +71,7 @@ class CodeGenerator:
             f" {self.__get_type_decl_str(iface)}{generic_str}{extends_str} {{",
             file=buffer,
         )
-        for key, t in iface.__iface_codegen__().items():
+        for key, t in iface.__codegen_iface__().items():
             if key in super_keys:
                 continue
             print(f"    {key}: {self.__get_type_ref_str(t)};", file=buffer)
@@ -75,7 +82,11 @@ class CodeGenerator:
         ifaces = sorted(self.__interfaces, key=lambda i: i.__name__)
         return [self.generate_interface(iface) for iface in ifaces]
 
-    def __get_type_decl_str(self, t: type[HasIfaceCodegen | HasBuiltinCodegen]) -> str:
+    def __get_type_decl_str(self, t: type[HasCodegenIface | HasCodegenBuiltin]) -> str:
+        if issubclass(t, HasCodegenName):
+            return t.__codegen_name__()
+        if issubclass(t, HasCodegenBuiltin):
+            return t.__codegen_builtin__()
         return t.__name__
 
     def __get_type_ref_str(self, t: Attr_t) -> str:
@@ -84,12 +95,12 @@ class CodeGenerator:
             return primitive
         origin = get_origin(t) or t
         args = get_args(t) or tuple()
-        if isclass(origin) and issubclass(origin, (HasIfaceCodegen, HasBuiltinCodegen)):
+        if isclass(origin) and issubclass(origin, (HasCodegenIface, HasCodegenBuiltin)):
             generic_str = self.__get_generic_ref_str(args)
             return f"{self.__get_type_decl_str(origin)}{generic_str}"
         return "unknown"
 
-    def __get_generic_decl_str(self, t: type[HasIfaceCodegen]) -> str:
+    def __get_generic_decl_str(self, t: type[HasCodegenIface]) -> str:
         if issubclass(t, Generic):
             return f"<{", ".join(map(str, t.__type_params__))}>"
         return ""
@@ -141,7 +152,7 @@ class CodeGenerator:
 cgen = CodeGenerator()
 
 
-class AddInterface(abc.ABC):
+class AddInterface(abc.ABC, HasCodegenIface):
     @classmethod
     def __init_subclass__(cls, exclude: bool = False) -> None:
         super().__init_subclass__()
@@ -149,11 +160,11 @@ class AddInterface(abc.ABC):
             cgen.add_interface(cls)
 
     @classmethod
-    def __iface_codegen__(cls) -> Iface_t:
+    def __codegen_iface__(cls) -> Iface_t:
         ...
 
 
 class AnnotateInterface(AddInterface, exclude=True):
     @classmethod
-    def __iface_codegen__(cls) -> Iface_t:
+    def __codegen_iface__(cls) -> Iface_t:
         return cls.__annotations__
