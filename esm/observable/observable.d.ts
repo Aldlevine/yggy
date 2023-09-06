@@ -222,6 +222,12 @@ type ObservableKwds = {
     remote?: boolean;
     network?: ObservableNetwork;
 };
+/**
+ * The keyowrds supported by {@link bind}
+ *
+ * @template T
+ * @template R
+ */
 type BindKwds<T, R> = {
     coerce?: TransformFn<T, R>;
     primary?: "observable" | "target";

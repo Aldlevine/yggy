@@ -1,27 +1,12 @@
 import { ReceiverFn_t, create_message } from "../comm/__init__.js";
 import { weakref } from "../utils/__init__.js";
 import { get_default } from "../utils/dicttools.js";
+import { WritableKeys } from "../utils/types.js";
 import { uuid4 } from "../utils/uuid.js";
 import { ChangeMessage, OBSERVABLE_CHANGE_MSG } from "./messages.js";
 import { ObservableNetwork } from "./observable_network.js";
 import { ObservableSchema } from "./schema.js";
 
-
-// TODO: move this to a better place
-type Equals<A1 extends any, A2 extends any> =
-    (<A>() => A extends A2 ? 1 : 0) extends (<A>() => A extends A1 ? 1 : 0)
-    ? (<A>() => A extends A1 ? 1 : 0) extends (<A>() => A extends A2 ? 1 : 0)
-    ? 1
-    : 0
-    : 0
-
-// TODO: move this to a better place
-type WritableKeys<O extends object> = {
-    [K in keyof O]-?: {
-        1: K
-        0: never
-    }[Equals<{ -readonly [Q in K]: O[K] }, { [Q in K]: O[K] }>]
-}[keyof O]
 
 /**
  * Any function that transforms an object of type {@link From} to type {@link To}
@@ -48,6 +33,7 @@ export type Primitives = [void, boolean, number, string];
  * @export
  */
 export type Primitive = Primitives[number];
+
 
 /**
  * Converts a possible literal primitive to a {@link Primitive}
@@ -83,6 +69,7 @@ type ObjectOf<T> =
     T extends string ? String :
     T extends object ? T :
     never;
+
 
 /**
  * Identifies the constructor type associated with a given {@link Primitive}
@@ -143,6 +130,7 @@ export type ObservableTuple<T extends Primitive[]> = {
     [P in keyof T]: Observable<T[P]>;
 };
 
+
 /**
  * Convert a tuple of {@link T} to a tuple of {@link ObservableOr}<{@link T}>
  *
@@ -164,6 +152,7 @@ export type ObservableDict<T extends { [key: string]: Primitive }> = {
     [P in keyof T]: Observable<T[P]>
 }
 
+
 /**
  * Convert a dict of {@link T} to a dict of {@link ObservableOr}<{@link T}>
  *
@@ -173,6 +162,7 @@ export type ObservableDict<T extends { [key: string]: Primitive }> = {
 export type ObservableOrDict<T extends { [key: string]: Primitive }> = {
     [P in keyof T]: ObservableOr<T[P]>
 }
+
 
 /**
  * Maps a function with Primitive arguments / return to
@@ -391,6 +381,7 @@ Object.defineProperty(Observable, Symbol.hasInstance, {
     value: (o: any) => o instanceof _Observable
 });
 
+
 /**
  * A {@link ProxyHandler} that either forwards directly to {@link _Observable}
  * OR to a wrapper around the underlying {@link Primitive}'s method / accessor
@@ -450,6 +441,7 @@ class _ObservableProxyHandler implements ProxyHandler<_Observable<any>> {
     }
 }
 
+
 /**
  * The keywords supported by {@link Observable}
  */
@@ -459,12 +451,21 @@ type ObservableKwds = {
     network?: ObservableNetwork,
 }
 
+
+
+/**
+ * The keyowrds supported by {@link bind}
+ * 
+ * @template T
+ * @template R
+ */
 type BindKwds<T, R> = {
     coerce?: TransformFn<T, R>,
     primary?: "observable" | "target"
     update_observable?: boolean
     update_target?: boolean
 }
+
 
 /**
  * The actual {@link Observable} implementation.
@@ -529,6 +530,7 @@ class _Observable<T> {
         return this.#id;
     }
 
+
     /**
      * Gets the {@link Observable}'s {@link ObservableNetwork}
      *
@@ -537,6 +539,7 @@ class _Observable<T> {
     get network(): ObservableNetwork | void {
         return this.#network;
     }
+
 
     /**
      * Gets the {@link Observable}'s value.
