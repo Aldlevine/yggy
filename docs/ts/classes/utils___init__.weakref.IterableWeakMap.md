@@ -55,7 +55,7 @@
 
 #### Defined in
 
-[utils/weakref.ts:10](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L10)
+[utils/weakref.ts:10](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L10)
 
 ## Properties
 
@@ -65,7 +65,7 @@
 
 #### Defined in
 
-[utils/weakref.ts:4](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L4)
+[utils/weakref.ts:4](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L4)
 
 ___
 
@@ -75,7 +75,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:3](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L3)
+[utils/weakref.ts:3](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L3)
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:2](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L2)
+[utils/weakref.ts:2](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L2)
 
 ## Methods
 
@@ -99,7 +99,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:43](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L43)
+[utils/weakref.ts:43](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L43)
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:31](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L31)
+[utils/weakref.ts:31](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L31)
 
 ___
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:52](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L52)
+[utils/weakref.ts:52](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L52)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:26](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L26)
+[utils/weakref.ts:26](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L26)
 
 ___
 
@@ -167,7 +167,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:56](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L56)
+[utils/weakref.ts:56](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L56)
 
 ___
 
@@ -188,7 +188,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:16](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L16)
+[utils/weakref.ts:16](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L16)
 
 ___
 
@@ -202,7 +202,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:62](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L62)
+[utils/weakref.ts:62](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L62)
 
 ___
 
@@ -224,4 +224,4 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:6](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/weakref.ts#L6)
+[utils/weakref.ts:6](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L6)

@@ -49,7 +49,7 @@
 
 #### Defined in
 
-[observable/messages.ts:7](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L7)
+[observable/messages.ts:7](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/messages.ts#L7)
 
 ___
 
@@ -65,7 +65,7 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:12](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L12)
+[observable/messages.ts:12](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/messages.ts#L12)
 
 ___
 
@@ -91,9 +91,9 @@ and [Observable](observable___init__.md#observable-1)s as arguments.
 
 #### Defined in
 
-[observable/observable.ts:366](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L366)
+[observable/observable.ts:356](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L356)
 
-[observable/observable.ts:380](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L380)
+[observable/observable.ts:370](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L370)
 
 ___
 
@@ -113,7 +113,7 @@ Convert a dict of T to a dict of [Observable](observable___init__.md#observable-
 
 #### Defined in
 
-[observable/observable.ts:163](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L163)
+[observable/observable.ts:151](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L151)
 
 ___
 
@@ -133,7 +133,7 @@ Either an [Observable](observable___init__.md#observable-1)<T> or T
 
 #### Defined in
 
-[observable/observable.ts:125](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L125)
+[observable/observable.ts:112](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L112)
 
 ___
 
@@ -153,7 +153,7 @@ Convert a dict of T to a dict of [ObservableOr](observable___init__.md#observabl
 
 #### Defined in
 
-[observable/observable.ts:173](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L173)
+[observable/observable.ts:162](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L162)
 
 ___
 
@@ -173,7 +173,7 @@ Convert a tuple of T to a tuple of [ObservableOr](observable___init__.md#observa
 
 #### Defined in
 
-[observable/observable.ts:152](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L152)
+[observable/observable.ts:140](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L140)
 
 ___
 
@@ -196,7 +196,7 @@ ___
 
 #### Defined in
 
-[observable/schema.ts:1](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/schema.ts#L1)
+[observable/schema.ts:1](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/schema.ts#L1)
 
 ___
 
@@ -216,7 +216,7 @@ Convert a tuple of T to a tuple of [Observable](observable___init__.md#observabl
 
 #### Defined in
 
-[observable/observable.ts:142](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L142)
+[observable/observable.ts:129](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L129)
 
 ___
 
@@ -230,7 +230,7 @@ Union of primitive types supported by [Observable](observable___init__.md#observ
 
 #### Defined in
 
-[observable/observable.ts:50](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L50)
+[observable/observable.ts:35](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L35)
 
 ___
 
@@ -250,7 +250,7 @@ Converts a possible literal primitive to a [Primitive](observable___init__.md#pr
 
 #### Defined in
 
-[observable/observable.ts:58](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L58)
+[observable/observable.ts:44](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L44)
 
 ___
 
@@ -264,7 +264,7 @@ Tuple of primitive types supported by [Observable](observable___init__.md#observ
 
 #### Defined in
 
-[observable/observable.ts:42](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L42)
+[observable/observable.ts:27](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L27)
 
 ___
 
@@ -280,7 +280,7 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:14](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L14)
+[observable/messages.ts:14](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/messages.ts#L14)
 
 ___
 
@@ -315,7 +315,7 @@ Any function that transforms an object of type From to type To
 
 #### Defined in
 
-[observable/observable.ts:34](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L34)
+[observable/observable.ts:19](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L19)
 
 ## Variables
 
@@ -325,7 +325,7 @@ Any function that transforms an object of type From to type To
 
 #### Defined in
 
-[observable/messages.ts:3](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L3)
+[observable/messages.ts:3](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/messages.ts#L3)
 
 ___
 
@@ -335,7 +335,7 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:4](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L4)
+[observable/messages.ts:4](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/messages.ts#L4)
 
 ___
 
@@ -345,7 +345,7 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:5](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L5)
+[observable/messages.ts:5](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/messages.ts#L5)
 
 ## Functions
 
@@ -374,4 +374,4 @@ the observable
 
 #### Defined in
 
-[observable/observable.ts:193](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L193)
+[observable/observable.ts:183](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable.ts#L183)

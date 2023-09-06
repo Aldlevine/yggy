@@ -39,7 +39,7 @@
 
 #### Defined in
 
-[utils/dicttools.ts:3](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/dicttools.ts#L3)
+[utils/dicttools.ts:3](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/dicttools.ts#L3)
 
 ___
 
@@ -67,4 +67,4 @@ ___
 
 #### Defined in
 
-[utils/dicttools.ts:19](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/dicttools.ts#L19)
+[utils/dicttools.ts:19](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/dicttools.ts#L19)

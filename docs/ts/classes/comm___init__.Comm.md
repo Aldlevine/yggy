@@ -47,7 +47,7 @@
 
 #### Defined in
 
-[comm/comm.ts:10](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L10)
+[comm/comm.ts:10](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L10)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:7](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L7)
+[comm/comm.ts:7](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L7)
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:11](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L11)
+[comm/comm.ts:11](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L11)
 
 ___
 
@@ -81,7 +81,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:9](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L9)
+[comm/comm.ts:9](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L9)
 
 ___
 
@@ -91,7 +91,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:8](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L8)
+[comm/comm.ts:8](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L8)
 
 ## Accessors
 
@@ -105,7 +105,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:13](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L13)
+[comm/comm.ts:13](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L13)
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:16](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L16)
+[comm/comm.ts:16](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L16)
 
 ## Methods
 
@@ -133,7 +133,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:20](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L20)
+[comm/comm.ts:20](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L20)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:34](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L34)
+[comm/comm.ts:34](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L34)
 
 ___
 
@@ -174,7 +174,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:49](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L49)
+[comm/comm.ts:49](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L49)
 
 ___
 
@@ -194,7 +194,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:60](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L60)
+[comm/comm.ts:60](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L60)
 
 ▸ **recv**(`msg`, `fn`): `void`
 
@@ -211,7 +211,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:62](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L62)
+[comm/comm.ts:62](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L62)
 
 ___
 
@@ -232,7 +232,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:42](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L42)
+[comm/comm.ts:42](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L42)
 
 ___
 
@@ -246,7 +246,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:26](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L26)
+[comm/comm.ts:26](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L26)
 
 ___
 
@@ -267,4 +267,4 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:86](https://github.com/Aldlevine/yggy/blob/8bc8567/src/comm/comm.ts#L86)
+[comm/comm.ts:86](https://github.com/Aldlevine/yggy/blob/379e698/src/comm/comm.ts#L86)

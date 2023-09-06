@@ -32,17 +32,17 @@
 
 ### constructor
 
-• **new ObservableNetwork**(`__comm`)
+• **new ObservableNetwork**(`comm`)
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `__comm` | [`Comm`](comm___init__.Comm.md) |
+| `comm` | [`Comm`](comm___init__.Comm.md) |
 
 #### Defined in
 
-[observable/observable_network.ts:14](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L14)
+[observable/observable_network.ts:14](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L14)
 
 ## Properties
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[observable/observable_network.ts:12](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L12)
+[observable/observable_network.ts:12](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L12)
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:10](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L10)
+[observable/observable_network.ts:10](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L10)
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:11](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L11)
+[observable/observable_network.ts:11](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L11)
 
 ## Accessors
 
@@ -90,13 +90,13 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:22](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L22)
+[observable/observable_network.ts:22](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L22)
 
 ## Methods
 
 ### #recv\_change
 
-▸ `Private` **#recv_change**<`T`\>(`__change`): `void`
+▸ `Private` **#recv_change**<`T`\>(`change`): `void`
 
 #### Type parameters
 
@@ -108,7 +108,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `__change` | [`ChangeMessage`](../modules/observable___init__.md#changemessage)<`T`\> |
+| `change` | [`ChangeMessage`](../modules/observable___init__.md#changemessage)<`T`\> |
 
 #### Returns
 
@@ -116,13 +116,13 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:47](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L47)
+[observable/observable_network.ts:47](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L47)
 
 ___
 
 ### get
 
-▸ **get**<`T`\>(`__id`): `undefined` \| [`Observable`](../modules/observable___init__.md#observable-1)<`T`\>
+▸ **get**<`T`\>(`id`): `undefined` \| [`Observable`](../modules/observable___init__.md#observable-1)<`T`\>
 
 #### Type parameters
 
@@ -134,7 +134,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `__id` | `string` |
+| `id` | `string` |
 
 #### Returns
 
@@ -142,13 +142,13 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:26](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L26)
+[observable/observable_network.ts:26](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L26)
 
 ___
 
 ### notify\_change
 
-▸ **notify_change**<`T`\>(`__change`): `void`
+▸ **notify_change**<`T`\>(`change`): `void`
 
 #### Type parameters
 
@@ -160,7 +160,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `__change` | [`ChangeMessage`](../modules/observable___init__.md#changemessage)<`T`\> |
+| `change` | [`ChangeMessage`](../modules/observable___init__.md#changemessage)<`T`\> |
 
 #### Returns
 
@@ -168,13 +168,13 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:38](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L38)
+[observable/observable_network.ts:38](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L38)
 
 ___
 
 ### register
 
-▸ **register**<`T`\>(`__obs`): `void`
+▸ **register**<`T`\>(`obs`): `void`
 
 #### Type parameters
 
@@ -186,7 +186,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `__obs` | [`Observable`](../modules/observable___init__.md#observable-1)<`T`\> |
+| `obs` | [`Observable`](../modules/observable___init__.md#observable-1)<`T`\> |
 
 #### Returns
 
@@ -194,13 +194,13 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:42](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L42)
+[observable/observable_network.ts:42](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L42)
 
 ___
 
 ### send\_change
 
-▸ **send_change**<`T`\>(`__change`): `void`
+▸ **send_change**<`T`\>(`change`): `void`
 
 #### Type parameters
 
@@ -212,7 +212,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `__change` | [`ChangeMessage`](../modules/observable___init__.md#changemessage)<`T`\> |
+| `change` | [`ChangeMessage`](../modules/observable___init__.md#changemessage)<`T`\> |
 
 #### Returns
 
@@ -220,4 +220,4 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:30](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable_network.ts#L30)
+[observable/observable_network.ts:30](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L30)
