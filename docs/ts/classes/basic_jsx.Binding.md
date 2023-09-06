@@ -1,8 +1,14 @@
 [yggy](../README.md) / [Modules](../modules.md) / [basic/jsx](../modules/basic_jsx.md) / Binding
 
-# Class: Binding
+# Class: Binding<T\>
 
 [basic/jsx](../modules/basic_jsx.md).Binding
+
+## Type parameters
+
+| Name |
+| :------ |
+| `T` |
 
 ## Table of contents
 
@@ -19,18 +25,24 @@
 
 ### constructor
 
-• **new Binding**(`obs`, `...events`)
+• **new Binding**<`T`\>(`obs`, `...events`)
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `T` |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `obs` | [`Observable`](observable___init__.Observable.md)<`any`\> |
+| `obs` | [`Observable`](../modules/observable___init__.md#observable-1)<`T`\> |
 | `...events` | `string`[] |
 
 #### Defined in
 
-[basic/jsx.ts:25](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L25)
+[basic/jsx.ts:12](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L12)
 
 ## Properties
 
@@ -40,14 +52,14 @@
 
 #### Defined in
 
-[basic/jsx.ts:23](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L23)
+[basic/jsx.ts:10](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L10)
 
 ___
 
 ### obs
 
-• **obs**: [`Observable`](observable___init__.Observable.md)<`any`\>
+• **obs**: [`Observable`](../modules/observable___init__.md#observable-1)<`T`\>
 
 #### Defined in
 
-[basic/jsx.ts:22](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L22)
+[basic/jsx.ts:9](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L9)

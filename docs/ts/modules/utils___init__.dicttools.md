@@ -15,29 +15,31 @@
 
 ### get\_default
 
-▸ **get_default**<`V`\>(`dict`, `key`, `default_value`): `V`
+▸ **get_default**<`T`, `K`, `R`\>(`dict`, `key`, `default_value`): `Exclude`<`T`[`K`], `undefined`\> \| `R`
 
 #### Type parameters
 
-| Name |
-| :------ |
-| `V` |
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `Object` |
+| `K` | extends `string` \| `number` \| `symbol` |
+| `R` | `Exclude`<`T`[`K`], `undefined`\> |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `dict` | `Object` |
-| `key` | `Index_t` |
-| `default_value` | `V` \| () => `V` |
+| `dict` | `T` |
+| `key` | `K` |
+| `default_value` | `R` \| () => `R` |
 
 #### Returns
 
-`V`
+`Exclude`<`T`[`K`], `undefined`\> \| `R`
 
 #### Defined in
 
-[utils/dicttools.ts:3](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/utils/dicttools.ts#L3)
+[utils/dicttools.ts:3](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/dicttools.ts#L3)
 
 ___
 
@@ -65,4 +67,4 @@ ___
 
 #### Defined in
 
-[utils/dicttools.ts:15](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/utils/dicttools.ts#L15)
+[utils/dicttools.ts:19](https://github.com/Aldlevine/yggy/blob/8bc8567/src/utils/dicttools.ts#L19)

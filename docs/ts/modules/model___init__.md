@@ -24,19 +24,19 @@
 
 #### Defined in
 
-[model/schema.ts:3](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/model/schema.ts#L3)
+[model/schema.ts:3](https://github.com/Aldlevine/yggy/blob/8bc8567/src/model/schema.ts#L3)
 
 ## Functions
 
 ### watch
 
-▸ **watch**<`T`\>(`args`, `fn`): [`Observable`](../classes/observable___init__.Observable.md)<`T`\>
+▸ **watch**<`T`\>(`args`, `fn`): [`Observable`](observable___init__.md#observable-1)<`T`\>
 
 #### Type parameters
 
-| Name |
-| :------ |
-| `T` |
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `string` \| `number` \| `boolean` \| `void` |
 
 #### Parameters
 
@@ -47,8 +47,8 @@
 
 #### Returns
 
-[`Observable`](../classes/observable___init__.Observable.md)<`T`\>
+[`Observable`](observable___init__.md#observable-1)<`T`\>
 
 #### Defined in
 
-[model/model.ts:5](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/model/model.ts#L5)
+[model/model.ts:5](https://github.com/Aldlevine/yggy/blob/8bc8567/src/model/model.ts#L5)

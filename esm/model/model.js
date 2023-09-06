@@ -1,10 +1,10 @@
-import { Observable as Observable } from "../__init__.js";
+import { Observable } from "../__init__.js";
 import { uuid4 } from "../utils/uuid.js";
 export function watch(args, fn) {
     let network;
-    const obs = Observable.create(uuid4(), fn(), { local: true });
+    const obs = Observable(fn(), { id: uuid4(), remote: false });
     args.forEach((arg) => {
-        if (arg instanceof Observable) {
+        if (Observable.isObservable(arg)) {
             if (arg.network) {
                 network = arg.network;
             }

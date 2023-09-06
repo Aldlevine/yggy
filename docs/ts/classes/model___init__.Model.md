@@ -19,33 +19,37 @@
 
 ### constructor
 
-• **new Model**()
+• `Private` **new Model**()
+
+#### Defined in
+
+[model/model.ts:30](https://github.com/Aldlevine/yggy/blob/8bc8567/src/model/model.ts#L30)
 
 ## Methods
 
 ### observables
 
-▸ **observables**(): `Generator`<[`Observable`](observable___init__.Observable.md)<`any`\>, `any`, `unknown`\>
+▸ **observables**(): `Generator`<[`Observable`](../modules/observable___init__.md#observable-1)<`any`\>, `any`, `unknown`\>
 
 #### Returns
 
-`Generator`<[`Observable`](observable___init__.Observable.md)<`any`\>, `any`, `unknown`\>
+`Generator`<[`Observable`](../modules/observable___init__.md#observable-1)<`any`\>, `any`, `unknown`\>
 
 #### Defined in
 
-[model/model.ts:58](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/model/model.ts#L58)
+[model/model.ts:68](https://github.com/Aldlevine/yggy/blob/8bc8567/src/model/model.ts#L68)
 
 ___
 
 ### from\_schema
 
-▸ `Static` **from_schema**<`T`\>(`schema`): [`Model`](model___init__.Model.md) & `T`
+▸ `Static` **from_schema**<`T`\>(`schema`): `T`
 
 #### Type parameters
 
 | Name | Type |
 | :------ | :------ |
-| `T` | `never` |
+| `T` | extends [`Model`](model___init__.Model.md) |
 
 #### Parameters
 
@@ -55,8 +59,8 @@ ___
 
 #### Returns
 
-[`Model`](model___init__.Model.md) & `T`
+`T`
 
 #### Defined in
 
-[model/model.ts:24](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/model/model.ts#L24)
+[model/model.ts:33](https://github.com/Aldlevine/yggy/blob/8bc8567/src/model/model.ts#L33)

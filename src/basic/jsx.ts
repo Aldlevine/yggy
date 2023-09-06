@@ -1,21 +1,22 @@
 /** @jsx h */
 
 import type { JSX as JSXInternal } from "preact";
-import { ObservableNetwork, ObservableOr, Observable as Observable, get, watch } from "../__init__.js";
+import { Observable, ObservableNetwork, ObservableOr, Primitive } from "../__init__.js";
 import { uuid } from "../utils/__init__.js";
 
 
-export class Binding {
-    obs: Observable<any>;
+export class Binding<T> {
+    obs: Observable<T>;
     events: string[];
 
-    constructor(obs: Observable<any>, ...events: string[]) {
+    constructor(obs: Observable<T>, ...events: string[]) {
         this.obs = obs;
         this.events = events;
     }
 }
 
-type __JSXElement<T> = T | Binding | Observable<T> | { [P in keyof T]: __JSXElement<T[P]> };
+type __JSXElement<T> = T | Binding<T> | Observable<T> | { [P in keyof T]: __JSXElement<T[P]> };
+// type __JSXElement<T> = T | { [P in keyof T]: __JSXElement<T[P]> } | (T extends Primitive ? Observable<T> | Binding<T> : never);
 
 declare global {
     namespace JSX {
@@ -34,11 +35,14 @@ declare global {
     }
 }
 
-export function bind<T>(obs: Observable<T> | T, ...events: string[]): Binding | T {
-    if (obs instanceof Observable) {
-        return new Binding(obs, ...events);
+export function bind<T extends boolean>(obs: ObservableOr<T>, ...events: string[]): Binding<T> | T;
+export function bind<T extends string>(obs: ObservableOr<T>, ...events: string[]): Binding<T> | T;
+export function bind<T extends number>(obs: ObservableOr<T>, ...events: string[]): Binding<T> | T;
+export function bind<T>(obs: ObservableOr<T>, ...events: string[]): T extends Primitive ? Binding<T> | T : never {
+    if (Observable.isObservable(obs)) {
+        return new Binding(obs, ...events) as (T extends Primitive ? Binding<T> : never);
     }
-    return obs;
+    return obs as (T extends Primitive ? T : never);
 }
 
 export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<string> {
@@ -46,7 +50,7 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
     function render_str(): string {
         const result: string[] = [strings[0]];
         args.forEach((obs: any, i: number) => {
-            if (obs instanceof Observable) {
+            if (Observable.isObservable(obs)) {
                 if (obs.network) {
                     network = obs.network;
                 }
@@ -59,13 +63,13 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
         return result.join("");
     }
 
-    const obs = Observable.create(uuid.uuid4(), render_str(), { local: true });
+    const obs = new Observable(render_str(), { id: uuid.uuid4(), remote: false });
     if (network) {
         network.register(obs as unknown as Observable<any>);
     }
 
     for (let arg of args) {
-        if (arg instanceof Observable) {
+        if (Observable.isObservable(arg)) {
             arg.watch(() => {
                 obs.set(render_str());
             });
@@ -90,8 +94,9 @@ export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]
     body_arr.push(`);`);
     const body = body_arr.join("");
     const fn = new Function("a", body);
-    const out = watch(args, () => {
-        return <number>fn(args.map(a => get(a)));
+    const out = Observable.map(...args, (...args_: number[]) => {
+        const result = <number>fn(args_);
+        return result;
     });
     return out;
 }
@@ -190,10 +195,12 @@ function __set_property(__node: Element, __property: string, __value: any): void
 }
 
 export function html(__html: Observable<string> | string): Observable<__NodeTree> | __NodeTree {
-    if (__html instanceof Observable) {
-        return watch([__html], () => __html_to_dom(get(__html)));
+    if (Observable.isObservable(__html)) {
+        const obs = Observable.map(__html, (h) => __html_to_dom(h));
+        obs.coerce = (x) => x;
+        return obs;
     }
-    return __html_to_dom(__html);
+    return __html_to_dom(<string>__html);
 }
 
 // TODO: This should be less hacky
@@ -216,36 +223,26 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
             const attr = attrs[key];
             if (attr instanceof Binding) {
                 if (attr.obs instanceof Observable) {
-                    attr.obs.watch(() => {
-                        __set_property(element, key, attr.obs.get());
-                    });
-                    __set_property(element, key, attr.obs.get());
-                    if (attr.events) {
-                        for (let evt of attr.events) {
-                            element.addEventListener(evt, () => {
-                                attr.obs.set(element[key]);
-                            });
-                        }
-                    }
+                    attr.obs.bind(element, key, attr.events);
                 }
                 else {
                     __set_property(element, key, attr.obs)
                 }
             }
             else {
-                if (attr instanceof Observable) {
+                if (Observable.isObservable(attr)) {
                     __set_property(element, key, attr.get());
-                    attr.watch(() => {
-                        __set_property(element, key, attr.get());
+                    attr.watch(v => {
+                        __set_property(element, key, v);
                     });
                 }
                 else if (attr && typeof attr === "object") {
                     for (let subkey in attr) {
                         const subattr = attr[subkey];
-                        element[key][subkey] = get(subattr);
-                        if (subattr instanceof Observable) {
-                            subattr.watch(() => {
-                                element[key][subkey] = get(subattr);
+                        element[key][subkey] = Observable.getValue(subattr);
+                        if (Observable.isObservable(subattr)) {
+                            subattr.watch(v => {
+                                element[key][subkey] = v;
                             });
                         }
 
@@ -263,7 +260,7 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
             if (child instanceof Element) {
                 element.appendChild(child);
             }
-            else if (child instanceof Observable) {
+            else if (Observable.isObservable(child)) {
                 const value = child.get();
                 ((node: __NodeTree) => {
                     child.watch(() => {

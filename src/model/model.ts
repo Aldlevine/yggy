@@ -1,12 +1,12 @@
-import { ObservableNetwork, Observable as Observable, ObservableSchema } from "../__init__.js";
+import { Observable, ObservableNetwork, ObservableSchema, Primitive } from "../__init__.js";
 import { uuid4 } from "../utils/uuid.js";
 import { ModelSchema } from "./schema.js";
 
-export function watch<T>(args: any[], fn: () => T): Observable<T> {
+export function watch<T extends Primitive>(args: any[], fn: () => T): Observable<T> {
     let network: ObservableNetwork | undefined;
-    const obs = Observable.create(uuid4(), fn(), { local: true });
+    const obs = Observable(fn(), { id: uuid4(), remote: false });
     args.forEach((arg: any) => {
-        if (arg instanceof Observable) {
+        if (Observable.isObservable(arg)) {
             if (arg.network) {
                 network = arg.network;
             }

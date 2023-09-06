@@ -26,9 +26,9 @@ class Resolver(MarkdownReferenceResolver):
             module_scope = self.__get_parent_module(scope)
             assert module_scope is not None
             
-            mod = import_module("yggy."+module_scope.name)
+            mod = import_module("src."+module_scope.name)
             obj: object = getattr(mod, ref)
-            module = obj.__module__.removeprefix("yggy.")
+            module = obj.__module__.removeprefix("src.")
             return f"#{module}.{ref}"
         except:
             # then try from root
@@ -38,14 +38,14 @@ class Resolver(MarkdownReferenceResolver):
                     cur_obj = getattr(cur_obj, piece)
                 assert isinstance(cur_obj, object)
                 module: str = cur_obj.__module__
-                module = module.removeprefix("yggy.")
+                module = module.removeprefix("src.")
                 return f"#{module}.{getattr(cur_obj, "__qualname__", "")}"
             except:
                 return super().resolve_ref(scope, ref)
 
 
 def generate_docs() -> None:
-    context = Context("yggy")
+    context = Context("src")
     loader = PythonLoader(search_path=["."])
 
     resolver = Resolver()

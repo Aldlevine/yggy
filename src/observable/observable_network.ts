@@ -4,7 +4,7 @@ import {
     OBSERVABLE_CHANGE_MSG,
     OBSERVABLE_CLIENT_CHANGE_MSG,
 } from "./messages.js";
-import { Observable } from "./observable.js";
+import { Observable, Primitive } from "./observable.js";
 
 export class ObservableNetwork {
     #registry: { [key: string]: Observable<any> };
@@ -23,14 +23,11 @@ export class ObservableNetwork {
         return this.#comm;
     }
 
-    public get(__id: string | number): Observable<any> | undefined {
-        if (typeof __id === "number") {
-            return Object.values(this.#registry)[__id];
-        }
-        return this.#registry[__id];
+    public get<T extends Primitive>(__id: string): Observable<T> | undefined {
+        return <Observable<T>>this.#registry[__id];
     }
 
-    public send_change(__change: ChangeMessage<any>): void {
+    public send_change<T>(__change: ChangeMessage<T>): void {
         if (this.#updating.has(__change.data_id)) {
             return;
         }
@@ -38,16 +35,16 @@ export class ObservableNetwork {
         this.#comm.send(OBSERVABLE_CLIENT_CHANGE_MSG, __change);
     }
 
-    public notify_change(__change: ChangeMessage<any>): void {
+    public notify_change<T>(__change: ChangeMessage<T>): void {
         this.#comm.notify(OBSERVABLE_CHANGE_MSG, __change);
     }
 
-    public register(__obs: Observable<any>): void {
+    public register<T>(__obs: Observable<T>): void {
         this.#registry[__obs.id] = __obs;
-        __obs.register(this);
+        __obs.__register(this);
     }
 
-    #recv_change(__change: ChangeMessage<any>): void {
+    #recv_change<T>(__change: ChangeMessage<T>): void {
         const { data_id } = __change;
 
         if (this.#updating.has(data_id)) {

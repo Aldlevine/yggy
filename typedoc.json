@@ -1,12 +1,14 @@
 {
     "$schema": "https://typedoc.org/schema.json",
     "entryPoints": [
-        "./yggy/basic/*",
-        "yggy/comm/__init__.ts",
-        "yggy/model/__init__.ts",
-        "yggy/observable/__init__.ts",
-        "yggy/utils/__init__.ts"
+        "./src/basic/*",
+        "src/comm/__init__.ts",
+        "src/model/__init__.ts",
+        "src/observable/__init__.ts",
+        "src/utils/__init__.ts"
     ],
+    "skipErrorChecking": true,
+    "jsDocCompatibility": true,
     "plugin": [
         "typedoc-plugin-markdown"
     ],

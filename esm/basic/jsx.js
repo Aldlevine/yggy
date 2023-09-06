@@ -1,5 +1,5 @@
 /** @jsx h */
-import { Observable as Observable, get, watch } from "../__init__.js";
+import { Observable } from "../__init__.js";
 import { uuid } from "../utils/__init__.js";
 export class Binding {
     obs;
@@ -10,7 +10,7 @@ export class Binding {
     }
 }
 export function bind(obs, ...events) {
-    if (obs instanceof Observable) {
+    if (Observable.isObservable(obs)) {
         return new Binding(obs, ...events);
     }
     return obs;
@@ -20,7 +20,7 @@ export function tmpl(strings, ...args) {
     function render_str() {
         const result = [strings[0]];
         args.forEach((obs, i) => {
-            if (obs instanceof Observable) {
+            if (Observable.isObservable(obs)) {
                 if (obs.network) {
                     network = obs.network;
                 }
@@ -32,12 +32,12 @@ export function tmpl(strings, ...args) {
         });
         return result.join("");
     }
-    const obs = Observable.create(uuid.uuid4(), render_str(), { local: true });
+    const obs = new Observable(render_str(), { id: uuid.uuid4(), remote: false });
     if (network) {
         network.register(obs);
     }
     for (let arg of args) {
-        if (arg instanceof Observable) {
+        if (Observable.isObservable(arg)) {
             arg.watch(() => {
                 obs.set(render_str());
             });
@@ -60,8 +60,9 @@ export function expr(strs, ...args) {
     body_arr.push(`);`);
     const body = body_arr.join("");
     const fn = new Function("a", body);
-    const out = watch(args, () => {
-        return fn(args.map(a => get(a)));
+    const out = Observable.map(...args, (...args_) => {
+        const result = fn(args_);
+        return result;
     });
     return out;
 }
@@ -140,8 +141,10 @@ function __set_property(__node, __property, __value) {
     }
 }
 export function html(__html) {
-    if (__html instanceof Observable) {
-        return watch([__html], () => __html_to_dom(get(__html)));
+    if (Observable.isObservable(__html)) {
+        const obs = Observable.map(__html, (h) => __html_to_dom(h));
+        obs.coerce = (x) => x;
+        return obs;
     }
     return __html_to_dom(__html);
 }
@@ -163,36 +166,26 @@ export function h(name, attrs, ...children) {
             const attr = attrs[key];
             if (attr instanceof Binding) {
                 if (attr.obs instanceof Observable) {
-                    attr.obs.watch(() => {
-                        __set_property(element, key, attr.obs.get());
-                    });
-                    __set_property(element, key, attr.obs.get());
-                    if (attr.events) {
-                        for (let evt of attr.events) {
-                            element.addEventListener(evt, () => {
-                                attr.obs.set(element[key]);
-                            });
-                        }
-                    }
+                    attr.obs.bind(element, key, attr.events);
                 }
                 else {
                     __set_property(element, key, attr.obs);
                 }
             }
             else {
-                if (attr instanceof Observable) {
+                if (Observable.isObservable(attr)) {
                     __set_property(element, key, attr.get());
-                    attr.watch(() => {
-                        __set_property(element, key, attr.get());
+                    attr.watch(v => {
+                        __set_property(element, key, v);
                     });
                 }
                 else if (attr && typeof attr === "object") {
                     for (let subkey in attr) {
                         const subattr = attr[subkey];
-                        element[key][subkey] = get(subattr);
-                        if (subattr instanceof Observable) {
-                            subattr.watch(() => {
-                                element[key][subkey] = get(subattr);
+                        element[key][subkey] = Observable.getValue(subattr);
+                        if (Observable.isObservable(subattr)) {
+                            subattr.watch(v => {
+                                element[key][subkey] = v;
                             });
                         }
                     }
@@ -208,7 +201,7 @@ export function h(name, attrs, ...children) {
             if (child instanceof Element) {
                 element.appendChild(child);
             }
-            else if (child instanceof Observable) {
+            else if (Observable.isObservable(child)) {
                 const value = child.get();
                 ((node) => {
                     child.watch(() => {

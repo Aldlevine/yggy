@@ -8,76 +8,107 @@
 
 - [Binding](../classes/basic_jsx.Binding.md)
 
-### Type Aliases
-
-- [PropertiesOf](basic_jsx.md#propertiesof)
-- [ValuesOf](basic_jsx.md#valuesof)
-
 ### Functions
 
 - [bind](basic_jsx.md#bind)
+- [expr](basic_jsx.md#expr)
 - [h](basic_jsx.md#h)
 - [html](basic_jsx.md#html)
 - [tmpl](basic_jsx.md#tmpl)
-
-## Type Aliases
-
-### PropertiesOf
-
-Ƭ **PropertiesOf**<`T`\>: { [P in keyof Omit<T, keyof Model \| keyof Observable<any\>\>]: T[P] extends Observable<infer U\> ? T[P] \| U : T[P] extends Observable<infer U\> \| undefined ? T[P] \| U \| undefined : T[P] }
-
-#### Type parameters
-
-| Name |
-| :------ |
-| `T` |
-
-#### Defined in
-
-[basic/jsx.ts:7](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L7)
-
-___
-
-### ValuesOf
-
-Ƭ **ValuesOf**<`T`\>: { [P in keyof T]: T[P] extends Observable<infer U\> \| infer U ? U : T[P] }
-
-#### Type parameters
-
-| Name |
-| :------ |
-| `T` |
-
-#### Defined in
-
-[basic/jsx.ts:16](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L16)
 
 ## Functions
 
 ### bind
 
-▸ **bind**<`T`\>(`obs`, `...events`): [`Binding`](../classes/basic_jsx.Binding.md) \| `T`
+▸ **bind**<`T`\>(`obs`, `...events`): [`Binding`](../classes/basic_jsx.Binding.md)<`T`\> \| `T`
 
 #### Type parameters
 
-| Name |
-| :------ |
-| `T` |
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `boolean` |
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `obs` | `T` \| [`Observable`](../classes/observable___init__.Observable.md)<`T`\> |
+| `obs` | [`ObservableOr`](observable___init__.md#observableor)<`T`\> |
 | `...events` | `string`[] |
 
 #### Returns
 
-[`Binding`](../classes/basic_jsx.Binding.md) \| `T`
+[`Binding`](../classes/basic_jsx.Binding.md)<`T`\> \| `T`
 
 #### Defined in
 
-[basic/jsx.ts:44](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L44)
+[basic/jsx.ts:38](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L38)
+
+▸ **bind**<`T`\>(`obs`, `...events`): [`Binding`](../classes/basic_jsx.Binding.md)<`T`\> \| `T`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `string` |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `obs` | [`ObservableOr`](observable___init__.md#observableor)<`T`\> |
+| `...events` | `string`[] |
+
+#### Returns
+
+[`Binding`](../classes/basic_jsx.Binding.md)<`T`\> \| `T`
+
+#### Defined in
+
+[basic/jsx.ts:39](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L39)
+
+▸ **bind**<`T`\>(`obs`, `...events`): [`Binding`](../classes/basic_jsx.Binding.md)<`T`\> \| `T`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `number` |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `obs` | [`ObservableOr`](observable___init__.md#observableor)<`T`\> |
+| `...events` | `string`[] |
+
+#### Returns
+
+[`Binding`](../classes/basic_jsx.Binding.md)<`T`\> \| `T`
+
+#### Defined in
+
+[basic/jsx.ts:40](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L40)
+
+___
+
+### expr
+
+▸ **expr**(`strs`, `...args`): [`Observable`](observable___init__.md#observable-1)<`number`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `strs` | `TemplateStringsArray` |
+| `...args` | [`ObservableOr`](observable___init__.md#observableor)<`number`\>[] |
+
+#### Returns
+
+[`Observable`](observable___init__.md#observable-1)<`number`\>
+
+#### Defined in
+
+[basic/jsx.ts:83](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L83)
 
 ___
 
@@ -99,33 +130,33 @@ ___
 
 #### Defined in
 
-[basic/jsx.ts:169](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L169)
+[basic/jsx.ts:207](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L207)
 
 ___
 
 ### html
 
-▸ **html**(`__html`): [`Observable`](../classes/observable___init__.Observable.md)<`__NodeTree`\> \| `__NodeTree`
+▸ **html**(`__html`): [`Observable`](observable___init__.md#observable-1)<`__NodeTree`\> \| `__NodeTree`
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `__html` | `string` \| [`Observable`](../classes/observable___init__.Observable.md)<`string`\> |
+| `__html` | `string` \| [`Observable`](observable___init__.md#observable-1)<`string`\> |
 
 #### Returns
 
-[`Observable`](../classes/observable___init__.Observable.md)<`__NodeTree`\> \| `__NodeTree`
+[`Observable`](observable___init__.md#observable-1)<`__NodeTree`\> \| `__NodeTree`
 
 #### Defined in
 
-[basic/jsx.ts:161](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L161)
+[basic/jsx.ts:197](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L197)
 
 ___
 
 ### tmpl
 
-▸ **tmpl**(`strings`, `...args`): [`Observable`](../classes/observable___init__.Observable.md)<`string`\>
+▸ **tmpl**(`strings`, `...args`): [`Observable`](observable___init__.md#observable-1)<`string`\>
 
 #### Parameters
 
@@ -136,8 +167,8 @@ ___
 
 #### Returns
 
-[`Observable`](../classes/observable___init__.Observable.md)<`string`\>
+[`Observable`](observable___init__.md#observable-1)<`string`\>
 
 #### Defined in
 
-[basic/jsx.ts:51](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/basic/jsx.ts#L51)
+[basic/jsx.ts:48](https://github.com/Aldlevine/yggy/blob/8bc8567/src/basic/jsx.ts#L48)

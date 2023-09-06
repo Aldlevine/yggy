@@ -13,9 +13,6 @@ export class ObservableNetwork {
         return this.#comm;
     }
     get(__id) {
-        if (typeof __id === "number") {
-            return Object.values(this.#registry)[__id];
-        }
         return this.#registry[__id];
     }
     send_change(__change) {
@@ -29,7 +26,7 @@ export class ObservableNetwork {
     }
     register(__obs) {
         this.#registry[__obs.id] = __obs;
-        __obs.register(this);
+        __obs.__register(this);
     }
     #recv_change(__change) {
         const { data_id } = __change;

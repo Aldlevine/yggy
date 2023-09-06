@@ -6,15 +6,24 @@
 
 ### Classes
 
-- [Observable](../classes/observable___init__.Observable.md)
 - [ObservableNetwork](../classes/observable___init__.ObservableNetwork.md)
 
 ### Type Aliases
 
 - [ChangeMessage](observable___init__.md#changemessage)
 - [ClientChangeMessage](observable___init__.md#clientchangemessage)
+- [Observable](observable___init__.md#observable)
+- [ObservableDict](observable___init__.md#observabledict)
+- [ObservableOr](observable___init__.md#observableor)
+- [ObservableOrDict](observable___init__.md#observableordict)
+- [ObservableOrTuple](observable___init__.md#observableortuple)
 - [ObservableSchema](observable___init__.md#observableschema)
+- [ObservableTuple](observable___init__.md#observabletuple)
+- [Primitive](observable___init__.md#primitive)
+- [PrimitiveOf](observable___init__.md#primitiveof)
+- [Primitives](observable___init__.md#primitives)
 - [RegisterMessage](observable___init__.md#registermessage)
+- [TransformFn](observable___init__.md#transformfn)
 
 ### Variables
 
@@ -24,7 +33,7 @@
 
 ### Functions
 
-- [get](observable___init__.md#get)
+- [Observable](observable___init__.md#observable-1)
 
 ## Type Aliases
 
@@ -40,7 +49,7 @@
 
 #### Defined in
 
-[observable/messages.ts:7](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/messages.ts#L7)
+[observable/messages.ts:7](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L7)
 
 ___
 
@@ -56,7 +65,115 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:12](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/messages.ts#L12)
+[observable/messages.ts:12](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L12)
+
+___
+
+### Observable
+
+Ƭ **Observable**<`T`, `O`\>: `_Observable`<`T`\> & { [P in keyof O]: O[P] extends Function ? ObservableFunction<O[P]\> : O[P] extends Primitive ? Observable<O[P]\> : never }
+
+An [Observable](observable___init__.md#observable-1) which provides a reactive
+interface to an underlying data type. Proxies 
+the methods associtated with the underlying data
+type such that they return [Observable](observable___init__.md#observable-1)s
+with equivalent value, and allow both [Primitive](observable___init__.md#primitive)s,
+and [Observable](observable___init__.md#observable-1)s as arguments.
+
+**`Export`**
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | `T` |
+| `O` | extends `ObjectOf`<`T`\> = `ObjectOf`<`T`\> |
+
+#### Defined in
+
+[observable/observable.ts:366](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L366)
+
+[observable/observable.ts:380](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L380)
+
+___
+
+### ObservableDict
+
+Ƭ **ObservableDict**<`T`\>: { [P in keyof T]: Observable<T[P]\> }
+
+Convert a dict of T to a dict of [Observable](observable___init__.md#observable-1)<T>
+
+**`Export`**
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `Object` |
+
+#### Defined in
+
+[observable/observable.ts:163](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L163)
+
+___
+
+### ObservableOr
+
+Ƭ **ObservableOr**<`T`\>: [`Observable`](observable___init__.md#observable-1)<`T`\> \| `T`
+
+Either an [Observable](observable___init__.md#observable-1)<T> or T
+
+**`Export`**
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `T` |
+
+#### Defined in
+
+[observable/observable.ts:125](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L125)
+
+___
+
+### ObservableOrDict
+
+Ƭ **ObservableOrDict**<`T`\>: { [P in keyof T]: ObservableOr<T[P]\> }
+
+Convert a dict of T to a dict of [ObservableOr](observable___init__.md#observableor)<T>
+
+**`Export`**
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends `Object` |
+
+#### Defined in
+
+[observable/observable.ts:173](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L173)
+
+___
+
+### ObservableOrTuple
+
+Ƭ **ObservableOrTuple**<`T`\>: { [P in keyof T]: ObservableOr<T[P]\> }
+
+Convert a tuple of T to a tuple of [ObservableOr](observable___init__.md#observableor)<T>
+
+**`Export`**
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`Primitive`](observable___init__.md#primitive)[] |
+
+#### Defined in
+
+[observable/observable.ts:152](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L152)
 
 ___
 
@@ -79,7 +196,75 @@ ___
 
 #### Defined in
 
-[observable/schema.ts:1](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/schema.ts#L1)
+[observable/schema.ts:1](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/schema.ts#L1)
+
+___
+
+### ObservableTuple
+
+Ƭ **ObservableTuple**<`T`\>: { [P in keyof T]: Observable<T[P]\> }
+
+Convert a tuple of T to a tuple of [Observable](observable___init__.md#observable-1)<T>
+
+**`Export`**
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`Primitive`](observable___init__.md#primitive)[] |
+
+#### Defined in
+
+[observable/observable.ts:142](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L142)
+
+___
+
+### Primitive
+
+Ƭ **Primitive**: [`Primitives`](observable___init__.md#primitives)[`number`]
+
+Union of primitive types supported by [Observable](observable___init__.md#observable-1)
+
+**`Export`**
+
+#### Defined in
+
+[observable/observable.ts:50](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L50)
+
+___
+
+### PrimitiveOf
+
+Ƭ **PrimitiveOf**<`T`\>: `T` extends `boolean` ? `boolean` : `T` extends `number` ? `number` : `T` extends `string` ? `string` : `never`
+
+Converts a possible literal primitive to a [Primitive](observable___init__.md#primitive)
+
+**`Export`**
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`Primitive`](observable___init__.md#primitive) |
+
+#### Defined in
+
+[observable/observable.ts:58](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L58)
+
+___
+
+### Primitives
+
+Ƭ **Primitives**: [`void`, `boolean`, `number`, `string`]
+
+Tuple of primitive types supported by [Observable](observable___init__.md#observable-1)
+
+**`Export`**
+
+#### Defined in
+
+[observable/observable.ts:42](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L42)
 
 ___
 
@@ -95,7 +280,42 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:14](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/messages.ts#L14)
+[observable/messages.ts:14](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L14)
+
+___
+
+### TransformFn
+
+Ƭ **TransformFn**<`From`, `To`\>: (`v`: `From`) => `To`
+
+#### Type parameters
+
+| Name |
+| :------ |
+| `From` |
+| `To` |
+
+#### Type declaration
+
+▸ (`v`): `To`
+
+Any function that transforms an object of type From to type To
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `v` | `From` |
+
+##### Returns
+
+`To`
+
+**`Export`**
+
+#### Defined in
+
+[observable/observable.ts:34](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L34)
 
 ## Variables
 
@@ -105,7 +325,7 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:3](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/messages.ts#L3)
+[observable/messages.ts:3](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L3)
 
 ___
 
@@ -115,7 +335,7 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:4](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/messages.ts#L4)
+[observable/messages.ts:4](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L4)
 
 ___
 
@@ -125,13 +345,13 @@ ___
 
 #### Defined in
 
-[observable/messages.ts:5](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/messages.ts#L5)
+[observable/messages.ts:5](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/messages.ts#L5)
 
 ## Functions
 
-### get
+### Observable
 
-▸ **get**<`T`\>(`obs`): `T`
+▸ **Observable**<`T`\>(`v`, `kwds?`): [`Observable`](observable___init__.md#observable-1)<`T`, `ObjectOf`<`T`\>\>
 
 #### Type parameters
 
@@ -141,14 +361,17 @@ ___
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obs` | `T` \| [`Observable`](../classes/observable___init__.Observable.md)<`T`\> |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `v` | `T` | the initial value |
+| `kwds?` | `ObservableKwds` | - |
 
 #### Returns
 
-`T`
+[`Observable`](observable___init__.md#observable-1)<`T`, `ObjectOf`<`T`\>\>
+
+the observable
 
 #### Defined in
 
-[observable/observable.ts:11](https://github.com/Aldlevine/yggy/blob/8e9bae7/yggy/observable/observable.ts#L11)
+[observable/observable.ts:193](https://github.com/Aldlevine/yggy/blob/8bc8567/src/observable/observable.ts#L193)

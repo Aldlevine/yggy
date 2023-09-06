@@ -33,7 +33,7 @@
 ## Model
 
 ```python
-class Model()
+class Model(AddInterface)
 ```
 
 A base class for managing an observable data model.
@@ -114,17 +114,6 @@ def __json__() -> ModelSchema
 
 Returns a json serializable [`ModelSchema`](#builtins.ModelSchema)
 
-<a id="model.model.Model.id"></a>
-
-#### id
-
-```python
-@property
-def id() -> str
-```
-
-The unique id for this [`Model`](#model.model.Model) instance
-
 <a id="model.model.Model.field_values"></a>
 
 #### field\_values
@@ -135,6 +124,17 @@ def field_values() -> dict[str, "Observable[Any] | Model"]
 ```
 
 A `dict` mapping field names to their respective [`Observable`](#observable.observable.Observable) or [`Model`](#model.model.Model)
+
+<a id="model.model.Model.id"></a>
+
+#### id
+
+```python
+@property
+def id() -> str
+```
+
+The unique id for this [`Model`](#model.model.Model) instance
 
 <a id="model.model.Model.observables"></a>
 

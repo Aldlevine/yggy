@@ -1,12 +1,12 @@
 import { Comm } from "../comm/comm.js";
 import { ChangeMessage } from "./messages.js";
-import { Observable } from "./observable.js";
+import { Observable, Primitive } from "./observable.js";
 export declare class ObservableNetwork {
     #private;
     constructor(__comm: Comm);
     get comm(): Comm;
-    get(__id: string | number): Observable<any> | undefined;
-    send_change(__change: ChangeMessage<any>): void;
-    notify_change(__change: ChangeMessage<any>): void;
-    register(__obs: Observable<any>): void;
+    get<T extends Primitive>(__id: string): Observable<T> | undefined;
+    send_change<T>(__change: ChangeMessage<T>): void;
+    notify_change<T>(__change: ChangeMessage<T>): void;
+    register<T>(__obs: Observable<T>): void;
 }
