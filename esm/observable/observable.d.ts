@@ -121,14 +121,14 @@ declare class ObservableStatic {
      *
      * @static
      * @template T
-     * @param {*} o the object to check
+     * @param {*} obj the object to check
      * @param {ConstructorOf<T>} [type] the {@link Primitive} object class type to check for
      * @returns {o is Observable<T>}
      */
-    static isObservable<T extends Primitive>(o: any): o is Observable<any>;
-    static isObservable<T extends boolean>(o: any, type: BooleanConstructor): o is Observable<T>;
-    static isObservable<T extends number>(o: any, type: NumberConstructor): o is Observable<T>;
-    static isObservable<T extends string>(o: any, type: StringConstructor): o is Observable<T>;
+    static is_observable<T extends Primitive>(obj: any): obj is Observable<any>;
+    static is_observable<T extends boolean>(obj: any, type: BooleanConstructor): obj is Observable<T>;
+    static is_observable<T extends number>(obj: any, type: NumberConstructor): obj is Observable<T>;
+    static is_observable<T extends string>(obj: any, type: StringConstructor): obj is Observable<T>;
     /**
      * Safely gets a value from an {@link Observable} or {@link Primitive}
      *
@@ -137,16 +137,16 @@ declare class ObservableStatic {
      * @param {ObservableOr<T>} o an {@link Observable} or {@link Primitive}
      * @returns {T} the value
      */
-    static getValue<T extends Primitive>(o: ObservableOr<T>): T;
+    static get<T extends Primitive>(o: ObservableOr<T>): T;
     /**
-     * Same as {@link getValue} but applies to a tuple / array. tuple / array may be heterogeneous.
+     * Same as {@link get} but applies to a tuple / array. tuple / array may be heterogeneous.
      *
      * @static
      * @template T
      * @param {...ObservableOrTuple<T>} os the {@link Observable}s and or {@link Primitive}s to get the values of.
      * @returns {T} a tuple of values
      */
-    static getAllValues<T extends any[]>(...os: ObservableOrTuple<T>): T;
+    static get_all<T extends any[]>(...os: ObservableOrTuple<T>): T;
     /**
      * Watches each of the observables and calls the callback with their values
      * as arguments when any one changes.
@@ -192,7 +192,7 @@ declare class ObservableStatic {
         ...ObservableOrTuple<T>,
         (...args: T) => R
     ]): Observable<R>;
-    static from_schema<T extends Primitive>(__schema: ObservableSchema<T>): Observable<T>;
+    static from_schema<T extends Primitive>(schema: ObservableSchema<T>): Observable<T>;
 }
 /**
  * An {@link Observable} which provides a reactive
@@ -331,14 +331,14 @@ declare class _Observable<T> {
      * Internal method: used by {@link ObservableNetwork} as part of registration
      *
      * @private
-     * @param {ObservableNetwork} __network
+     * @param {ObservableNetwork} network
      */
-    __register(__network: ObservableNetwork): void;
+    __register(network: ObservableNetwork): void;
     /**
      * Internal method: used by {@link ObservableNetwork} as part of communication
      *
      * @private
-     * @param {ObservableNetwork} __network
+     * @param {ChangeMessage<T>} change
      */
     __recv_change(change: ChangeMessage<T>): void;
 }

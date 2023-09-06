@@ -9,66 +9,66 @@ export function __make_node(content) {
         return document.createTextNode(content);
     }
 }
-export function* __iter_node(__node) {
-    if (__node instanceof Node) {
-        yield __node;
+export function* __iter_node(root_node) {
+    if (root_node instanceof Node) {
+        yield root_node;
         return;
     }
-    for (let node of __node) {
+    for (let node of root_node) {
         yield* __iter_node(node);
     }
 }
-export function __append_node(__parent, __node) {
-    if (__node instanceof Node) {
-        __parent.appendChild(__node);
+export function __append_node(parent, node) {
+    if (node instanceof Node) {
+        parent.appendChild(node);
         return;
     }
-    if (Array.isArray(__node)) {
-        __node.forEach(node => __append_node(__parent, node));
+    if (Array.isArray(node)) {
+        node.forEach(node => __append_node(parent, node));
         return;
     }
 }
-export function __remove_node(__node) {
-    if (__node instanceof Node) {
-        __node.parentNode?.removeChild(__node);
+export function __remove_node(node) {
+    if (node instanceof Node) {
+        node.parentNode?.removeChild(node);
         return;
     }
-    __node.forEach(__remove_node);
+    node.forEach(__remove_node);
 }
-export function __first_node(__node) {
-    if (__node instanceof Node) {
-        return __node;
+export function __first_node(parent_node) {
+    if (parent_node instanceof Node) {
+        return parent_node;
     }
-    for (let node of __node) {
+    for (let node of parent_node) {
         return __first_node(node);
     }
     return null;
 }
-export function __insert_node(__cur_node, __new_node) {
-    const first = __first_node(__cur_node);
+export function __insert_node(cur_node, new_node) {
+    const first = __first_node(cur_node);
     const parent = first?.parentNode;
-    for (let node of __iter_node(__new_node)) {
+    for (let node of __iter_node(new_node)) {
         parent?.insertBefore(node, first);
     }
 }
-export function __replace_node(__cur_node, __new_node) {
+export function __replace_node(cur_node, new_node) {
     const placeholder = document.createComment("");
-    __insert_node(__cur_node, placeholder);
-    __remove_node(__cur_node);
-    __insert_node(placeholder, __new_node);
+    __insert_node(cur_node, placeholder);
+    __remove_node(cur_node);
+    __insert_node(placeholder, new_node);
     __remove_node(placeholder);
 }
-export function __html_to_dom(__html) {
-    const doc = new DOMParser().parseFromString(`${__html}`, "text/html");
+export function __html_to_dom(html) {
+    const doc = new DOMParser().parseFromString(`${html}`, "text/html");
     const result = Array.from(doc.body.childNodes);
     doc.body.innerHTML = "";
     return result;
 }
-export function __set_property(__node, __property, __value) {
-    if (typeof __value === "boolean" || typeof __value === "number" || typeof __value === "string") {
-        __node.setAttribute(__property, String(__value));
+export function __set_property(node, property, value) {
+    if (typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
+        node.setAttribute(property, String(value));
     }
     else {
-        __node[__property] = __value;
+        node[property] = value;
     }
 }

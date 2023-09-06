@@ -15,7 +15,7 @@ export class Binding {
     }
 }
 export function bind(obs, ...events) {
-    if (Observable.isObservable(obs)) {
+    if (Observable.is_observable(obs)) {
         return new Binding(obs, ...events);
     }
     return obs;

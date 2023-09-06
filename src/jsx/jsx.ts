@@ -66,7 +66,7 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
                 }
             }
             else {
-                if (Observable.isObservable(attr)) {
+                if (Observable.is_observable(attr)) {
                     __set_property(element, key, attr.get());
                     attr.watch(v => {
                         __set_property(element, key, v);
@@ -75,8 +75,8 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
                 else if (attr && typeof attr === "object") {
                     for (let subkey in attr) {
                         const subattr = attr[subkey];
-                        element[key][subkey] = Observable.getValue(subattr);
-                        if (Observable.isObservable(subattr)) {
+                        element[key][subkey] = Observable.get(subattr);
+                        if (Observable.is_observable(subattr)) {
                             subattr.watch(v => {
                                 element[key][subkey] = v;
                             });
@@ -96,7 +96,7 @@ export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [k
             if (child instanceof Element) {
                 element.appendChild(child);
             }
-            else if (Observable.isObservable(child)) {
+            else if (Observable.is_observable(child)) {
                 const value = child.get();
                 ((node: __NodeTree) => {
                     child.watch(() => {

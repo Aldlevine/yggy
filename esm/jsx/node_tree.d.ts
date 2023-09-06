@@ -1,10 +1,10 @@
 export type __NodeTree = Node | __NodeTree[];
 export declare function __make_node(content: any): __NodeTree;
-export declare function __iter_node(__node: __NodeTree): Generator<Node>;
-export declare function __append_node(__parent: Node, __node: __NodeTree): void;
-export declare function __remove_node(__node: __NodeTree): void;
-export declare function __first_node(__node: __NodeTree): Node | null;
-export declare function __insert_node(__cur_node: __NodeTree, __new_node: __NodeTree): void;
-export declare function __replace_node(__cur_node: __NodeTree, __new_node: __NodeTree): void;
-export declare function __html_to_dom(__html: string): __NodeTree;
-export declare function __set_property(__node: Element, __property: string, __value: any): void;
+export declare function __iter_node(root_node: __NodeTree): Generator<Node>;
+export declare function __append_node(parent: Node, node: __NodeTree): void;
+export declare function __remove_node(node: __NodeTree): void;
+export declare function __first_node(parent_node: __NodeTree): Node | null;
+export declare function __insert_node(cur_node: __NodeTree, new_node: __NodeTree): void;
+export declare function __replace_node(cur_node: __NodeTree, new_node: __NodeTree): void;
+export declare function __html_to_dom(html: string): __NodeTree;
+export declare function __set_property(node: Element, property: string, value: any): void;

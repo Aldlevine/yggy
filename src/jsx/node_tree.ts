@@ -14,74 +14,74 @@ export function __make_node(content: any): __NodeTree {
     }
 }
 
-export function* __iter_node(__node: __NodeTree): Generator<Node> {
-    if (__node instanceof Node) {
-        yield __node;
+export function* __iter_node(root_node: __NodeTree): Generator<Node> {
+    if (root_node instanceof Node) {
+        yield root_node;
         return;
     }
-    for (let node of __node) {
+    for (let node of root_node) {
         yield* __iter_node(node);
     }
 }
 
-export function __append_node(__parent: Node, __node: __NodeTree): void {
-    if (__node instanceof Node) {
-        __parent.appendChild(__node);
+export function __append_node(parent: Node, node: __NodeTree): void {
+    if (node instanceof Node) {
+        parent.appendChild(node);
         return;
     }
-    if (Array.isArray(__node)) {
-        __node.forEach(node => __append_node(__parent, node));
+    if (Array.isArray(node)) {
+        node.forEach(node => __append_node(parent, node));
         return;
     }
 }
 
-export function __remove_node(__node: __NodeTree): void {
-    if (__node instanceof Node) {
-        __node.parentNode?.removeChild(__node);
+export function __remove_node(node: __NodeTree): void {
+    if (node instanceof Node) {
+        node.parentNode?.removeChild(node);
         return;
     }
-    __node.forEach(__remove_node);
+    node.forEach(__remove_node);
 }
 
-export function __first_node(__node: __NodeTree): Node | null {
-    if (__node instanceof Node) {
-        return __node;
+export function __first_node(parent_node: __NodeTree): Node | null {
+    if (parent_node instanceof Node) {
+        return parent_node;
     }
-    for (let node of __node) {
+    for (let node of parent_node) {
         return __first_node(node);
     }
     return null;
 }
 
-export function __insert_node(__cur_node: __NodeTree, __new_node: __NodeTree): void {
-    const first = __first_node(__cur_node);
+export function __insert_node(cur_node: __NodeTree, new_node: __NodeTree): void {
+    const first = __first_node(cur_node);
     const parent = first?.parentNode;
-    for (let node of __iter_node(__new_node)) {
+    for (let node of __iter_node(new_node)) {
         parent?.insertBefore(node, first);
     }
 }
 
-export function __replace_node(__cur_node: __NodeTree, __new_node: __NodeTree): void {
+export function __replace_node(cur_node: __NodeTree, new_node: __NodeTree): void {
     const placeholder = document.createComment("");
-    __insert_node(__cur_node, placeholder);
-    __remove_node(__cur_node);
-    __insert_node(placeholder, __new_node);
+    __insert_node(cur_node, placeholder);
+    __remove_node(cur_node);
+    __insert_node(placeholder, new_node);
     __remove_node(placeholder);
 }
 
-export function __html_to_dom(__html: string): __NodeTree {
-    const doc = new DOMParser().parseFromString(`${__html}`, "text/html");
+export function __html_to_dom(html: string): __NodeTree {
+    const doc = new DOMParser().parseFromString(`${html}`, "text/html");
     const result = Array.from(doc.body.childNodes);
     doc.body.innerHTML = "";
     return result;
 }
 
-export function __set_property(__node: Element, __property: string, __value: any): void {
-    if (typeof __value === "boolean" || typeof __value === "number" || typeof __value === "string") {
-        __node.setAttribute(__property, String(__value));
+export function __set_property(node: Element, property: string, value: any): void {
+    if (typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
+        node.setAttribute(property, String(value));
     }
     else {
-        __node[__property as WritableKeys<Node>] = __value;
+        node[property as WritableKeys<Node>] = value;
     }
 }
 

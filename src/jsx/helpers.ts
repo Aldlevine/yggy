@@ -7,7 +7,7 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
     function render_str(): string {
         const result: string[] = [strings[0]];
         args.forEach((obs: any, i: number) => {
-            if (Observable.isObservable(obs)) {
+            if (Observable.is_observable(obs)) {
                 if (obs.network) {
                     network = obs.network;
                 }
@@ -26,7 +26,7 @@ export function tmpl(strings: TemplateStringsArray, ...args: any[]): Observable<
     }
 
     for (let arg of args) {
-        if (Observable.isObservable(arg)) {
+        if (Observable.is_observable(arg)) {
             arg.watch(() => {
                 obs.set(render_str());
             });
@@ -58,12 +58,12 @@ export function expr(strs: TemplateStringsArray, ...args: ObservableOr<number>[]
     return out;
 }
 
-export function html(__html: Observable<string> | string): Observable<__NodeTree> | __NodeTree {
-    if (Observable.isObservable(__html)) {
-        const obs = Observable.map(__html, (h) => __html_to_dom(h));
+export function html(html_str: ObservableOr<string> | string): Observable<__NodeTree> | __NodeTree {
+    if (Observable.is_observable(html_str)) {
+        const obs = Observable.map(html_str, (h) => __html_to_dom(h));
         obs.coerce = (x) => x;
         return obs;
     }
-    return __html_to_dom(<string>__html);
+    return __html_to_dom(<string>html_str);
 }
 

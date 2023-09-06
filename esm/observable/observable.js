@@ -10,7 +10,7 @@ import { OBSERVABLE_CHANGE_MSG } from "./messages.js";
  * @param {T} v the primitive
  * @returns {ConstructorOf<T>}
  */
-function ctorOf(v) {
+function ctor_of(v) {
     if (typeof v === "boolean") {
         return Boolean;
     }
@@ -25,20 +25,20 @@ function ctorOf(v) {
  * The static components of the {@link Observable} constructor
  */
 class ObservableStatic {
-    static isObservable(o, type) {
-        if (!(o instanceof _Observable)) {
+    static is_observable(obj, type) {
+        if (!(obj instanceof _Observable)) {
             return false;
         }
         if (type === Boolean) {
-            return typeof o.get() === "boolean";
+            return typeof obj.get() === "boolean";
         }
         if (type === Number) {
-            return typeof o.get() === "number";
+            return typeof obj.get() === "number";
         }
         if (type === String) {
-            return typeof o.get() === "string";
+            return typeof obj.get() === "string";
         }
-        return !type || o.get() instanceof type;
+        return !type || obj.get() instanceof type;
     }
     /**
      * Safely gets a value from an {@link Observable} or {@link Primitive}
@@ -48,22 +48,22 @@ class ObservableStatic {
      * @param {ObservableOr<T>} o an {@link Observable} or {@link Primitive}
      * @returns {T} the value
      */
-    static getValue(o) {
-        if (ObservableStatic.isObservable(o)) {
+    static get(o) {
+        if (ObservableStatic.is_observable(o)) {
             return o.get();
         }
         return o;
     }
     /**
-     * Same as {@link getValue} but applies to a tuple / array. tuple / array may be heterogeneous.
+     * Same as {@link get} but applies to a tuple / array. tuple / array may be heterogeneous.
      *
      * @static
      * @template T
      * @param {...ObservableOrTuple<T>} os the {@link Observable}s and or {@link Primitive}s to get the values of.
      * @returns {T} a tuple of values
      */
-    static getAllValues(...os) {
-        return os.map(ObservableStatic.getValue);
+    static get_all(...os) {
+        return os.map(ObservableStatic.get);
     }
     /**
      * Watches each of the observables and calls the callback with their values
@@ -87,10 +87,10 @@ class ObservableStatic {
         const fn = args.pop();
         const args_ = args;
         const handler = () => {
-            fn.call(null, ...Observable.getAllValues(...args_));
+            fn.call(null, ...Observable.get_all(...args_));
         };
         for (let o of args_) {
-            if (Observable.isObservable(o)) {
+            if (Observable.is_observable(o)) {
                 o.watch(handler);
             }
         }
@@ -117,7 +117,7 @@ class ObservableStatic {
     static map(...args) {
         const fn = args.pop();
         const args_ = args;
-        const value = fn.call(null, ...Observable.getAllValues(...args_));
+        const value = fn.call(null, ...Observable.get_all(...args_));
         const result = new Observable(value);
         ObservableStatic.watch(...args_, (...values) => {
             const value = fn.call(null, ...values);
@@ -125,7 +125,7 @@ class ObservableStatic {
         });
         let network = null;
         for (let o of args_) {
-            if (Observable.isObservable(o) && o.network) {
+            if (Observable.is_observable(o) && o.network) {
                 network = o.network;
                 break;
             }
@@ -135,8 +135,8 @@ class ObservableStatic {
         }
         return result;
     }
-    static from_schema(__schema) {
-        return new Observable(__schema.value, { id: __schema.data_id, remote: true });
+    static from_schema(schema) {
+        return new Observable(schema.value, { id: schema.data_id, remote: true });
     }
 }
 /**
@@ -170,11 +170,11 @@ class _ObservableProxyHandler {
             const attr = value[p];
             if (typeof attr === "function") {
                 return (...args) => {
-                    const observables = [target, ...args.filter(Observable.isObservable)];
-                    const value = attr.apply(target.get(), Observable.getAllValues(...args));
+                    const observables = [target, ...args.filter(Observable.is_observable)];
+                    const value = attr.apply(target.get(), Observable.get_all(...args));
                     const result = Observable(value);
                     Observable.watch(...observables, (..._) => {
-                        result.set(attr.call(target.get(), ...Observable.getAllValues(...args)));
+                        result.set(attr.call(target.get(), ...Observable.get_all(...args)));
                     });
                     target.network?.register(result);
                     return result;
@@ -229,7 +229,7 @@ class _Observable {
         this.#remote = get_default(kwds, "remote", false);
         this.#network = get_default(kwds, "network", undefined);
         this.#receivers = new weakref.IterableWeakMap();
-        const defaultCoerce = ctorOf(this.get());
+        const defaultCoerce = ctor_of(this.get());
         if (defaultCoerce) {
             this.coerce = (v) => defaultCoerce(v);
         }
@@ -300,11 +300,11 @@ class _Observable {
      * @see {@link Observable.watch}
      */
     watch(fn) {
-        const __recv_change = (__change) => {
-            if (__change["data_id"] != this.id) {
+        const __recv_change = (change) => {
+            if (change["data_id"] != this.id) {
                 return;
             }
-            fn(__change.new_value);
+            fn(change.new_value);
         };
         this.#receivers.set(fn, __recv_change);
         this.#network?.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_change);
@@ -374,10 +374,10 @@ class _Observable {
      * Internal method: used by {@link ObservableNetwork} as part of registration
      *
      * @private
-     * @param {ObservableNetwork} __network
+     * @param {ObservableNetwork} network
      */
-    __register(__network) {
-        this.#network = __network;
+    __register(network) {
+        this.#network = network;
         for (let fn of this.#receivers.values()) {
             this.#network.comm.recv(OBSERVABLE_CHANGE_MSG, fn);
         }
@@ -386,7 +386,7 @@ class _Observable {
      * Internal method: used by {@link ObservableNetwork} as part of communication
      *
      * @private
-     * @param {ObservableNetwork} __network
+     * @param {ChangeMessage<T>} change
      */
     __recv_change(change) {
         this.set(change.new_value);

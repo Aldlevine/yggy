@@ -90,7 +90,7 @@ type ConstructorOf<T> =
  * @param {T} v the primitive
  * @returns {ConstructorOf<T>}
  */
-function ctorOf<T>(v: T): ConstructorOf<T> | void {
+function ctor_of<T>(v: T): ConstructorOf<T> | void {
     if (typeof v === "boolean") {
         return Boolean as ConstructorOf<T>;
     }
@@ -194,29 +194,29 @@ class ObservableStatic {
      *
      * @static
      * @template T
-     * @param {*} o the object to check
+     * @param {*} obj the object to check
      * @param {ConstructorOf<T>} [type] the {@link Primitive} object class type to check for 
      * @returns {o is Observable<T>}
      */
-    static isObservable<T extends Primitive>(o: any): o is Observable<any>;
-    static isObservable<T extends boolean>(o: any, type: BooleanConstructor): o is Observable<T>;
-    static isObservable<T extends number>(o: any, type: NumberConstructor): o is Observable<T>;
-    static isObservable<T extends string>(o: any, type: StringConstructor): o is Observable<T>;
-    static isObservable<T extends Primitive>(o: any, type?: ConstructorOf<T>): o is Observable<T> {
-        if (!(o instanceof _Observable)) {
+    static is_observable<T extends Primitive>(obj: any): obj is Observable<any>;
+    static is_observable<T extends boolean>(obj: any, type: BooleanConstructor): obj is Observable<T>;
+    static is_observable<T extends number>(obj: any, type: NumberConstructor): obj is Observable<T>;
+    static is_observable<T extends string>(obj: any, type: StringConstructor): obj is Observable<T>;
+    static is_observable<T extends Primitive>(obj: any, type?: ConstructorOf<T>): obj is Observable<T> {
+        if (!(obj instanceof _Observable)) {
             return false;
         }
 
         if (type === Boolean) {
-            return typeof o.get() === "boolean";
+            return typeof obj.get() === "boolean";
         }
         if (type === Number) {
-            return typeof o.get() === "number";
+            return typeof obj.get() === "number";
         }
         if (type === String) {
-            return typeof o.get() === "string";
+            return typeof obj.get() === "string";
         }
-        return !type || o.get() instanceof type;
+        return !type || obj.get() instanceof type;
     }
 
 
@@ -228,8 +228,8 @@ class ObservableStatic {
      * @param {ObservableOr<T>} o an {@link Observable} or {@link Primitive}
      * @returns {T} the value
      */
-    static getValue<T extends Primitive>(o: ObservableOr<T>): T {
-        if (ObservableStatic.isObservable(o)) {
+    static get<T extends Primitive>(o: ObservableOr<T>): T {
+        if (ObservableStatic.is_observable(o)) {
             return o.get();
         }
         return o;
@@ -237,15 +237,15 @@ class ObservableStatic {
 
 
     /**
-     * Same as {@link getValue} but applies to a tuple / array. tuple / array may be heterogeneous.
+     * Same as {@link get} but applies to a tuple / array. tuple / array may be heterogeneous.
      *
      * @static
      * @template T
      * @param {...ObservableOrTuple<T>} os the {@link Observable}s and or {@link Primitive}s to get the values of.
      * @returns {T} a tuple of values
      */
-    static getAllValues<T extends any[]>(...os: ObservableOrTuple<T>): T {
-        return os.map(ObservableStatic.getValue) as T;
+    static get_all<T extends any[]>(...os: ObservableOrTuple<T>): T {
+        return os.map(ObservableStatic.get) as T;
     }
 
 
@@ -276,10 +276,10 @@ class ObservableStatic {
         const fn = <(...args: T) => void>args.pop();
         const args_ = <ObservableOrTuple<T>>args;
         const handler = () => {
-            fn.call(null, ...Observable.getAllValues(...args_) as T);
+            fn.call(null, ...Observable.get_all(...args_) as T);
         }
         for (let o of args_) {
-            if (Observable.isObservable(o)) {
+            if (Observable.is_observable(o)) {
                 o.watch(handler);
             }
         }
@@ -316,7 +316,7 @@ class ObservableStatic {
     ): Observable<R> {
         const fn = <(...args: T) => R>args.pop();
         const args_ = <ObservableOrTuple<T>>args;
-        const value = fn.call(null, ...Observable.getAllValues(...args_) as T);
+        const value = fn.call(null, ...Observable.get_all(...args_) as T);
         const result = new Observable(value);
         ObservableStatic.watch(...args_, (...values: T) => {
             const value = fn.call(null, ...values);
@@ -324,7 +324,7 @@ class ObservableStatic {
         });
         let network: ObservableNetwork | null = null;
         for (let o of args_) {
-            if (Observable.isObservable(o) && o.network) {
+            if (Observable.is_observable(o) && o.network) {
                 network = o.network;
                 break;
             }
@@ -335,8 +335,8 @@ class ObservableStatic {
         return result;
     }
 
-    static from_schema<T extends Primitive>(__schema: ObservableSchema<T>): Observable<T> {
-        return new Observable(__schema.value, { id: __schema.data_id, remote: true });
+    static from_schema<T extends Primitive>(schema: ObservableSchema<T>): Observable<T> {
+        return new Observable(schema.value, { id: schema.data_id, remote: true });
     }
 }
 
@@ -401,11 +401,11 @@ class _ObservableProxyHandler implements ProxyHandler<_Observable<any>> {
             const attr = value[p as keyof T];
             if (typeof attr === "function") {
                 return (...args: any[]) => {
-                    const observables: Observable<any>[] = [target, ...args.filter(Observable.isObservable)];
-                    const value = (<Function>attr).apply(target.get(), Observable.getAllValues(...args))
+                    const observables: Observable<any>[] = [target, ...args.filter(Observable.is_observable)];
+                    const value = (<Function>attr).apply(target.get(), Observable.get_all(...args))
                     const result = Observable(value);
                     Observable.watch(...observables, (..._: any[]) => {
-                        result.set((<Function>attr).call(target.get(), ...Observable.getAllValues(...args)));
+                        result.set((<Function>attr).call(target.get(), ...Observable.get_all(...args)));
                     });
                     target.network?.register(result);
                     return result;
@@ -497,7 +497,7 @@ class _Observable<T> {
         this.#remote = get_default(kwds, "remote", false);
         this.#network = get_default(kwds, "network", undefined);
         this.#receivers = new weakref.IterableWeakMap();
-        const defaultCoerce = ctorOf<T>(this.get());
+        const defaultCoerce = ctor_of<T>(this.get());
         if (defaultCoerce) {
             this.coerce = (v) => defaultCoerce(v) as T;
         }
@@ -583,9 +583,9 @@ class _Observable<T> {
      * @see {@link Observable.watch}
      */
     watch(fn: TransformFn<T, any>): void {
-        const __recv_change = (__change: ChangeMessage<any>) => {
-            if (__change["data_id"] != this.id) { return; }
-            fn(__change.new_value);
+        const __recv_change = (change: ChangeMessage<any>) => {
+            if (change["data_id"] != this.id) { return; }
+            fn(change.new_value);
         };
 
         this.#receivers.set(fn, __recv_change);
@@ -694,10 +694,10 @@ class _Observable<T> {
      * Internal method: used by {@link ObservableNetwork} as part of registration
      *
      * @private
-     * @param {ObservableNetwork} __network
+     * @param {ObservableNetwork} network
      */
-    __register(__network: ObservableNetwork): void {
-        this.#network = __network;
+    __register(network: ObservableNetwork): void {
+        this.#network = network;
         for (let fn of this.#receivers.values()) {
             this.#network.comm.recv(OBSERVABLE_CHANGE_MSG, fn);
         }
@@ -708,7 +708,7 @@ class _Observable<T> {
      * Internal method: used by {@link ObservableNetwork} as part of communication
      *
      * @private
-     * @param {ObservableNetwork} __network
+     * @param {ChangeMessage<T>} change
      */
     __recv_change(change: ChangeMessage<T>): void {
         this.set(change.new_value);

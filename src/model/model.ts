@@ -6,7 +6,7 @@ export function watch<T extends Primitive>(args: any[], fn: () => T): Observable
     let network: ObservableNetwork | undefined;
     const obs = Observable(fn(), { id: uuid4(), remote: false });
     args.forEach((arg: any) => {
-        if (Observable.isObservable(arg)) {
+        if (Observable.is_observable(arg)) {
             if (arg.network) {
                 network = arg.network;
             }
@@ -19,17 +19,10 @@ export function watch<T extends Primitive>(args: any[], fn: () => T): Observable
     return obs;
 }
 
-// export type ModelProxy<T extends Model> = T & {
-//     [P in keyof T]:
-//     T[P] extends Observable<infer V> ?
-//     Observable<V> & ObservableProxy<V> :
-//     T[P]
-// }
 
 export class Model {
     private constructor() { }
 
-    // static from_schema<T extends Model>(schema: ModelSchema): ModelProxy<T> {
     static from_schema<T extends Model>(schema: ModelSchema): T {
         const result = <T>new Model();
 
@@ -61,7 +54,6 @@ export class Model {
             }
         }
 
-        // return <ModelProxy<T>>result;
         return result;
     }
 

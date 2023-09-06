@@ -6,7 +6,7 @@ export function tmpl(strings, ...args) {
     function render_str() {
         const result = [strings[0]];
         args.forEach((obs, i) => {
-            if (Observable.isObservable(obs)) {
+            if (Observable.is_observable(obs)) {
                 if (obs.network) {
                     network = obs.network;
                 }
@@ -23,7 +23,7 @@ export function tmpl(strings, ...args) {
         network.register(obs);
     }
     for (let arg of args) {
-        if (Observable.isObservable(arg)) {
+        if (Observable.is_observable(arg)) {
             arg.watch(() => {
                 obs.set(render_str());
             });
@@ -52,11 +52,11 @@ export function expr(strs, ...args) {
     });
     return out;
 }
-export function html(__html) {
-    if (Observable.isObservable(__html)) {
-        const obs = Observable.map(__html, (h) => __html_to_dom(h));
+export function html(html_str) {
+    if (Observable.is_observable(html_str)) {
+        const obs = Observable.map(html_str, (h) => __html_to_dom(h));
         obs.coerce = (x) => x;
         return obs;
     }
-    return __html_to_dom(__html);
+    return __html_to_dom(html_str);
 }

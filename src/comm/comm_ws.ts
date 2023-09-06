@@ -57,8 +57,8 @@ export class CommWS {
         this.#websocket.send(JSON.stringify({ msg, data }));
     }
 
-    #onmessage({ data: __data }: MessageEvent): void {
-        const { msg, data } = JSON.parse(__data);
+    #onmessage({ data: json_data }: MessageEvent): void {
+        const { msg, data } = JSON.parse(json_data);
         this.#comm.notify(msg, data);
     }
 

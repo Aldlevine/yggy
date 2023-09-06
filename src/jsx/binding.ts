@@ -41,7 +41,7 @@ export function bind<T extends boolean>(obs: ObservableOr<T>, ...events: string[
 export function bind<T extends string>(obs: ObservableOr<T>, ...events: string[]): Binding<T> | T;
 export function bind<T extends number>(obs: ObservableOr<T>, ...events: string[]): Binding<T> | T;
 export function bind<T>(obs: ObservableOr<T>, ...events: string[]): T extends Primitive ? Binding<T> | T : never {
-    if (Observable.isObservable(obs)) {
+    if (Observable.is_observable(obs)) {
         return new Binding(obs, ...events) as (T extends Primitive ? Binding<T> : never);
     }
     return obs as (T extends Primitive ? T : never);
