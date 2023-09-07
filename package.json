@@ -17,7 +17,6 @@
   "author": "Aaron Levine",
   "license": "ISC",
   "dependencies": {
-    "preact": "^10.17.0",
     "typescript": "^5.1.6"
   },
   "engines": {

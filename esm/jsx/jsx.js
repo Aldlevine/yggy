@@ -3,7 +3,7 @@ import { Observable } from "../__init__.js";
 import { Binding } from "./binding.js";
 import { __make_node, __replace_node, __append_node } from "./node_tree.js";
 import { __set_property } from "./node_tree.js";
-const SVG_PREFIX = "svg.";
+const SVG_PREFIX = "__svg__";
 export const svg = new Proxy({}, {
     get(_, p) {
         return `${SVG_PREFIX}${p}`;

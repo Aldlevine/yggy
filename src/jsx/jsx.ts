@@ -1,43 +1,73 @@
 /** @jsx h */
 
-import type { JSX as JSXInternal } from "preact";
 import { Observable } from "../__init__.js";
 import { Binding } from "./binding.js";
 import { __NodeTree, __make_node, __replace_node, __append_node } from "./node_tree.js";
 import { __set_property } from "./node_tree.js";
 
-const SVG_PREFIX = "svg.";
+const SVG_PREFIX = "__svg__";
 
-type JSXElement<T> = T | Binding<T> | Observable<T> | { [P in keyof T]: JSXElement<T[P]> };
-// type __JSXElement<T> = T | { [P in keyof T]: __JSXElement<T[P]> } | (T extends Primitive ? Observable<T> | Binding<T> : never);
+type JSXAttributeTypeMap<T> =
+    T extends string ? boolean | number | string :
+    T extends SVGAnimatedNumber ? number | string :
+    T extends SVGAnimatedLength ? number | string :
+    T extends SVGAnimatedEnumeration ? string :
+    T extends SVGAnimatedNumberList ? string :
+    T extends SVGFEColorMatrixElement ? string :
+    T extends SVGFEMorphologyElement ? string :
+    T;
+
+type JSXAttribute<
+    T, U = JSXAttributeTypeMap<T>
+> = U | Binding<U> | Observable<U>;
+
+type JSXAttributeKeyMap<T> =
+    T extends "className" ? "class" :
+    T extends "htmlFor" ? "for" :
+    T extends `${infer U}${"X" | "Y"}` ? U :
+    T
+
+type JSXAttributeKeyTypeMap<T, K extends keyof T> =
+    K extends "children" ? (
+        JSXElement<any> | JSXElement<any>[] | string
+    )
+    : K extends "style" ? (
+        JSXAttribute<string> | { [P in keyof CSSStyleDeclaration]?: JSXAttribute<CSSStyleDeclaration[P]> }
+    )
+    : JSXAttribute<T[K]>
+
+
+type JSXElement<T> = {
+    [K in keyof T as JSXAttributeKeyMap<K>]?: JSXAttributeKeyTypeMap<T, K>;
+}
+
+type HTMLElements = {
+    [K in keyof HTMLElementTagNameMap]: JSXElement<HTMLElementTagNameMap[K]>
+}
+
+type SVGElements = {
+    [K in keyof SVGElementTagNameMap]: JSXElement<SVGElementTagNameMap[K]>
+}
+
+type __IntrinsicElements = HTMLElements & SVGElements;
+
 
 declare global {
     namespace JSX {
-        type IntrinsicElements = {
-            [
-            K in keyof JSXInternal.IntrinsicElements
-            ]: {
-                [
-                K2 in keyof JSXInternal.IntrinsicElements[K]
-                as K2 extends `on${string}` ? Lowercase<K2> : K2
-                ]:
-                JSXElement<JSXInternal.IntrinsicElements[K][K2]>
-            }
-        }
+        type IntrinsicElements = __IntrinsicElements;
     }
 }
 
-type SVGKeys = keyof SVGElementTagNameMap;
-
 type SVGProxy = {
-    [P in SVGKeys]: P
+    [P in keyof SVGElements]: P
 }
 
 export const svg = new Proxy<SVGProxy>({} as SVGProxy, {
-    get<T extends SVGKeys>(_: any, p: T): T {
+    get<T extends keyof SVGElements>(_: any, p: T): T {
         return `${SVG_PREFIX}${p}` as T;
     },
-})
+});
+
 
 // TODO: This should be less hacky
 export function h(name: string | ((...args: any[]) => HTMLElement), attrs?: { [key: string]: any }, ...children: any): Element {
