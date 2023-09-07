@@ -5,7 +5,7 @@ from weakref import WeakKeyDictionary
 from ..codegen import HasCodegenBuiltin
 from ..comm import LazyMessage, ReceiverFn_t, create_message
 from ..logging import get_logger
-from ..types import Primitive
+from ..utils.types import Primitive
 from ..utils.functools import noop
 from .messages import OBSERVABLE_CHANGE_MSG, ChangeMessage
 from .schema import ObservableSchema

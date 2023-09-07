@@ -2,3 +2,4 @@ watchdog
 websockets
 pydoc_markdown
 PyYAML
+setuptools

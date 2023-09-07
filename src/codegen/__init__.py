@@ -13,7 +13,7 @@ from typing import (
     runtime_checkable,
 )
 
-from ..types import Primitive
+from ..utils.types import Primitive
 
 
 @runtime_checkable

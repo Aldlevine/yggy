@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[observable/observable_network.ts:14](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L14)
+[observable/observable_network.ts:14](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L14)
 
 ## Properties
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[observable/observable_network.ts:12](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L12)
+[observable/observable_network.ts:12](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L12)
 
 ___
 
@@ -66,7 +66,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:10](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L10)
+[observable/observable_network.ts:10](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L10)
 
 ___
 
@@ -76,7 +76,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:11](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L11)
+[observable/observable_network.ts:11](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L11)
 
 ## Accessors
 
@@ -90,7 +90,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:22](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L22)
+[observable/observable_network.ts:22](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L22)
 
 ## Methods
 
@@ -116,7 +116,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:47](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L47)
+[observable/observable_network.ts:47](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L47)
 
 ___
 
@@ -142,7 +142,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:26](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L26)
+[observable/observable_network.ts:26](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L26)
 
 ___
 
@@ -168,7 +168,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:38](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L38)
+[observable/observable_network.ts:38](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L38)
 
 ___
 
@@ -194,7 +194,7 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:42](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L42)
+[observable/observable_network.ts:42](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L42)
 
 ___
 
@@ -220,4 +220,4 @@ ___
 
 #### Defined in
 
-[observable/observable_network.ts:30](https://github.com/Aldlevine/yggy/blob/379e698/src/observable/observable_network.ts#L30)
+[observable/observable_network.ts:30](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/observable/observable_network.ts#L30)

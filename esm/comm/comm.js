@@ -50,20 +50,24 @@ export class Comm {
         this.#require_open();
         // overload 1
         if (typeof arg0 === "function" && !arg1) {
-            if (!this.#global_receivers.includes(arg0)) {
-                this.#global_receivers.push(arg0);
-            }
-            return;
+            return this.#recv_global(arg0);
         }
         // overload 2
         if (typeof arg0 === "string" && arg1 instanceof Function) {
-            const receivers = dicttools.set_default(this.#receivers, arg0, () => []);
-            if (!receivers.includes(arg1)) {
-                receivers.push(arg1);
-            }
-            return;
+            return this.#recv_named(arg0, arg1);
         }
         throw new TypeError("invalid arguments to Comm.recv");
+    }
+    #recv_global(fn) {
+        if (!this.#global_receivers.includes(fn)) {
+            this.#global_receivers.push(fn);
+        }
+    }
+    #recv_named(arg0, arg1) {
+        const receivers = dicttools.set_default(this.#receivers, arg0, () => []);
+        if (!receivers.includes(arg1)) {
+            receivers.push(arg1);
+        }
     }
     unrecv(msg, fn) {
         const receivers = dicttools.get_default(this.#receivers, msg, null);

@@ -4,12 +4,14 @@
 
 [utils/__init__](../modules/utils___init__.md).[weakref](../modules/utils___init__.weakref.md).IterableWeakMap
 
+An Iterable WeakMap.
+
 ## Type parameters
 
-| Name | Type |
-| :------ | :------ |
-| `K` | extends `object` |
-| `V` | `V` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `K` | extends `object` | The keys' type, must be an object. |
+| `V` | `V` | The values' type. |
 
 ## Table of contents
 
@@ -40,6 +42,8 @@
 
 • **new IterableWeakMap**<`K`, `V`\>(`iterable?`)
 
+Constructs an IterableWeakMap instance.
+
 #### Type parameters
 
 | Name | Type |
@@ -49,13 +53,13 @@
 
 #### Parameters
 
-| Name | Type | Default value |
-| :------ | :------ | :------ |
-| `iterable` | [`K`, `V`][] | `[]` |
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `iterable` | [`K`, `V`][] | `[]` | An array of key-value pairs to initialize the map. |
 
 #### Defined in
 
-[utils/weakref.ts:10](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L10)
+[utils/weakref.ts:22](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L22)
 
 ## Properties
 
@@ -65,7 +69,7 @@
 
 #### Defined in
 
-[utils/weakref.ts:4](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L4)
+[utils/weakref.ts:9](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L9)
 
 ___
 
@@ -75,7 +79,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:3](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L3)
+[utils/weakref.ts:8](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L8)
 
 ___
 
@@ -85,7 +89,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:2](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L2)
+[utils/weakref.ts:7](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L7)
 
 ## Methods
 
@@ -93,13 +97,17 @@ ___
 
 ▸ **[iterator]**(): `Generator`<[`K`, `V`], `any`, `unknown`\>
 
+Provides a generator for iterating over keys and values.
+
 #### Returns
 
 `Generator`<[`K`, `V`], `any`, `unknown`\>
 
+A Generator yielding key-value pairs.
+
 #### Defined in
 
-[utils/weakref.ts:43](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L43)
+[utils/weakref.ts:74](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L74)
 
 ___
 
@@ -107,19 +115,23 @@ ___
 
 ▸ **delete**(`key`): `boolean`
 
+Deletes a key-value pair by key.
+
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `key` | `K` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `key` | `K` | The key to delete. |
 
 #### Returns
 
 `boolean`
 
+True if deletion was successful, false otherwise.
+
 #### Defined in
 
-[utils/weakref.ts:31](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L31)
+[utils/weakref.ts:58](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L58)
 
 ___
 
@@ -127,13 +139,17 @@ ___
 
 ▸ **entries**(): `Iterator`<[`K`, `V`], `any`, `undefined`\>
 
+Provides an iterator for the entries of the map.
+
 #### Returns
 
 `Iterator`<[`K`, `V`], `any`, `undefined`\>
 
+An Iterator for the entries.
+
 #### Defined in
 
-[utils/weakref.ts:52](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L52)
+[utils/weakref.ts:87](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L87)
 
 ___
 
@@ -141,19 +157,23 @@ ___
 
 ▸ **get**(`key`): `void` \| `V`
 
+Retrieves a value by its key.
+
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `key` | `K` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `key` | `K` | The key to get. |
 
 #### Returns
 
 `void` \| `V`
 
+The value or undefined if not found.
+
 #### Defined in
 
-[utils/weakref.ts:26](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L26)
+[utils/weakref.ts:48](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L48)
 
 ___
 
@@ -161,13 +181,17 @@ ___
 
 ▸ **keys**(): `Generator`<`K`, `any`, `unknown`\>
 
+Provides a generator that yields keys.
+
 #### Returns
 
 `Generator`<`K`, `any`, `unknown`\>
 
+A Generator of keys.
+
 #### Defined in
 
-[utils/weakref.ts:56](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L56)
+[utils/weakref.ts:95](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L95)
 
 ___
 
@@ -175,12 +199,14 @@ ___
 
 ▸ **set**(`key`, `value`): `void`
 
+Sets a key-value pair in the weak map.
+
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `key` | `K` |
-| `value` | `V` |
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `key` | `K` | The key to add |
+| `value` | `V` | The value to add |
 
 #### Returns
 
@@ -188,7 +214,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:16](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L16)
+[utils/weakref.ts:33](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L33)
 
 ___
 
@@ -196,19 +222,25 @@ ___
 
 ▸ **values**(): `Generator`<`V`, `any`, `unknown`\>
 
+Provides a generator that yields values.
+
 #### Returns
 
 `Generator`<`V`, `any`, `unknown`\>
 
+A Generator of values.
+
 #### Defined in
 
-[utils/weakref.ts:62](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L62)
+[utils/weakref.ts:105](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L105)
 
 ___
 
 ### #cleanup
 
 ▸ `Static` `Private` **#cleanup**(`«destructured»`): `void`
+
+Cleans up references from set.
 
 #### Parameters
 
@@ -224,4 +256,4 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:6](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/weakref.ts#L6)
+[utils/weakref.ts:14](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L14)

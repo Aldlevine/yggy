@@ -5,7 +5,7 @@ from typing import Any, ClassVar, Iterator, cast
 from ..codegen import AddInterface, Attr_t, Iface_t
 from ..logging import get_logger
 from ..observable import Observable, ObservableSchema, get
-from ..types import Primitive
+from ..utils.types import Primitive
 from .fields import (
     Field,
     ObservableField,

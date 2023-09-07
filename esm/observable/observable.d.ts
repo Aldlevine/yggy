@@ -83,7 +83,7 @@ export type ObservableOrTuple<T extends Primitive[]> = {
 export type ObservableDict<T extends {
     [key: string]: Primitive;
 }> = {
-    [P in keyof T]: Observable<T[P]>;
+    [P in keyof T]: Observable<Exclude<T[P], undefined>>;
 };
 /**
  * Convert a dict of {@link T} to a dict of {@link ObservableOr}<{@link T}>
@@ -94,7 +94,7 @@ export type ObservableDict<T extends {
 export type ObservableOrDict<T extends {
     [key: string]: Primitive;
 }> = {
-    [P in keyof T]: ObservableOr<T[P]>;
+    [P in keyof T]: ObservableOr<Exclude<T[P], undefined>>;
 };
 /**
  * Maps a function with Primitive arguments / return to

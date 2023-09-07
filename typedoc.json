@@ -7,6 +7,7 @@
         "src/observable/__init__.ts",
         "src/utils/__init__.ts"
     ],
+    "categorizeByGroup": true,
     "skipErrorChecking": true,
     "jsDocCompatibility": true,
     "plugin": [

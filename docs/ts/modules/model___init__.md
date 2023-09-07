@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[model/schema.ts:3](https://github.com/Aldlevine/yggy/blob/379e698/src/model/schema.ts#L3)
+[model/schema.ts:3](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/model/schema.ts#L3)
 
 ## Functions
 
@@ -51,4 +51,4 @@
 
 #### Defined in
 
-[model/model.ts:5](https://github.com/Aldlevine/yggy/blob/379e698/src/model/model.ts#L5)
+[model/model.ts:5](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/model/model.ts#L5)

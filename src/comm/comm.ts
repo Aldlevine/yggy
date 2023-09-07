@@ -1,7 +1,7 @@
+import { dicttools, uuid } from "../utils/__init__.js";
+
 export type GlobalReceiverFn_t = (msg: string, data: any) => any;
 export type ReceiverFn_t = (data: any) => any;
-
-import { dicttools, uuid } from "../utils/__init__.js";
 
 export class Comm {
     #id: string = uuid.uuid4();
@@ -65,22 +65,28 @@ export class Comm {
         this.#require_open();
         // overload 1
         if (typeof arg0 === "function" && !arg1) {
-            if (!this.#global_receivers.includes(arg0)) {
-                this.#global_receivers.push(arg0);
-            }
-            return;
+            return this.#recv_global(arg0);
         }
 
         // overload 2
         if (typeof arg0 === "string" && arg1 instanceof Function) {
-            const receivers = dicttools.set_default(this.#receivers, arg0, () => []);
-            if (!receivers.includes(arg1)) {
-                receivers.push(arg1);
-            }
-            return;
+            return this.#recv_named(arg0, arg1);
         }
 
         throw new TypeError("invalid arguments to Comm.recv");
+    }
+
+    #recv_global(fn: GlobalReceiverFn_t): void {
+        if (!this.#global_receivers.includes(fn)) {
+            this.#global_receivers.push(fn);
+        }
+    }
+
+    #recv_named(arg0: string, arg1: ReceiverFn_t) {
+        const receivers = dicttools.set_default(this.#receivers, arg0, () => []);
+        if (!receivers.includes(arg1)) {
+            receivers.push(arg1);
+        }
     }
 
     unrecv(msg: string, fn: ReceiverFn_t): void {

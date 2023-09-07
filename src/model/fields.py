@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from ..observable import Observable
 from ..observable.observable import Observable
-from ..types import Primitive
+from ..utils.types import Primitive
 from ..utils.functools import bind_fn, noop
 
 if TYPE_CHECKING:

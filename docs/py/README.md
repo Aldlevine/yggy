@@ -22,6 +22,7 @@
   * [fn\_type](#utils.functools.fn_type)
   * [bind\_fn](#utils.functools.bind_fn)
 * [comm.comm](#comm.comm)
+  * [create\_message](#comm.comm.create_message)
   * [Comm](#comm.comm.Comm)
 
 <a id="model.model"></a>
@@ -576,6 +577,26 @@ method calls downstream.
 
 # comm.comm
 
+<a id="comm.comm.create_message"></a>
+
+#### create\_message
+
+```python
+def create_message(message_type: type[T], kwds: T) -> T
+```
+
+Create a [`Message`](#comm.messages.Message) of type message_type with the given fields.
+
+**Arguments**:
+
+- `message_type` _type[T]_ - The type of message to create.
+- `kwds` _T_ - The fields for the message.
+  
+
+**Returns**:
+
+- `T` - The created message.
+
 <a id="comm.comm.Comm"></a>
 
 ## Comm
@@ -812,4 +833,31 @@ sent to the given message name.
 
 - `__msg` - The message name
 - `__fn` - The receiver to add
+
+<a id="comm.comm.Comm.recv"></a>
+
+#### recv
+
+```python
+@overload
+def recv() -> Callable[[GlobalReceiverFn_t[T]], GlobalReceiverFn_t[T]]
+```
+
+A decorator that adds a global receiver.
+
+Global receivers are called for all messages.
+
+<a id="comm.comm.Comm.recv"></a>
+
+#### recv
+
+```python
+@overload
+def recv(__msg: str) -> Callable[[ReceiverFn_t[T]], ReceiverFn_t[T]]
+```
+
+A decorator that adds a named receiver.
+
+Named receivers are called for all messages
+sent to the given message name.
 

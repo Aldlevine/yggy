@@ -47,6 +47,15 @@ type GlobalReceiverFn_t[T] = Callable[[str, T], Any]
 
 
 def create_message[T: Message](message_type: type[T], kwds: T) -> T:
+    """Create a #Message of type message_type with the given fields.
+    
+    Args:
+        message_type (type[T]): The type of message to create.
+        kwds (T): The fields for the message.
+    
+    Returns:
+        T: The created message.
+    """
     origin = get_origin(message_type) or message_type
     return cast(
         T,
@@ -252,12 +261,21 @@ class Comm:
     def recv[
         T: Message
     ](self, /) -> Callable[[GlobalReceiverFn_t[T]], GlobalReceiverFn_t[T]]:
+        """A decorator that adds a global receiver.
+
+        Global receivers are called for all messages.
+        """
         ...
 
     @overload
     def recv[
         T: Message
     ](self, __msg: str, /) -> Callable[[ReceiverFn_t[T]], ReceiverFn_t[T]]:
+        """A decorator that adds a named receiver.
+
+        Named receivers are called for all messages
+        sent to the given message name.
+        """
         ...
 
     def recv(
@@ -272,40 +290,48 @@ class Comm:
     ):
         # overload 1
         if isinstance(__arg0, Callable) and __arg1 is None:
-            if __arg0 not in self.__global_receivers:
-                self.__global_receivers.add(__arg0)
-            return
+            return self.__recv_global(__arg0)
 
         # overload 2
         if isinstance(__arg0, str) and isinstance(__arg1, Callable):
-            receivers = self.__receivers.setdefault(__arg0, WeakMethodSet())
-            fn: ReceiverFn_t[Any] = __arg1
-            if fn not in receivers:
-                receivers.add(fn)
-            return
+            return self.__recv_named(__arg0, __arg1)
 
         # overload 3
         if __arg0 is None and __arg1 is None:
-
-            def __inner_fn_3(
-                fn: GlobalReceiverFn_t[Message],
-            ) -> GlobalReceiverFn_t[Message]:
-                if fn not in self.__global_receivers:
-                    self.__global_receivers.add(fn)
-                return fn
-
-            return __inner_fn_3
+            # this is purposefully not called
+            # no aruments, so a static decorator will do
+            return self.__recv_global_decorator
 
         # overload 4
         if isinstance(__arg0, str) and __arg1 is None:
+            return self.__recv_named_decorator(__arg0)
 
-            def __inner_fn_4(fn: ReceiverFn_t[Message]) -> ReceiverFn_t[Message]:
-                receivers = self.__receivers.setdefault(__arg0, WeakMethodSet())
-                if fn not in receivers:
-                    receivers.add(fn)
-                return fn
+    def __recv_global(self, fn: GlobalReceiverFn_t[Message]) -> None:
+        if fn not in self.__global_receivers:
+            self.__global_receivers.add(fn)
 
-            return __inner_fn_4
+    def __recv_named(self, msg: str, fn: ReceiverFn_t[Message]) -> None:
+        receivers = self.__receivers.setdefault(msg, WeakMethodSet())
+        if fn not in receivers:
+            receivers.add(fn)
+
+    def __recv_global_decorator(
+        self, __fn: GlobalReceiverFn_t[Message]
+    ) -> GlobalReceiverFn_t[Message]:
+        if __fn not in self.__global_receivers:
+            self.__global_receivers.add(__fn)
+        return __fn
+
+    def __recv_named_decorator(
+        self, __msg: str
+    ) -> Callable[[ReceiverFn_t[Message]], ReceiverFn_t[Message]]:
+        def __inner_fn(fn: ReceiverFn_t[Message]) -> ReceiverFn_t[Message]:
+            receivers = self.__receivers.setdefault(__msg, WeakMethodSet())
+            if fn not in receivers:
+                receivers.add(fn)
+            return fn
+
+        return __inner_fn
 
     # TODO: add unrecv overloads for corresponding recv overloads
     def unrecv(self, msg: str, fn: ReceiverFn_t[Message]) -> None:

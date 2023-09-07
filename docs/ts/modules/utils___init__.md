@@ -7,5 +7,6 @@
 ### Namespaces
 
 - [dicttools](utils___init__.dicttools.md)
+- [types](utils___init__.types.md)
 - [uuid](utils___init__.uuid.md)
 - [weakref](utils___init__.weakref.md)

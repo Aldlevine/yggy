@@ -22,4 +22,4 @@
 
 #### Defined in
 
-[utils/uuid.ts:1](https://github.com/Aldlevine/yggy/blob/379e698/src/utils/uuid.ts#L1)
+[utils/uuid.ts:1](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/uuid.ts#L1)

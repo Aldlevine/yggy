@@ -149,7 +149,7 @@ export type ObservableOrTuple<T extends Primitive[]> = {
  * @template T
  */
 export type ObservableDict<T extends { [key: string]: Primitive }> = {
-    [P in keyof T]: Observable<T[P]>
+    [P in keyof T]: Observable<Exclude<T[P], undefined>>
 }
 
 
@@ -160,7 +160,7 @@ export type ObservableDict<T extends { [key: string]: Primitive }> = {
  * @template T
  */
 export type ObservableOrDict<T extends { [key: string]: Primitive }> = {
-    [P in keyof T]: ObservableOr<T[P]>
+    [P in keyof T]: ObservableOr<Exclude<T[P], undefined>>
 }
 
 
