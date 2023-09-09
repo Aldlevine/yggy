@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from ..observable import Observable
 from ..observable.observable import Observable
-from ..utils.types import Primitive
 from ..utils.functools import bind_fn, noop
 
 if TYPE_CHECKING:
@@ -30,7 +29,7 @@ class Field[T](abc.ABC):
         ...
 
 
-class ObservableField[T: Primitive](Field[Observable[T]]):
+class ObservableField[T](Field[Observable[T]]):
     """A common base class for all #ObservableField#s.
 
     These are the fields that will end up in a #Model#s
@@ -43,7 +42,7 @@ class ObservableField[T: Primitive](Field[Observable[T]]):
         ...
 
 
-class ObservableValueField[T: Primitive](ObservableField[T]):
+class ObservableValueField[T](ObservableField[T]):
     """Defines a simple #Observable[T] field.
 
     When realized, it creates an #Observable with the value
@@ -102,7 +101,7 @@ class SubmodelProperty[T]:
         return SubmodelProperty(self, __name)
 
 
-class ObservableWatchField[T: Primitive](ObservableField[T]):
+class ObservableWatchField[T](ObservableField[T]):
     """Defines an #Observable[T] which evaluates a callback
     in response to any changes to the provided observables.
 

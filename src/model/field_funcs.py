@@ -2,7 +2,6 @@ from inspect import isclass
 from typing import Any, Callable, cast, overload
 
 from ..observable import Observable
-from ..observable.observable import Primitive
 from .fields import (
     ObservableField,
     ObservableValueField,
@@ -39,7 +38,7 @@ def obs[T: "Model"](__factory: type[T], **__kwds: Any) -> T:
 
 
 @overload
-def obs[T: Primitive](__value: T) -> Observable[T]:
+def obs[T](__value: T) -> Observable[T]:
     """Creates a #ObservableValueField[T] which describes how to
     initialize an #Observable[T] at #Model initialization.
 
@@ -64,7 +63,7 @@ def obs(__arg0: Any | type, *__args: Any, **__kwds: Any) -> Any:
 
 
 def watch[
-    T: Primitive
+    T
 ](
     *__observables: Observable[Any] | ObservableField[Any] | SubmodelProperty[Any],
 ) -> Callable[[Callable[..., T]], Observable[T]]:
@@ -119,7 +118,7 @@ def watch[
 
 
 def coerce[
-    T: Primitive
+    T
 ](
     __obs: Observable[T] | ObservableValueField[T],
 ) -> Callable[
@@ -150,7 +149,7 @@ def coerce[
 
 
 def validate[
-    T: Primitive
+    T
 ](
     __obs: Observable[T] | ObservableValueField[T],
 ) -> Callable[

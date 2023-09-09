@@ -5,7 +5,6 @@ from typing import Any, ClassVar, Iterator, cast
 from ..codegen import AddInterface, Attr_t, Iface_t
 from ..logging import get_logger
 from ..observable import Observable, ObservableSchema, get
-from ..utils.types import Primitive
 from .fields import (
     Field,
     ObservableField,
@@ -258,7 +257,7 @@ class Model(AddInterface, exclude=True):
                 self.__submodels[k].load_schema(cast(ModelSchema, v))
 
     def find_observable[
-        T: Primitive
+        T
     ](
         self, field: Observable[T] | ObservableField[T] | SubmodelProperty[T]
     ) -> Observable[T]:
@@ -288,7 +287,7 @@ class Model(AddInterface, exclude=True):
         return field
 
     def __find_observable_field[
-        T: Primitive
+        T
     ](self, __field: ObservableField[T],) -> Observable[T]:
         root_key = list(self.__model_fields__.keys())[
             list(self.__model_fields__.values()).index(__field)
@@ -296,7 +295,7 @@ class Model(AddInterface, exclude=True):
         return self.__observables[root_key]
 
     def __find_submodel_property[
-        T: Primitive
+        T
     ](self, __field: SubmodelProperty[T],) -> Observable[T]:
         root = __field
         keys: list[str] = []

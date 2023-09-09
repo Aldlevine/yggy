@@ -1,11 +1,10 @@
 import uuid
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, cast
 from weakref import WeakKeyDictionary
 
 from ..codegen import HasCodegenBuiltin
 from ..comm import LazyMessage, ReceiverFn_t, create_message
 from ..logging import get_logger
-from ..utils.types import Primitive
 from ..utils.functools import noop
 from .messages import OBSERVABLE_CHANGE_MSG, ChangeMessage
 from .schema import ObservableSchema
@@ -21,13 +20,14 @@ __all__ = [
 logger = get_logger(f"{__name__}")
 
 
-def get[T: Primitive](obs: "Observable[T] | T") -> T:
+def get[T](obs: "Observable[T] | T") -> T:
     if isinstance(obs, Observable):
+        obs = cast(Observable[T], obs)
         return obs.get()
     return obs
 
 
-class Observable[T: Primitive](HasCodegenBuiltin):
+class Observable[T](HasCodegenBuiltin):
     """An observable primitive value.
 
     When registered with an #ObservableNetwork it will emit and receive
