@@ -2,8 +2,8 @@
 
 import { Observable } from "../__init__.js";
 import { Binding } from "./binding.js";
-import { __NodeTree, __make_node, __replace_node, __append_node } from "./node_tree.js";
-import { __set_property } from "./node_tree.js";
+import { __NodeTree, __append_node, __make_node, __replace_node, __set_property } from "./node_tree.js";
+import { TreeEventHandlers } from "./tree_events.js";
 
 const SVG_PREFIX = "__svg__";
 
@@ -36,10 +36,12 @@ type JSXAttributeKeyTypeMap<T, K extends keyof T> =
     )
     : JSXAttribute<T[K]>
 
+type JSXAttribueExtras = TreeEventHandlers;
+
 
 type JSXElement<T> = {
     [K in keyof T as JSXAttributeKeyMap<K>]?: JSXAttributeKeyTypeMap<T, K>;
-}
+} & JSXAttribueExtras;
 
 type HTMLElements = {
     [K in keyof HTMLElementTagNameMap]: JSXElement<HTMLElementTagNameMap[K]>

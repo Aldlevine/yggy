@@ -1,8 +1,7 @@
 /** @jsx h */
 import { Observable } from "../__init__.js";
 import { Binding } from "./binding.js";
-import { __make_node, __replace_node, __append_node } from "./node_tree.js";
-import { __set_property } from "./node_tree.js";
+import { __append_node, __make_node, __replace_node, __set_property } from "./node_tree.js";
 const SVG_PREFIX = "__svg__";
 export const svg = new Proxy({}, {
     get(_, p) {
