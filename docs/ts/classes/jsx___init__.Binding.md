@@ -47,7 +47,7 @@ create the specified binding at render time.
 
 #### Defined in
 
-[jsx/binding.ts:15](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/binding.ts#L15)
+[jsx/binding.ts:15](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/binding.ts#L15)
 
 ## Properties
 
@@ -57,7 +57,7 @@ create the specified binding at render time.
 
 #### Defined in
 
-[jsx/binding.ts:13](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/binding.ts#L13)
+[jsx/binding.ts:13](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/binding.ts#L13)
 
 ___
 
@@ -67,4 +67,4 @@ ___
 
 #### Defined in
 
-[jsx/binding.ts:12](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/binding.ts#L12)
+[jsx/binding.ts:12](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/binding.ts#L12)

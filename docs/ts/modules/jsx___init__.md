@@ -28,7 +28,7 @@
 
 #### Defined in
 
-[jsx/jsx.ts:65](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/jsx.ts#L65)
+[jsx/jsx.ts:67](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/jsx.ts#L67)
 
 ## Functions
 
@@ -72,7 +72,7 @@ a binding definition for JSX
 
 #### Defined in
 
-[jsx/binding.ts:40](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/binding.ts#L40)
+[jsx/binding.ts:40](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/binding.ts#L40)
 
 ▸ **bind**<`T`\>(`obs`, `...events`): [`Binding`](../classes/jsx___init__.Binding.md)<`T`\> \| `T`
 
@@ -95,7 +95,7 @@ a binding definition for JSX
 
 #### Defined in
 
-[jsx/binding.ts:41](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/binding.ts#L41)
+[jsx/binding.ts:41](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/binding.ts#L41)
 
 ▸ **bind**<`T`\>(`obs`, `...events`): [`Binding`](../classes/jsx___init__.Binding.md)<`T`\> \| `T`
 
@@ -118,7 +118,7 @@ a binding definition for JSX
 
 #### Defined in
 
-[jsx/binding.ts:42](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/binding.ts#L42)
+[jsx/binding.ts:42](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/binding.ts#L42)
 
 ___
 
@@ -139,7 +139,7 @@ ___
 
 #### Defined in
 
-[jsx/helpers.ts:40](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/helpers.ts#L40)
+[jsx/helpers.ts:40](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/helpers.ts#L40)
 
 ___
 
@@ -161,7 +161,7 @@ ___
 
 #### Defined in
 
-[jsx/jsx.ts:73](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/jsx.ts#L73)
+[jsx/jsx.ts:75](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/jsx.ts#L75)
 
 ___
 
@@ -181,7 +181,7 @@ ___
 
 #### Defined in
 
-[jsx/helpers.ts:61](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/helpers.ts#L61)
+[jsx/helpers.ts:61](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/helpers.ts#L61)
 
 ___
 
@@ -202,4 +202,4 @@ ___
 
 #### Defined in
 
-[jsx/helpers.ts:5](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/jsx/helpers.ts#L5)
+[jsx/helpers.ts:5](https://github.com/Aldlevine/yggy/blob/a37fb28/src/jsx/helpers.ts#L5)

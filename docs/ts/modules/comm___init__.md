@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[comm/comm.ts:3](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/comm/comm.ts#L3)
+[comm/comm.ts:3](https://github.com/Aldlevine/yggy/blob/a37fb28/src/comm/comm.ts#L3)
 
 ___
 
@@ -58,7 +58,7 @@ ___
 
 #### Defined in
 
-[comm/messages.ts:3](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/comm/messages.ts#L3)
+[comm/messages.ts:3](https://github.com/Aldlevine/yggy/blob/a37fb28/src/comm/messages.ts#L3)
 
 ___
 
@@ -82,7 +82,7 @@ ___
 
 #### Defined in
 
-[comm/comm.ts:4](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/comm/comm.ts#L4)
+[comm/comm.ts:4](https://github.com/Aldlevine/yggy/blob/a37fb28/src/comm/comm.ts#L4)
 
 ## Functions
 
@@ -108,4 +108,4 @@ ___
 
 #### Defined in
 
-[comm/messages.ts:7](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/comm/messages.ts#L7)
+[comm/messages.ts:7](https://github.com/Aldlevine/yggy/blob/a37fb28/src/comm/messages.ts#L7)

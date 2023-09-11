@@ -30,7 +30,7 @@ Resolves to 1 if A1 == A2 and 0 otherwise.
 
 #### Defined in
 
-[utils/types.ts:9](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/types.ts#L9)
+[utils/types.ts:9](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/types.ts#L9)
 
 ___
 
@@ -50,4 +50,4 @@ Resolves a union of writable properties of T
 
 #### Defined in
 
-[utils/types.ts:25](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/types.ts#L25)
+[utils/types.ts:25](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/types.ts#L25)

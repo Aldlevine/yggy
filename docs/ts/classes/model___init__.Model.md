@@ -23,7 +23,7 @@
 
 #### Defined in
 
-[model/model.ts:24](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/model/model.ts#L24)
+[model/model.ts:24](https://github.com/Aldlevine/yggy/blob/a37fb28/src/model/model.ts#L24)
 
 ## Methods
 
@@ -37,7 +37,7 @@
 
 #### Defined in
 
-[model/model.ts:60](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/model/model.ts#L60)
+[model/model.ts:60](https://github.com/Aldlevine/yggy/blob/a37fb28/src/model/model.ts#L60)
 
 ___
 
@@ -63,4 +63,4 @@ ___
 
 #### Defined in
 
-[model/model.ts:26](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/model/model.ts#L26)
+[model/model.ts:26](https://github.com/Aldlevine/yggy/blob/a37fb28/src/model/model.ts#L26)

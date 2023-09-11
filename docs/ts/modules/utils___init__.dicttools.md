@@ -43,7 +43,7 @@ Function to get a default value from a dictionary if the key isn't present or is
 
 #### Defined in
 
-[utils/dicttools.ts:16](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/dicttools.ts#L16)
+[utils/dicttools.ts:16](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/dicttools.ts#L16)
 
 ___
 
@@ -75,4 +75,4 @@ Function to set a default value in a dictionary if the key isn't present
 
 #### Defined in
 
-[utils/dicttools.ts:40](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/dicttools.ts#L40)
+[utils/dicttools.ts:40](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/dicttools.ts#L40)

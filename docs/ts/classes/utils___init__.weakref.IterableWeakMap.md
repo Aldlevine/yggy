@@ -59,7 +59,7 @@ Constructs an IterableWeakMap instance.
 
 #### Defined in
 
-[utils/weakref.ts:22](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L22)
+[utils/weakref.ts:22](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L22)
 
 ## Properties
 
@@ -69,7 +69,7 @@ Constructs an IterableWeakMap instance.
 
 #### Defined in
 
-[utils/weakref.ts:9](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L9)
+[utils/weakref.ts:9](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L9)
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:8](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L8)
+[utils/weakref.ts:8](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L8)
 
 ___
 
@@ -89,7 +89,7 @@ ___
 
 #### Defined in
 
-[utils/weakref.ts:7](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L7)
+[utils/weakref.ts:7](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L7)
 
 ## Methods
 
@@ -107,7 +107,7 @@ A Generator yielding key-value pairs.
 
 #### Defined in
 
-[utils/weakref.ts:74](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L74)
+[utils/weakref.ts:74](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L74)
 
 ___
 
@@ -131,7 +131,7 @@ True if deletion was successful, false otherwise.
 
 #### Defined in
 
-[utils/weakref.ts:58](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L58)
+[utils/weakref.ts:58](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L58)
 
 ___
 
@@ -149,7 +149,7 @@ An Iterator for the entries.
 
 #### Defined in
 
-[utils/weakref.ts:87](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L87)
+[utils/weakref.ts:87](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L87)
 
 ___
 
@@ -173,7 +173,7 @@ The value or undefined if not found.
 
 #### Defined in
 
-[utils/weakref.ts:48](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L48)
+[utils/weakref.ts:48](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L48)
 
 ___
 
@@ -191,7 +191,7 @@ A Generator of keys.
 
 #### Defined in
 
-[utils/weakref.ts:95](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L95)
+[utils/weakref.ts:95](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L95)
 
 ___
 
@@ -214,7 +214,7 @@ Sets a key-value pair in the weak map.
 
 #### Defined in
 
-[utils/weakref.ts:33](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L33)
+[utils/weakref.ts:33](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L33)
 
 ___
 
@@ -232,7 +232,7 @@ A Generator of values.
 
 #### Defined in
 
-[utils/weakref.ts:105](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L105)
+[utils/weakref.ts:105](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L105)
 
 ___
 
@@ -256,4 +256,4 @@ Cleans up references from set.
 
 #### Defined in
 
-[utils/weakref.ts:14](https://github.com/Aldlevine/yggy/blob/ad84d0f/src/utils/weakref.ts#L14)
+[utils/weakref.ts:14](https://github.com/Aldlevine/yggy/blob/a37fb28/src/utils/weakref.ts#L14)
