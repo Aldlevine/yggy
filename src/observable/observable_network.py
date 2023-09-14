@@ -2,8 +2,12 @@ from typing import Any, Iterable
 from weakref import WeakKeyDictionary, WeakValueDictionary
 
 from ..comm import Comm, LazyMessage
-from .messages import OBSERVABLE_CHANGE_MSG, OBSERVABLE_CLIENT_CHANGE_MSG, ChangeMessage
-from .observable import Observable
+from .messages import (
+    OBSERVABLE_CHANGE_MSG,
+    OBSERVABLE_CLIENT_CHANGE_MSG,
+    BaseChangeMessage,
+)
+from .observable_base import ObservableBase
 
 __all__ = [
     "ObservableNetwork",
@@ -11,8 +15,8 @@ __all__ = [
 
 
 class ObservableNetwork:
-    __registry: WeakValueDictionary[str, Observable[Any]]
-    __client_registry: WeakKeyDictionary[Observable[Any], set[str]]
+    __registry: WeakValueDictionary[str, ObservableBase[Any, Any]]
+    __client_registry: WeakKeyDictionary[ObservableBase[Any, Any], set[str]]
     __comm: Comm
 
     def __init__(self, __comm: Comm) -> None:
@@ -28,7 +32,7 @@ class ObservableNetwork:
 
     def register(
         self,
-        __observables: Observable[Any] | Iterable[Observable[Any]],
+        __observables: ObservableBase[Any, Any] | Iterable[ObservableBase[Any, Any]],
         clients: Iterable[str] | None = None,
     ) -> None:
         if isinstance(__observables, Iterable):
@@ -50,26 +54,41 @@ class ObservableNetwork:
     # def unregister(self, __observable: Observable[Any]) -> None:
     #     del self.__registry[__observable.id]
 
+    def send_change(
+        self,
+        __observable: ObservableBase[Any, Any],
+        __change: BaseChangeMessage | LazyMessage[BaseChangeMessage],
+    ) -> None:
+        self.__comm.send(
+            OBSERVABLE_CHANGE_MSG,
+            __change,
+            client_ids=self.__client_registry.get(__observable, []),
+        )
+
+    def notify_change(
+        self,
+        __observable: ObservableBase[Any, Any],
+        __change: BaseChangeMessage,
+    ) -> None:
+        self.__comm.notify(
+            OBSERVABLE_CHANGE_MSG,
+            __change,
+        )
+
     def emit_change(
         self,
-        __observable: Observable[Any],
-        __change: ChangeMessage[Any] | LazyMessage[ChangeMessage[Any]],
-        *,
-        revoke: str | None = None,
+        __observable: ObservableBase[Any, Any],
+        __change: BaseChangeMessage | LazyMessage[BaseChangeMessage],
     ) -> None:
-        if revoke is not None:
-            self.__comm.revoke(revoke)
         self.__comm.emit(
             OBSERVABLE_CHANGE_MSG,
             __change,
             client_ids=self.__client_registry.get(__observable, []),
         )
 
-    def __recv_client_change(self, __change: ChangeMessage[Any]) -> None:
+    def __recv_client_change(self, __change: BaseChangeMessage) -> None:
         data_id = __change["data_id"]
 
         if data_id in self.__registry:
             obs = self.__registry[data_id]
-
-            new_value = __change["new_value"]
-            obs.set(new_value)
+            obs._handle_client_change(__change)  # type: ignore[you got a friend in me]

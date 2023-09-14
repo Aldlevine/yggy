@@ -1,9 +1,8 @@
-import { ReceiverFn_t, create_message } from "../comm/__init__.js";
-import { weakref } from "../utils/__init__.js";
+import { create_message } from "../comm/__init__.js";
 import { get_default } from "../utils/dicttools.js";
 import { WritableKeys } from "../utils/types.js";
-import { uuid4 } from "../utils/uuid.js";
-import { ChangeMessage, OBSERVABLE_CHANGE_MSG } from "./messages.js";
+import { ChangeMessage } from "./messages.js";
+import { ObservableBase, ObservableKwds } from "./observable_base.js";
 import { ObservableNetwork } from "./observable_network.js";
 import { ObservableSchema } from "./schema.js";
 
@@ -443,17 +442,6 @@ class _ObservableProxyHandler implements ProxyHandler<_Observable<any>> {
 
 
 /**
- * The keywords supported by {@link Observable}
- */
-type ObservableKwds = {
-    id?: string;
-    remote?: boolean;
-    network?: ObservableNetwork,
-}
-
-
-
-/**
  * The keyowrds supported by {@link bind}
  * 
  * @template T
@@ -475,13 +463,8 @@ type BindKwds<T, R> = {
  *
  * @template T
  */
-class _Observable<T> {
+class _Observable<T> extends ObservableBase<ObservableSchema<T>, ChangeMessage<T>> {
     #value: T;
-    #id: string
-    #remote: boolean
-    #network?: ObservableNetwork
-    #receivers: weakref.IterableWeakMap<ReceiverFn_t, ReceiverFn_t>;
-
 
     /**
      * Creates an instance of {@link _Observable}.
@@ -492,11 +475,8 @@ class _Observable<T> {
      * @param {T} value
      */
     private constructor(value: T, kwds: ObservableKwds = {}) {
+        super(kwds);
         this.#value = value;
-        this.#id = get_default(kwds, "id", uuid4());
-        this.#remote = get_default(kwds, "remote", false);
-        this.#network = get_default(kwds, "network", undefined);
-        this.#receivers = new weakref.IterableWeakMap();
         const defaultCoerce = ctor_of<T>(this.get());
         if (defaultCoerce) {
             this.coerce = (v) => defaultCoerce(v) as T;
@@ -522,26 +502,6 @@ class _Observable<T> {
 
 
     /**
-     * Gets the {@link Observable}'s id
-     *
-     * @readonly
-     */
-    get id(): string {
-        return this.#id;
-    }
-
-
-    /**
-     * Gets the {@link Observable}'s {@link ObservableNetwork}
-     *
-     * @readonly
-     */
-    get network(): ObservableNetwork | void {
-        return this.#network;
-    }
-
-
-    /**
      * Gets the {@link Observable}'s value.
      *
      * @returns {T}
@@ -559,10 +519,8 @@ class _Observable<T> {
      */
     set(v: any) {
         v = this.coerce(v);
-        if (this.#value !== v) {
-            this.#value = v;
-            this.#notify_change();
-        }
+        this.#apply_change(v);
+        this.#emit_change(v);
     }
 
 
@@ -576,24 +534,6 @@ class _Observable<T> {
 
 
     /**
-     * Watches the observable and calls the callback with its value
-     * as the argument when changed.
-     *
-     * @param {TransformFn<T, any>} fn the callback
-     * @see {@link Observable.watch}
-     */
-    watch(fn: TransformFn<T, any>): void {
-        const __recv_change = (change: ChangeMessage<any>) => {
-            if (change["data_id"] != this.id) { return; }
-            fn(change.new_value);
-        };
-
-        this.#receivers.set(fn, __recv_change);
-        this.#network?.comm.recv(OBSERVABLE_CHANGE_MSG, __recv_change);
-    }
-
-
-    /**
      * Similar to {@link watch} but produces an {@link Observable}<{@link R}> with
      * the result of the callback.
      *
@@ -604,12 +544,10 @@ class _Observable<T> {
      */
     map<R>(fn: TransformFn<T, R>): Observable<R> {
         const result = _Observable.create(fn(this.get()));
-        this.watch(v => {
-            result.set(fn(v));
+        this.watch(change => {
+            result.set(fn(change.new_value));
         });
-        if (this.#network) {
-            this.#network.register(result);
-        }
+        this.network?.register(result);
         return result;
     }
 
@@ -675,8 +613,8 @@ class _Observable<T> {
         }
 
         if (update_target) {
-            this.watch(v => {
-                obj[attr] = <O[K]>(coerce ? coerce(v) : v);
+            this.watch(change => {
+                obj[attr] = <O[K]>(coerce ? coerce(change.new_value) : change.new_value);
             });
         }
 
@@ -686,46 +624,21 @@ class _Observable<T> {
         else if (primary === "target") {
             this.set(obj[attr]);
         }
-
     }
 
-
-    /**
-     * Internal method: used by {@link ObservableNetwork} as part of registration
-     *
-     * @private
-     * @param {ObservableNetwork} network
-     */
-    __register(network: ObservableNetwork): void {
-        this.#network = network;
-        for (let fn of this.#receivers.values()) {
-            this.#network.comm.recv(OBSERVABLE_CHANGE_MSG, fn);
-        }
+    #apply_change(value: T): void {
+        this.#value = value;
     }
 
-
-    /**
-     * Internal method: used by {@link ObservableNetwork} as part of communication
-     *
-     * @private
-     * @param {ChangeMessage<T>} change
-     */
-    __recv_change(change: ChangeMessage<T>): void {
-        this.set(change.new_value);
-    }
-
-
-    #notify_change(): void {
+    #emit_change(value: T): void {
         const change = create_message<ChangeMessage<T>>({
-            data_id: this.#id,
-            new_value: this.#value,
+            data_id: this.id,
+            new_value: value,
         });
+        this._emit_change_message(change);
+    }
 
-        if (this.#remote) {
-            this.#network?.send_change(change);
-        }
-        else {
-            this.#network?.notify_change(change);
-        }
+    protected _handle_change_message(msg: ChangeMessage<T>): void {
+        this.#apply_change(msg.new_value);
     }
 };

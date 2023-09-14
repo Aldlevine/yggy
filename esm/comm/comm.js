@@ -30,12 +30,6 @@ export class Comm {
         }
         this.#senders.push(sender);
     }
-    send(msg, data) {
-        this.#require_open();
-        for (let sender of this.#senders) {
-            sender(msg, data);
-        }
-    }
     notify(msg, data) {
         this.#require_open();
         for (let receiver of this.#global_receivers) {
@@ -45,6 +39,16 @@ export class Comm {
         for (let receiver of receivers) {
             receiver(data);
         }
+    }
+    send(msg, data) {
+        this.#require_open();
+        for (let sender of this.#senders) {
+            sender(msg, data);
+        }
+    }
+    emit(msg, data) {
+        this.notify(msg, data);
+        this.send(msg, data);
     }
     recv(arg0, arg1) {
         this.#require_open();

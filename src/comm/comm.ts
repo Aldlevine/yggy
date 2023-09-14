@@ -39,13 +39,6 @@ export class Comm {
         this.#senders.push(sender);
     }
 
-    send(msg: string, data: any): void {
-        this.#require_open();
-        for (let sender of this.#senders) {
-            sender(msg, data);
-        }
-    }
-
     notify(msg: string, data: any): void {
         this.#require_open();
         for (let receiver of this.#global_receivers) {
@@ -55,6 +48,18 @@ export class Comm {
         for (let receiver of receivers) {
             receiver(data);
         }
+    }
+
+    send(msg: string, data: any): void {
+        this.#require_open();
+        for (let sender of this.#senders) {
+            sender(msg, data);
+        }
+    }
+
+    emit(msg: string, data: any): void {
+        this.notify(msg, data);
+        this.send(msg, data);
     }
 
     recv(fn: GlobalReceiverFn_t): void;

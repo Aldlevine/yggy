@@ -1,9 +1,12 @@
 from inspect import isclass
 from typing import Any, Callable, cast, overload
 
-from ..observable import Observable
+from ..observable.observable_base import ObservableBase
+
+from ..observable import Observable, ObservableList
 from .fields import (
     ObservableField,
+    ObservableListField,
     ObservableValueField,
     ObservableWatchField,
     SubmodelField,
@@ -11,7 +14,7 @@ from .fields import (
 )
 from .model import Model
 
-__all__ = ["obs", "watch", "coerce", "validate"]
+__all__ = ["obs", "obs_list", "watch", "coerce", "validate"]
 
 
 @overload
@@ -62,10 +65,14 @@ def obs(__arg0: Any | type, *__args: Any, **__kwds: Any) -> Any:
     return ObservableValueField(__arg0)
 
 
+def obs_list[T](__type: type[T]) -> ObservableList[T]:
+    return cast(ObservableList[T], ObservableListField(__type))
+
+
 def watch[
     T
 ](
-    *__observables: Observable[Any] | ObservableField[Any] | SubmodelProperty[Any],
+    *__observables: ObservableBase[Any, Any] | ObservableField | SubmodelProperty[Any],
 ) -> Callable[[Callable[..., T]], Observable[T]]:
     """Creates a #ObservableWatchField[T] which describes how to
     initialize an #Observable[T] which is automatically updated based
@@ -99,7 +106,7 @@ def watch[
     """
 
     def __inner_fn(fn: Callable[..., T]) -> Observable[T]:
-        observables = [obs for obs in __observables if isinstance(obs, Observable)]
+        observables = [obs for obs in __observables if isinstance(obs, ObservableBase)]
         for obs in observables:
 
             def __fn(*__args: Any, **__kwargs: Any) -> None:

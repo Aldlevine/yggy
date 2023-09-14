@@ -4,10 +4,13 @@ from typing import Any, ClassVar, Iterator, cast
 
 from ..codegen import AddInterface, Attr_t, Iface_t
 from ..logging import get_logger
-from ..observable import Observable, ObservableSchema, get
+from ..observable import Observable, get
+from ..observable.observable_base import ObservableBase
+from ..observable.observable_list import ObservableList
 from .fields import (
     Field,
     ObservableField,
+    ObservableListField,
     ObservableWatchField,
     SubmodelField,
     SubmodelProperty,
@@ -69,7 +72,8 @@ class Model(AddInterface, exclude=True):
     __model_fields__: ClassVar[dict[str, Field[Any]]] = {}
 
     __id: str
-    __observables: dict[str, Observable[Any]]
+    # __observables: dict[str, Observable[Any]]
+    __observables: dict[str, ObservableBase[Any, Any]]
     __submodels: dict[str, "Model"]
 
     @classmethod
@@ -112,8 +116,8 @@ class Model(AddInterface, exclude=True):
         self.__submodels = {}
 
         for k, f in self.__model_fields__.items():
-            if k in __kwargs and isinstance(__kwargs[k], (Observable, Model)):
-                if isinstance(__kwargs[k], Observable):
+            if k in __kwargs and isinstance(__kwargs[k], (ObservableBase, Model)):
+                if isinstance(__kwargs[k], ObservableBase):
                     self.__observables[k] = __kwargs[k]
                     continue
 
@@ -122,7 +126,6 @@ class Model(AddInterface, exclude=True):
                     continue
 
             if isinstance(f, ObservableField):
-                f = cast(ObservableField[Any], f)
                 self.__observables[k] = f.realize(self, k, **__kwargs)
                 continue
 
@@ -187,19 +190,23 @@ class Model(AddInterface, exclude=True):
                 t := cast(
                     Attr_t,
                     (
-                        Observable[v.type]
-                        if isinstance(v, ObservableField)
-                        else v.factory if isinstance(v, SubmodelField) else False
+                        ObservableList[v.type]
+                        if isinstance(v, ObservableListField)
+                        else (
+                            Observable[v.type]
+                            if isinstance(v, ObservableField)
+                            else v.factory if isinstance(v, SubmodelField) else False
+                        )
                     ),
                 )
             )
         }
 
     @property
-    def field_values(self) -> dict[str, "Observable[Any] | Model"]:
+    def field_values(self) -> dict[str, "ObservableBase[Any, Any] | Model"]:
         """A `dict` mapping field names to their respective #Observable or #Model"""
 
-        res: dict[str, Observable[Any] | Model] = {}
+        res: dict[str, ObservableBase[Any, Any] | Model] = {}
         for k, f in self.__model_fields__.items():
             if isinstance(f, ObservableField):
                 res[k] = self.__observables[k]
@@ -216,7 +223,7 @@ class Model(AddInterface, exclude=True):
         return self.__id
 
     @property
-    def observables(self) -> Iterator[Observable[Any]]:
+    def observables(self) -> Iterator[ObservableBase[Any, Any]]:
         """An iterator for all #Observable#s in the #Model's hierarchy. This
         includes both direct and indirect descendants.
 
@@ -232,8 +239,8 @@ class Model(AddInterface, exclude=True):
         ```
         """
 
-        for obs in self.__observables.values():
-            yield obs
+        yield from self.__observables.values()
+
         for key, field in self.__model_fields__.items():
             if isinstance(field, SubmodelField):
                 sub_obs = getattr(self, key)
@@ -251,7 +258,8 @@ class Model(AddInterface, exclude=True):
             if k in self.__observables:
                 if isinstance(self.__model_fields__[k], ObservableWatchField):
                     continue
-                self.__observables[k].set(cast(ObservableSchema[Any], v)["value"])
+                # self.__observables[k].set(cast(ObservableSchema[Any], v)["value"])
+                self.__observables[k].load_schema(v)
                 continue
             if k in self.__submodels:
                 self.__submodels[k].load_schema(cast(ModelSchema, v))
@@ -259,8 +267,8 @@ class Model(AddInterface, exclude=True):
     def find_observable[
         T
     ](
-        self, field: Observable[T] | ObservableField[T] | SubmodelProperty[T]
-    ) -> Observable[T]:
+        self, field: ObservableBase[Any, Any] | ObservableField | SubmodelProperty[Any]
+    ) -> ObservableBase[Any, Any]:
         """Finds an #Observable based
         on a provided field.
 
@@ -283,12 +291,12 @@ class Model(AddInterface, exclude=True):
         if isinstance(field, ObservableField):
             return self.__find_observable_field(field)
 
-        assert isinstance(field, Observable)
+        assert isinstance(field, ObservableBase)
         return field
 
     def __find_observable_field[
         T
-    ](self, __field: ObservableField[T],) -> Observable[T]:
+    ](self, __field: ObservableField,) -> ObservableBase[Any, Any]:
         root_key = list(self.__model_fields__.keys())[
             list(self.__model_fields__.values()).index(__field)
         ]

@@ -1,9 +1,12 @@
 import abc
 from inspect import signature
+
+# from inspect import signature
 from typing import TYPE_CHECKING, Any, Callable
 
-from ..observable import Observable
-from ..observable.observable import Observable
+from ..observable.observable_base import ObservableBase
+
+from ..observable import Observable, ObservableList
 from ..utils.functools import bind_fn, noop
 
 if TYPE_CHECKING:
@@ -29,7 +32,7 @@ class Field[T](abc.ABC):
         ...
 
 
-class ObservableField[T](Field[Observable[T]]):
+class ObservableField(Field[ObservableBase[Any, Any]]):
     """A common base class for all #ObservableField#s.
 
     These are the fields that will end up in a #Model#s
@@ -42,7 +45,7 @@ class ObservableField[T](Field[Observable[T]]):
         ...
 
 
-class ObservableValueField[T](ObservableField[T]):
+class ObservableValueField[T](ObservableField):
     """Defines a simple #Observable[T] field.
 
     When realized, it creates an #Observable with the value
@@ -74,6 +77,31 @@ class ObservableValueField[T](ObservableField[T]):
         return Observable(default, coerce=coerce_fn, validate=validate_fn)
 
 
+class ObservableListField[T](ObservableField):
+    coerce_fn: Callable[["Model", Any], T] | Callable[[Any], T]
+    validate_fn: Callable[["Model", T], T] | Callable[[T], T]
+
+    __type: type[T]
+
+    def __init__(self, __type: type[T]) -> None:
+        super().__init__()
+        self.coerce_fn = __type
+        self.validate_fn = noop
+        self.__type = __type
+
+    @property
+    def type(self) -> type:
+        return self.__type
+
+    def realize(
+        self, __model: "Model", __key: str, **__kwargs: Any
+    ) -> ObservableList[T]:
+        # return super().realize(__model, __key, **__kwargs)
+        coerce_fn = bind_fn(self.coerce_fn, __model)
+        validate_fn = bind_fn(self.validate_fn, __model)
+        return ObservableList(coerce=coerce_fn, validate=validate_fn)
+
+
 class SubmodelProperty[T]:
     """Defines a reference chain from a #SubmodelField to an observable #Field.
 
@@ -101,7 +129,7 @@ class SubmodelProperty[T]:
         return SubmodelProperty(self, __name)
 
 
-class ObservableWatchField[T](ObservableField[T]):
+class ObservableWatchField[T](ObservableField):
     """Defines an #Observable[T] which evaluates a callback
     in response to any changes to the provided observables.
 
@@ -111,12 +139,12 @@ class ObservableWatchField[T](ObservableField[T]):
     """
 
     fn: Callable[..., T]
-    observables: list["ObservableField[Any] | SubmodelProperty[Any]"]
+    observables: list["ObservableField | SubmodelProperty[Any]"]
 
     def __init__(
         self,
         fn: Callable[..., T],
-        observables: list["ObservableField[Any] | SubmodelProperty[Any]"],
+        observables: list["ObservableField | SubmodelProperty[Any]"],
     ) -> None:
         super().__init__()
         self.fn = fn

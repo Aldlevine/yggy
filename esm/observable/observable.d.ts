@@ -1,5 +1,5 @@
 import { ChangeMessage } from "./messages.js";
-import { ObservableNetwork } from "./observable_network.js";
+import { ObservableBase, ObservableKwds } from "./observable_base.js";
 import { ObservableSchema } from "./schema.js";
 /**
  * Any function that transforms an object of type {@link From} to type {@link To}
@@ -215,14 +215,6 @@ export type Observable<T, O extends ObjectOf<T> = ObjectOf<T>> = _Observable<T> 
  */
 export declare const Observable: ObservableCtor & typeof ObservableStatic;
 /**
- * The keywords supported by {@link Observable}
- */
-type ObservableKwds = {
-    id?: string;
-    remote?: boolean;
-    network?: ObservableNetwork;
-};
-/**
  * The keyowrds supported by {@link bind}
  *
  * @template T
@@ -242,7 +234,7 @@ type BindKwds<T, R> = {
  *
  * @template T
  */
-declare class _Observable<T> {
+declare class _Observable<T> extends ObservableBase<ObservableSchema<T>, ChangeMessage<T>> {
     #private;
     /**
      * Creates an instance of {@link _Observable}.
@@ -263,18 +255,6 @@ declare class _Observable<T> {
      */
     static create<T>(value: T, kwds?: ObservableKwds): Observable<T>;
     /**
-     * Gets the {@link Observable}'s id
-     *
-     * @readonly
-     */
-    get id(): string;
-    /**
-     * Gets the {@link Observable}'s {@link ObservableNetwork}
-     *
-     * @readonly
-     */
-    get network(): ObservableNetwork | void;
-    /**
      * Gets the {@link Observable}'s value.
      *
      * @returns {T}
@@ -294,14 +274,6 @@ declare class _Observable<T> {
      * @type {TransformFn<any, T>}
      */
     coerce: TransformFn<any, T>;
-    /**
-     * Watches the observable and calls the callback with its value
-     * as the argument when changed.
-     *
-     * @param {TransformFn<T, any>} fn the callback
-     * @see {@link Observable.watch}
-     */
-    watch(fn: TransformFn<T, any>): void;
     /**
      * Similar to {@link watch} but produces an {@link Observable}<{@link R}> with
      * the result of the callback.
@@ -327,19 +299,6 @@ declare class _Observable<T> {
     bind<O extends EventTarget, K extends keyof O>(obj: O, attr: K, event: string | string[]): void;
     bind<O extends object, K extends keyof O>(obj: O, attr: K, kwds: BindKwds<T, O[K]>): void;
     bind<O extends EventTarget, K extends keyof O>(obj: O, attr: K, event: string | string[], kwds: BindKwds<T, O[K]>): void;
-    /**
-     * Internal method: used by {@link ObservableNetwork} as part of registration
-     *
-     * @private
-     * @param {ObservableNetwork} network
-     */
-    __register(network: ObservableNetwork): void;
-    /**
-     * Internal method: used by {@link ObservableNetwork} as part of communication
-     *
-     * @private
-     * @param {ChangeMessage<T>} change
-     */
-    __recv_change(change: ChangeMessage<T>): void;
+    protected _handle_change_message(msg: ChangeMessage<T>): void;
 }
 export {};

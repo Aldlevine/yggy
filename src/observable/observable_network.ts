@@ -1,19 +1,18 @@
 import { Comm } from "../comm/comm.js";
 import {
-    ChangeMessage,
+    BaseChangeMessage,
     OBSERVABLE_CHANGE_MSG,
-    OBSERVABLE_CLIENT_CHANGE_MSG,
+    OBSERVABLE_CLIENT_CHANGE_MSG
 } from "./messages.js";
-import { Observable, Primitive } from "./observable.js";
+import { ObservableBase } from "./observable_base.js";
+import { BaseObservableSchema } from "./schema.js";
 
 export class ObservableNetwork {
-    #registry: { [key: string]: Observable<any> };
-    #updating: Set<string>;
+    #registry: { [key: string]: ObservableBase<any, any> };
     #comm: Comm;
 
     constructor(comm: Comm) {
         this.#registry = {};
-        this.#updating = new Set();
         this.#comm = comm;
 
         this.#comm.recv(OBSERVABLE_CHANGE_MSG, this.#recv_change.bind(this));
@@ -23,38 +22,30 @@ export class ObservableNetwork {
         return this.#comm;
     }
 
-    public get<T extends Primitive>(id: string): Observable<T> | undefined {
-        return <Observable<T>>this.#registry[id];
+    public get<T extends BaseObservableSchema, U extends BaseChangeMessage>(id: string): ObservableBase<T, U> | undefined {
+        return this.#registry[id];
     }
 
-    public send_change<T>(change: ChangeMessage<T>): void {
-        if (this.#updating.has(change.data_id)) {
-            return;
-        }
-
+    public send_change(change: BaseChangeMessage): void {
         this.#comm.send(OBSERVABLE_CLIENT_CHANGE_MSG, change);
     }
 
-    public notify_change<T>(change: ChangeMessage<T>): void {
+    public notify_change(change: BaseChangeMessage): void {
         this.#comm.notify(OBSERVABLE_CHANGE_MSG, change);
     }
 
-    public register<T>(obs: Observable<T>): void {
+    public emit_change(change: BaseChangeMessage): void {
+        this.#comm.emit(OBSERVABLE_CHANGE_MSG, change);
+    }
+
+    public register(obs: ObservableBase<any, any>): void {
         this.#registry[obs.id] = obs;
         obs.__register(this);
     }
 
-    #recv_change<T>(change: ChangeMessage<T>): void {
+    #recv_change(change: BaseChangeMessage): void {
         const { data_id } = change;
-
-        if (this.#updating.has(data_id)) {
-            return;
-        }
-        this.#updating.add(data_id);
-
         this.#registry[data_id].__recv_change(change);
-
-        this.#updating.delete(data_id);
     }
 
 }
